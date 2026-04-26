@@ -1,8 +1,9 @@
 # C64 with 9V AC at 50 or 60 Hz
 
-I got a retrofit power supply for my C64 with a switch for 50 or 60 Hz.
+I got a retrofit power supply for my C64.
+It has a switch which is for 50 or 60 Hz.
 I needed to study this to understand what it means.
-This howto documents that.
+This _howto_ documents that.
 
 ## Introduction
 
@@ -13,27 +14,28 @@ I'm guessing he might be calling it the USB-64.
 
 ![USB-64](images/USB-C64-3D.jpg) ![USB-64 plugged in](images/USB-C64-plugged.jpg)
 
-The USB-64 device is a small "block" that you plug into the DIN power connector 
-of the C64. The USB-64 itself must be powered by a USB power adapter compliant
-with USB PD (Power Delivery). The circuitry in the USB-64 negotiates 12V from 
-the USB PD power adapter, and converts it to 5V DC and 9V DC.  
+The USB-64 device is a small "block" that you plug into the power socket
+of the C64. The USB-64 itself must be powered by an USB power adapter compliant
+with USB Power Delivery (PD). The circuitry in the USB-64 negotiates 12V from 
+the USB power adapter, and converts it to 5V DC and 9V AC. That is already 
+interesting: the USB-64 must generate 9V AC from 12 DC.
 
-![USB-64 front](images/USB-C64-front.jpg) ![USB-64 back](images/USB-C64-back.jpg) ![USB-64 left](images/USB-C64-left.jpg) 
+![USB-64 front](images/USB-C64-front.jpg) ![USB-64 back](images/USB-C64-back.jpg) 
 
 The USB-64 device has power LEDs and two switches. 
 The upper switch is the on/off switch, the lower switch is an 50Hz/60Hz selector. 
 
-![USB-64 right](images/USB-C64-right.jpg)
+![USB-64 left](images/USB-C64-left.jpg) ![USB-64 right](images/USB-C64-right.jpg)
 
 I flipped the 50/60 selector and nothing seemed to happen. 
-This howto is the result of my trying to understand what this frequency switch is about.
+This _howto_ is the result of me trying to understand what this frequency switch is about.
 
 
 ## 50Hz/60Hz switch
 
 Since the USB-64 was not yet released, there was no documentation.
 The lower switch being a 50/60Hz selector was just what I remembered 
-from the creator's presentation.
+from the creator's presentation. Can I confirm its function?
 
 My multimeter has a frequency mode, and I measured the frequency over 
 pin 6 and 7, and indeed when the switch is in the down position 
@@ -44,7 +46,8 @@ What is it used for?
 ![Power plug](images/powerplug.png)
 
 By the way, the frequency switch is not momentarily active.
-It seems only to be sampled by the USB-64 when it is switched on.
+It seems to be sampled by the USB-64 only at startup 
+(when the USB-64 is powered on).
 
 
 
@@ -56,17 +59,18 @@ The opposite is more obscure, but it seems Myanmar used NTSC despite being in a
 50Hz region. 
 
 I soon realized that the clock of the CPU is created by a crystal, not the mains
-frequency. The crystal is Y1, we see it in the right of the top center in below
-photo, which is an part of the C64 breadbin motherboard. 
-The print on the component Y1 shows 17 or even 17.7 which is the frequency for PAL 
+frequency. The crystal is Y1, we see it right of the top center in below
+photo. The photo shows a part of the C64 breadbin motherboard (below the VIC-II can). 
+The marking on the component Y1 shows 17 or even 17.7 which is the frequency for PAL 
 (17.73447 MHz), NTSC would have 14.31818 MHz. Via U31 (chip in center),
 a [Dual voltage-controlled oscillators](https://www.ti.com/product/SN74LS629), the
 clock reaches the VIC-II (U19, big chip at the bottom of below image). 
-The VIC-II in my machine is an 6569 the PAL variant; NTSC would have the 6567.
+The VIC-II in my machine is a 6569, the PAL variant; NTSC would have the 6567.
 
 ![VIC-II](images/VIC-II.jpg)
 
-I definitly have a PAL machine.
+The conclusion is that I definitly have a _PAL_ machine.
+
 As [c64 wiki](https://www.c64-wiki.com/wiki/Hardware_internals_of_the_C64) explains
 
 > Y1 defines the _Color Clock_ (17.734472 MHz for PAL).
@@ -76,42 +80,47 @@ As [c64 wiki](https://www.c64-wiki.com/wiki/Hardware_internals_of_the_C64) expla
 > (the ratio for NTSC is 7:4).
 
 > Φ0 (~1 MHz) is an output signal from the VIC, where the pixel clock divided 
-> by 8 is present. Φ0 clocks the 6510. 
+> by 8 is present. 
+
+Signal Φ0 clocks the 6510. 
 
 
 ## 50Hz/60Hz is for CIA
 
-Clearly the 50/60 selector does not influence VIC-II video or 6510 CPU.
-I have copy of the [Commodore 64 Programmer's Reference Guide](http://cini.classiccmp.org/pdf/Commodore/C64%20Programmer's%20Reference%20Guide.pdf) 
-and that contains at the end of the book, an insert, with the schematics.
-I made some tracks and pins green.
+Clearly the 50/60 selector does not influence the VIC-II video or the 6510 CPU.
+I have copy of the [Commodore 64 Programmer's Reference Guide](http://cini.classiccmp.org/pdf/Commodore/C64%20Programmer's%20Reference%20Guide.pdf),
+which contains, at the end of the book, an insert with the schematics.
+Below is a photo of part of the schematics, I made some tracks and pins related to 9V AC green.
 
 ![Schematics](images/schematics.jpg)
 
-We see that the CIAs (chips U1 and U2) have their pin 19 for TOD 
-(Time Of Day) connected to the 9V AC, through U27, a quad AND-gate 
+We see that the CIAs (chips U1 and U2 on the left) have their pin 19 for **TOD** 
+(Time Of Day) connected to the 9V AC, through U27 (bottom left), a quad AND-gate 
 [74LS08](https://www.ti.com/lit/ds/symlink/sn74ls08.pdf), likely to 
-"digitize" the sine wave.
+"digitize" the sine wave. The AND-gate is fed via power switch SW1 from 
+power input CN7 (DIN socket).
 
 Inside the CIA (Complex Interface Adapter) chip, there is a Time of Day clock. 
 This clock is designed to track "real-world" time; it is driven by the 
 frequency of the 9V AC coming from the power supply. The TOD has four 
-registers (08..0B in BCD): hour, minutes, seconds and tenth of seconds. 
+registers (08..0B): hour, minutes, seconds and tenth of seconds (green). 
 
 ![CIA register map](images/ciaregmem.png)
 
-The CRA register of the CIA has TODIN as bit 7. It indicates if the 
-"10THS of SECONDS" register is incremented every 5 or every 6 edges 
-on the TOD pin. In other words, with the TODIN bit we can tell the CIA
-whether the 9V AC contains a 50Hz or a 60 Hz signal. 
+The CRA register of the CIA (also green in the image above) has as bit 7
+a flag called TODIN (green in image below). This flag indicates if the 
+"10THS of SECONDS" register is incremented every 5 or every 6 edges on the 
+TOD pin. In other words, with the TODIN bit we can tell the CIA whether the 
+9V AC contains a 50Hz or a 60 Hz signal. 
 
 ![TODIN bit in register CRA of the CIA](images/cia-cra.jpg)
 
 As far as I know, the TOD is the only usage of the AC signal 
-(except maybe that it is also present on the user port).
+(except that it is also present on the user port).
 
 If a retrofit power supply supplies 9V DC instead of AC, 
-the CIA TOD wouldn't step. Gemini added
+the CIA TOD wouldn't step, but for the rest all is fine. 
+Gemini explains
 
 > The **9V AC** is also rectified internally by the C64 to create **12V DC**.
 > This is required for the SID (Sound Interface Device) chip and the video circuitry. 
@@ -121,17 +130,17 @@ the CIA TOD wouldn't step. Gemini added
 
 ## Writing a BASIC program to test
 
-I want to test this (the TOD being driven by the 9V frequency) on a real system.
+I want to test the TOD being driven by the 9V frequency.
 
 The Kernal maintains a Jiffy clock. It counts 1/60 seconds, based on the
 CPU clock, which is derived from the crystal, not the 9V AC frequency.
 We can compare the Jiffy clock, with the TOD of the CIA.
 
-To access the Jiffy clock in BASIC, we can simply use the variable `TI`.
-To access the TOD, we need to `PEEK` and `POKE`, see the register addresses 
-in the table from the previous paragraph.
+To access the Jiffy clock in BASIC, we can read variable `TI`.
+To access the TOD, we need to `PEEK` and `POKE` the CIA, 
+see the register addresses in the table from the previous paragraph.
 
-This is the BASIC program I wrote.
+Below is the BASIC program I wrote.
 It is de-token-ized by `petcat`, which comes with 
 [VICE](https://vice-emu.sourceforge.io/),
 the Versatile Commodore Emulator. The original `PRG` source is also 
@@ -162,11 +171,11 @@ the Versatile Commodore Emulator. The original `PRG` source is also
 410 r=abs(ts-x)<0.1:return
 ```
 
-The above programs contains of three parts: main, CIA and measurement.
+The above programs contains three parts: main, CIA and measurement.
 
 - The **main routine** is lines 100-120. It starts two identical tests, 
   one with CIA1 and one with CIA2. The variable `c` contains the CIA number, 
-  and `a` the address of the first register. Variable `aa` is just `a+14`, 
+  and `a` the address of its first register. Variable `aa` is just `a+14`, 
   it is introduced to make lines 200 and 210 fit on one screen line.
 
 - The **CIA routine** is on lines 200-260.
@@ -174,22 +183,26 @@ The above programs contains of three parts: main, CIA and measurement.
   then measures time (line 200). Next, it configures the CIA for 60 Hz,
   and again measures time (line 210). 
   
-  Measuring time in this context means: restting the CIAs TOD to 0,
-  then using the Jiffy clock to wait 2.5 seconds, then reading the TOD,
-  and finally returning true iff the TOD reads 2.5.
+  Measuring time in this context means: resetting the CIA's TOD to 0,
+  then using the Jiffy clock to wait 2.5 seconds, then reading the CIA's TOD,
+  and finally returning true iff the TOD also reads 2.5 seconds.
 
-  The results of the two tests are in `r5` and `r6`, 0 for false and -1
-  for true; line 220 jumps to the four cases. Since case 4 
+  The results of the 50Hz and 60Hz tests are in `r5` and `r6`; 0 for false 
+  and -1 for true. This leads to 4 cases: TOD equals Jiffy at 50 Hz, 
+  TOD equals Jiffy at 60 Hz, and the border cases TOD doesn't equal Jiffy
+  in either case or TOD equals Jiffy in both cases. Line 220 jumps to the 
+  four cases based on the value of `r5` and `r6`. Since case 4 
   (both measurements match) is not in the goto-list, it falls through 
   to line 230, printing `error`.
 
   Note that `{wht}` is the control character to switch to white and 
   `{lblu}` is the control character to switch to light blue, the system
-  default color for text.
+  default color for text. These meta codes are generated by de-token-izer 
+  `petcat`. Note that `{` and `}` are not present on the C64 keyboard.
 
 - The **measurement routine** is lines 300-410. It start, as a form of 
-  debug, by printing for which frequency (`f`) for which the CIA was configured
-  (lines 300-310).
+  debugging (tracing), by printing for which frequency (`f`) for which 
+  the CIA was configured (lines 300-310).
 
   Lines 320 and 330 set the TOD of the CIA to 0 by poking all four registers
   to 0: hour, minutes, seconds and tenth (of seconds). 
@@ -198,12 +211,10 @@ The above programs contains of three parts: main, CIA and measurement.
   TOD. Writing a value to the _hours_ register immediately stops the internal 
   TOD clock from incrementing. The clock stays stopped until you write a value 
   to the _tenths_ register. Only then does the internal CIA TOD resume ticking 
-  from the newly provided time.
+  from the newly provided time. This is why, although we are only interested 
+  in seconds and tenth, all four registers are written to 0.
 
-  This is why, although we are only interested in seconds and tenth,
-  all four registers are written to 0.
-
-  Lines 340 sets the wating time in seconds (`ts`) and captures the 
+  Lines 340 sets and prints the wating time in seconds (`ts`), then captures the 
   Jiffy clock (`ti`) into `t0`. Line 360 does the actual wait using the Jiffy
   clock.
 
@@ -211,14 +222,14 @@ The above programs contains of three parts: main, CIA and measurement.
   locking mechanism. The moment you read the _hours_ register, the CIA 
   takes a "snapshot" of the current minutes, seconds, and tenths.
   While the internal TOD continues to keep time, the values held in 
-  the registers remain frozen. The registers remain locked until you 
-  read the _tenths_. Hence we read all four.
+  the registers remain frozen. The registers remain frozen until you 
+  read the _tenths_. Hence we read all four TOD registers.
 
-  Since the CIA publishes the TOD through its registers in BCD format 
+  Since the CIA publishes the TOD through its registers in _BCD_ format 
   (e.g. 24 seconds is stored as hex 0x24 or 36 decimal), 
   line 390 computes the TOD in second (in `x`), converting
   from BCD (only using seconds and tenth). The TOD is printed full and 
-  in seconds on line 400. Line 410 returns, in `r` whether the TOD matches
+  in seconds on line 400. Line 410 returns, in `r`, whether the TOD matches
   the Jiffy clock close enough (margin of 0.1 second).
 
 
@@ -236,5 +247,17 @@ To be honest, the actual screenshots were made on VICE on Win10.
 As it turns out, VICE even emulates the 9V frequency:
 
 ![VICE frequency](images/vice-setting-hz.png)
+
+
+## Conclusion
+
+SPL makes a high quality product.
+If 9V were DC nobody would have probably noticed (who uses the TOD)?
+Explicit components have to be added to convert the DC from USB to AC for the C64.
+SPL goes one step further, not just making AC (fixed 50Hz for "europe") but making 
+it configurable with a switch.
+
+Impressive.
+
 
 (end)
