@@ -58,7 +58,7 @@ The opposite is more obscure, but it seems Myanmar used NTSC despite being in a
 I soon realized that the clock of the CPU is created by a crystal, not the mains
 frequency. The crystal is Y1, we see it in the right of the top center in below
 photo, which is an part of the C64 breadbin motherboard. 
-The print on the component shows 17... which is the frequency for PAL 
+The print on the component Y1 shows 17 or even 17.7 which is the frequency for PAL 
 (17.73447 MHz), NTSC would have 14.31818 MHz. Via U31 (chip in center),
 a [Dual voltage-controlled oscillators](https://www.ti.com/product/SN74LS629), the
 clock reaches the VIC-II (U19, big chip at the bottom of below image). 
@@ -84,11 +84,12 @@ As [c64 wiki](https://www.c64-wiki.com/wiki/Hardware_internals_of_the_C64) expla
 Clearly the 50/60 selector does not influence VIC-II video or 6510 CPU.
 I have copy of the [Commodore 64 Programmer's Reference Guide](http://cini.classiccmp.org/pdf/Commodore/C64%20Programmer's%20Reference%20Guide.pdf) 
 and that contains at the end of the book, an insert, with the schematics.
+I made some tracks and pins green.
 
 ![Schematics](images/schematics.jpg)
 
-We see that the CIAs have their pin 19 for TOD (Time Of Day) connected to 
-the 9V AC, through U27, a quad AND-gate 
+We see that the CIAs (chips U1 and U2) have their pin 19 for TOD 
+(Time Of Day) connected to the 9V AC, through U27, a quad AND-gate 
 [74LS08](https://www.ti.com/lit/ds/symlink/sn74ls08.pdf), likely to 
 "digitize" the sine wave.
 
@@ -118,9 +119,9 @@ the CIA TOD wouldn't step. Gemini added
 > on the motherboard will happily pass DC through.
 
 
-## The test - BASIC program
+## Writing a BASIC program to test
 
-I want to test this on the real system.
+I want to test this (the TOD being driven by the 9V frequency) on a real system.
 
 The Kernal maintains a Jiffy clock. It counts 1/60 seconds, based on the
 CPU clock, which is derived from the crystal, not the 9V AC frequency.
@@ -130,6 +131,110 @@ To access the Jiffy clock in BASIC, we can simply use the variable `TI`.
 To access the TOD, we need to `PEEK` and `POKE`, see the register addresses 
 in the table from the previous paragraph.
 
+This is the BASIC program I wrote.
+It is de-token-ized by `petcat`, which comes with 
+[VICE](https://vice-emu.sourceforge.io/),
+the Versatile Commodore Emulator. The original `PRG` source is also 
+[available](9vac-freq-2x.prg).
 
+
+```basic
+100 print"comp ac freq with jiffy (2x)"
+110 print"mc pennings, 2026 apr 23"
+120 for c=1to2:print:print"cia"c:a=56320+256*(c-1):aa=a+14:gosub200:next:end
+200 pokeaa,peek(aa)or 128:gosub300:r5=r
+210 pokeaa,peek(aa)and127:gosub300:r6=r
+220 on 1-r5-2*r6 goto 240,250,260
+230 print " {wht}error{lblu}":return
+240 print " 9v {wht}dc{lblu}, not ac":return
+250 print " 9v ac on {wht}50{lblu} hz":return
+260 print " 9v ac on {wht}60{lblu} hz":return
+300 f=60+10*(peek(aa)>127)
+310 print " conf for"f"hz"
+320 poke a+11,0:poke a+10,0:rem h:m
+330 poke a+ 9,0:poke a+ 8,0:rem s.t
+340 ts=2.5:print"  wait";ts;"sec":t0=ti
+360 if ti-t0<ts*60 then 360
+370 h=peek(a+11):m=peek(a+10)
+380 s=peek(a+ 9):t=peek(a+ 8)
+390 x=int(s/16):x=10*x+(s-16*x)+t/10
+400 print "  tod"h":"m":"s"."t"="x"sec"
+410 r=abs(ts-x)<0.1:return
+```
+
+The above programs contains of three parts: main, CIA and measurement.
+
+- The **main routine** is lines 100-120. It starts two identical tests, 
+  one with CIA1 and one with CIA2. The variable `c` contains the CIA number, 
+  and `a` the address of the first register. Variable `aa` is just `a+14`, 
+  it is introduced to make lines 200 and 210 fit on one screen line.
+
+- The **CIA routine** is on lines 200-260.
+  This routine configures the CIA for 50 Hz (setting the TODIN flag),
+  then measures time (line 200). Next, it configures the CIA for 60 Hz,
+  and again measures time (line 210). 
+  
+  Measuring time in this context means: restting the CIAs TOD to 0,
+  then using the Jiffy clock to wait 2.5 seconds, then reading the TOD,
+  and finally returning true iff the TOD reads 2.5.
+
+  The results of the two tests are in `r5` and `r6`, 0 for false and -1
+  for true; line 220 jumps to the four cases. Since case 4 
+  (both measurements match) is not in the goto-list, it falls through 
+  to line 230, printing `error`.
+
+  Note that `{wht}` is the control character to switch to white and 
+  `{lblu}` is the control character to switch to light blue, the system
+  default color for text.
+
+- The **measurement routine** is lines 300-410. It start, as a form of 
+  debug, by printing for which frequency (`f`) for which the CIA was configured
+  (lines 300-310).
+
+  Lines 320 and 330 set the TOD of the CIA to 0 by poking all four registers
+  to 0: hour, minutes, seconds and tenth (of seconds). 
+  
+  It should be noted that the CIA has a locking mechanism while writing the 
+  TOD. Writing a value to the _hours_ register immediately stops the internal 
+  TOD clock from incrementing. The clock stays stopped until you write a value 
+  to the _tenths_ register. Only then does the internal CIA TOD resume ticking 
+  from the newly provided time.
+
+  This is why, although we are only interested in seconds and tenth,
+  all four registers are written to 0.
+
+  Lines 340 sets the wating time in seconds (`ts`) and captures the 
+  Jiffy clock (`ti`) into `t0`. Line 360 does the actual wait using the Jiffy
+  clock.
+
+  Lines 370 and 380 read the TOD. Also here we have to deal with the 
+  locking mechanism. The moment you read the _hours_ register, the CIA 
+  takes a "snapshot" of the current minutes, seconds, and tenths.
+  While the internal TOD continues to keep time, the values held in 
+  the registers remain frozen. The registers remain locked until you 
+  read the _tenths_. Hence we read all four.
+
+  Since the CIA publishes the TOD through its registers in BCD format 
+  (e.g. 24 seconds is stored as hex 0x24 or 36 decimal), 
+  line 390 computes the TOD in second (in `x`), converting
+  from BCD (only using seconds and tenth). The TOD is printed full and 
+  in seconds on line 400. Line 410 returns, in `r` whether the TOD matches
+  the Jiffy clock close enough (margin of 0.1 second).
+
+
+## Test results
+
+I ran the BASIC program, once with the frequency selector on the USB-64 
+in the lower (50Hz) position, and once in the upper (60Hz) position.
+The screenshots are as follows
+
+![BASIC progr test 50 Hz](images/test50hz.png)
+
+![BASIC progr test 60 Hz](images/test60hz.png)
+
+To be honest, the actual screenshots were made on VICE on Win10.
+As it turns out, VICE even emulates the 9V frequency:
+
+![VICE frequency](images/vice-setting-hz.png)
 
 (end)
