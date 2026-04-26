@@ -9,18 +9,21 @@ This howto documents that.
 I met the guy behind SPL ([SideProjectsLab](https://github.com/sideprojectslab))
 at a Commodore fair in the Netherlands. He is working on a not yet released 
 (April 2026) USB power supply for the C64. I bought a pre-release model from him. 
-I'm guessing he might be calling it the USB-C64.
+I'm guessing he might be calling it the USB-64.
 
-![USB-C64](images/USB-C64-3D.jpg) ![USB-C64 plugged in](images/USB-C64-plugged.jpg)
+![USB-64](images/USB-C64-3D.jpg) ![USB-64 plugged in](images/USB-C64-plugged.jpg)
 
-The USB-C64 device is a small "block" that you plug into the DIN power connector 
-of the C64. The USB-C64 itself is powered by USB PD. The circuitry in the USB-C64 
-negotiates 12V from a USB PD power adapter, and converts it to 5V DC and 9V DC.  
-It has a power LEDs and two switches. The upper switch is the on/off switch, 
-the lower switch is an 50Hz/60Hz selector. 
+The USB-64 device is a small "block" that you plug into the DIN power connector 
+of the C64. The USB-64 itself must be powered by a USB power adapter compliant
+with USB PD (Power Delivery). The circuitry in the USB-64 negotiates 12V from 
+the USB PD power adapter, and converts it to 5V DC and 9V DC.  
 
-![USB-C64](images/USB-C64-front.jpg) ![](images/USB-C64-back.jpg)
-![USB-C64](images/USB-C64-left.jpg) ![](images/USB-C64-right.jpg)
+![USB-64 front](images/USB-C64-front.jpg) ![USB-64 back](images/USB-C64-back.jpg) ![USB-64 left](images/USB-C64-left.jpg) 
+
+The USB-64 device has power LEDs and two switches. 
+The upper switch is the on/off switch, the lower switch is an 50Hz/60Hz selector. 
+
+![USB-64 right](images/USB-C64-right.jpg)
 
 I flipped the 50/60 selector and nothing seemed to happen. 
 This howto is the result of my trying to understand what this frequency switch is about.
@@ -28,7 +31,7 @@ This howto is the result of my trying to understand what this frequency switch i
 
 ## 50Hz/60Hz switch
 
-Since the USB-64 was not yet released, there was no dicumentation.
+Since the USB-64 was not yet released, there was no documentation.
 The lower switch being a 50/60Hz selector was just what I remembered 
 from the creator's presentation.
 
@@ -54,7 +57,8 @@ The opposite is more obscure, but it seems Myanmar used NTSC despite being in a
 
 I soon realized that the clock of the CPU is created by a crystal, not the mains
 frequency. The crystal is Y1, we see it in the right of the top center in below
-photo. The print on the component shows 17... which is the frequency for PAL 
+photo, which is an part of the C64 breadbin motherboard. 
+The print on the component shows 17... which is the frequency for PAL 
 (17.73447 MHz), NTSC would have 14.31818 MHz. Via U31 (chip in center),
 a [Dual voltage-controlled oscillators](https://www.ti.com/product/SN74LS629), the
 clock reaches the VIC-II (U19, big chip at the bottom of below image). 
