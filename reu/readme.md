@@ -29,31 +29,30 @@ where the `src` is in the C64 and the `dst` is in the REU (stash)
 or vice versa (fetch). The C64 address is two bytes, the REU address is
 three bytes and the size is also two bytes.
 
-The REU performs these copy actions, not the 6510, the CPU of the C64.
-It does that the C64's clock speed (that is what the C64's memories can handle).
-This means that the REU reads the C64's bytes (for a stash) 
-or writes the bytes (for a fetch) at 1 MHz, or 1 Mbyte per second.
+The copy is performed by the controller in the REU, not by the 6510, the controller of the C64.
+It REU copies at the C64 clock speed - that is what the C64's memory chips can handle.
+In other words the REU reads or writes at 1 MHz, or 1 Mbyte per second.
 A full C64 memory range (64k) can be read or written in 1/16 second (62.5 ms).
 
-When the 6510 would copy, a typical loop (copying max 256 bytes) 
-would be 12 cycles: 4 for LDA, 3 for STA, 2 for INX and 3 for BNE.
-This means the C64 reaches 1 000 000 / 12 or 83 kbyte per second
-(65536 bytes in 786 ms). The REU is 12× faster.
+When the 6510 would perform the copy, a typical loop (copying max 256 bytes) 
+would be 12 clock cycles: 4 for LDA, 3 for STA, 2 for INX and 3 for BNE.
+This means that the 6510 reaches 1 000 000 / 12 or 83 kbyte per second or
+65536 bytes in 786 ms. The REU is 12× faster.
 
 
 ## Registers
 
 The REU has the following registers, mapped to address DF00 in the C64's I/O space.
 
-  | Offset | Size | Hex  | Dec   | Register   |
-  |:------:|:----:|:----:|:-----:|:----------:|
-  |    0   |   1  | DF00 | 57088 | `status`   |
-  |    1   |   1  | DF01 | 57089 | `command`  |
-  |   2,3  |   2  | DF02 | 57090 | `c64base`  |
-  |  4,5,6 |   3  | DF04 | 57092 | `reubase`  |
-  |   7,8  |   2  | DF07 | 57095 | `translen` |
-  |    9   |   1  | DF09 | 57097 | `irqmask`  |
-  |   10   |   1  | DF0A | 57098 | `addrctrl` |
+  | Register   | Size | Offset | Hex  | Dec   |
+  |:----------:|:----:|:------:|:----:|:-----:|
+  | `status`   |   1  |    0   | DF00 | 57088 |
+  | `command`  |   1  |    1   | DF01 | 57089 |
+  | `c64base`  |   2  |   2,3  | DF02 | 57090 |
+  | `reubase`  |   3  |  4,5,6 | DF04 | 57092 |
+  | `translen` |   2  |   7,8  | DF07 | 57095 |
+  | `irqmask`  |   1  |    9   | DF09 | 57097 |
+  | `addrctrl` |   1  |   10   | DF0A | 57098 |
 
 The `c64base` register is 2 bytes; offset 2 is the LSB and offset 3 is the MSB.
 The same holds for `translen`: offset 7 is the LSB, offset 8 is the MSB.
@@ -67,8 +66,6 @@ The REU has a _continuous_ memory from 0x00 0000 to 0xFF FFFF (assuming a 1M byt
 [reu-presence.prg](reu-presence.prg)
 
 [reu-size.prg](reu-size.prg)
-
-
 
 
 ## Link
