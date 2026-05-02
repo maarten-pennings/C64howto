@@ -1,7 +1,7 @@
 # RE U
 
-In 1985 Commodore release the [REU](https://www.c64-wiki.com/wiki/REU) 
-or RAM expansion unit. I got the [Kung Fu Flash 2](https://codeberg.org/KimJorgensen/KungFuFlash2)
+In 1985 Commodore released the [REU](https://www.c64-wiki.com/wiki/REU) 
+or RAM expansion unit. I got a [Kung Fu Flash 2](https://codeberg.org/KimJorgensen/KungFuFlash2) cartridge 
 and that [claims](https://codeberg.org/KimJorgensen/KungFuFlash2#:~:text=Kung%20Fu%20Flash%202%20can%20emulate%20a%201%20Mb%20REU) 
 to incorporate a REU. I was wondering if a REU is accessible from BASIC.
 
@@ -13,41 +13,51 @@ The smallest Commodore REU is the "Commodore 1700 REU";
 it contains 2 blocks of 64 kbytes or 128 kbytes.
 The "Commodore 1764 REU" contains 4 blocks or 256 kbytes.
 The biggest one is the "Commodore 1750 REU", it contains 8 blocks or 512 kbytes.
-The Kung Fu Flash 2 REU contains 16 blocks or 1024 kbytes or 1 Mbyte.
+The "Kung Fu Flash 2" REU contains 16 blocks or 1024 kbytes or 1 Mbyte.
 The maximum size possible, fitting to the current REU register API, would be 256 blocks or 16 Mbyte.
 
 A REU does _not_ use a banking mechanism, in the sense that it 
-replaces a part of the C64 RAM by a part of the REU.
+replaces a part of the C64 RAM by a (selectable) part of the REU.
 The REU's memory is _not_ accessible by the 6510 processor of the C64.
 Instead the REU is a memory mapped device, 
 with 11 control and status registers mapped at 0xDF00.
 The C64 gives the REU a command to _stash_ some of the C64's data into the REU RAM,
 or to _fetch_ some of the C64's data from the REU RAM.
 
-The REU performs these actions at the C64's clock speed 
+Technically, I think of it as a `memcpy(dst,src,size)` in hardware, 
+where the `src` is in the C64 and the `dst` is in the REU (stash)
+or vice versa (fetch). The C64 address is two bytes, the REU address is
+three bytes and the size is also two bytes.
+
+The REU performs these copy actions at the C64's clock speed 
 (that is what the C64's memories can handle).
 This means that the REU reads the C64's bytes (when it performs a stash) 
 or writes the bytes (for a fetch) at 1MHz, or 1Mbyte per second.
 A full C64 memory range (64k) can be read or written in 1/16 second (62.5ms).
 
+When the C64 would copy, a typical loop (copying max 256 bytes) 
+would be 12 cycles: 4 for LDA, 3 for STA, 2 for INX and 3 for BNE.
+This means the C64 reaches 1 000 000 / 12 or 83 kbyte per second.
+The REU is 12× faster.
+
 
 ## Registers
 
-The REU has the following registers.
+The REU has the following registers, mapped to address DF00 in the I/O space.
 
-  | Offset | Size |   Hex  | Dec   | Name       |
-  |:------:|:----:|:------:|:-----:|:----------:|
-  |    0   |   1  | 0xDF00 | 57088 | `status`   |
-  |    1   |   1  | 0xDF01 | 57089 | `command`  |
-  |   2,3  |   2  | 0xDF02 | 57090 | `c64base`  |
-  |  4,5,6 |   3  | 0xDF04 | 57092 | `reubase`  |
-  |   7,8  |   2  | 0xDF07 | 57095 | `translen` |
-  |    9   |   1  | 0xDF09 | 57097 | `irqmask`  |
-  |   10   |   1  | 0xDF0A | 57098 | `addrctrl` |
+  | Offset | Size | Hex  | Dec   | Name       |
+  |:------:|:----:|:----:|:-----:|:----------:|
+  |    0   |   1  | DF00 | 57088 | `status`   |
+  |    1   |   1  | DF01 | 57089 | `command`  |
+  |   2,3  |   2  | DF02 | 57090 | `c64base`  |
+  |  4,5,6 |   3  | DF04 | 57092 | `reubase`  |
+  |   7,8  |   2  | DF07 | 57095 | `translen` |
+  |    9   |   1  | DF09 | 57097 | `irqmask`  |
+  |   10   |   1  | DF0A | 57098 | `addrctrl` |
 
 The `c64base` register is 2 bytes; offset 2 is the LSB, offset 3 is the MSB.
+The same holds for `translen` offset 7 is the LSB, offset 8 is the MSB.
 The `reubase` register is 3 bytes; offset 4 is the LSB, offset 6 is the MSB.
-The `translen` register is 2 bytes; offset 7 is the LSB, offset 8 is the MSB.
 
 Some documents call the byte a offset 6 a "bank" but that is confusing term.
 The REU has a _continuous_ memory from 0x00 0000 to 0xFF FFFF (assuming a 1M byte REU).
