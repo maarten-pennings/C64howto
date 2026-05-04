@@ -317,22 +317,22 @@ by the writes of the lower blocks.
 
 Below table shows the content of (the highest byte of) the REU blocks.
 It assumes a REU with 4 blocks (columns 0, 1, 2, and 3), but also shows the 
-virtual blocks (4, 5, 6, 7 which could have been extended to 255).
-All virtual blocks are enclosed in parenthesis.
+aliased blocks (4, 5, 6, 7 which could have been extended to 255).
+All aliased blocks are enclosed in parenthesis.
 The first row is at step 248, when blocks 255 down to 8 have been written.
-The next rows show the final steps, until the last block, block 0, is written.
+The next rows show the final steps (changes in italics), until the last block, block 0, is written.
 
   | time (action) \ block |  0  |  1  |  2  |  3  | (4) | (5) | (6) | (7) | ... | 
   |:----------------------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-  | time=248: stash 8     |  8  |  9  | 10  | 11  | (8) | (9) |(10) |(11) | ... |
-  | time=249: stash 7     |  8  |  9  | 10  |  7  | (8) | (9) |(10) | (7) | ... |
-  | time=250: stash 6     |  8  |  9  |  6  |  7  | (8) | (9) | (6) | (7) | ... |
-  | time=251: stash 5     |  8  |  5  |  6  |  7  | (8) | (5) | (6) | (7) | ... |
-  | time=252: stash 4     |  4  |  5  |  6  |  7  | (4) | (5) | (6) | (7) | ... |
-  | time=253: stash 3     |  4  |  5  |  6  |  3  | (4) | (5) | (6) | (3) | ... |
-  | time=254: stash 2     |  4  |  5  |  2  |  3  | (4) | (5) | (2) | (3) | ... |
-  | time=255: stash 1     |  4  |  1  |  2  |  3  | (4) | (1) | (2) | (3) | ... |
-  | time=256: stash 0     |  0  |  1  |  2  |  3  | (0) | (1) | (2) | (3) | ... |
+  | time=248: stash 8     | _8_ |  9  | 10  | 11  |_(8)_| (9) |(10) |(11) | ... |
+  | time=249: stash 7     |  8  |  9  | 10  | _7_ | (8) | (9) |(10) |_(7)_| ... |
+  | time=250: stash 6     |  8  |  9  | _6_ |  7  | (8) | (9) |_(6)_| (7) | ... |
+  | time=251: stash 5     |  8  | _5_ |  6  |  7  | (8) |_(5)_| (6) | (7) | ... |
+  | time=252: stash 4     | _4_ |  5  |  6  |  7  |_(4)_| (5) | (6) | (7) | ... |
+  | time=253: stash 3     |  4  |  5  |  6  | _3_ | (4) | (5) | (6) |_(3)_| ... |
+  | time=254: stash 2     |  4  |  5  | _2_ |  3  | (4) | (5) |_(2)_| (3) | ... |
+  | time=255: stash 1     |  4  | _1_ |  2  |  3  | (4) |_(1)_| (2) | (3) | ... |
+  | time=256: stash 0     | _0_ |  1  |  2  |  3  |_(0)_| (1) | (2) | (3) | ... |
 
 At the end, blocks 0, 1, 2 and 3 have the correct value, but block 4 is wrong.
 It should have 4 but has 0. So the REU size is 4.
