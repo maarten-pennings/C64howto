@@ -41,9 +41,9 @@ four operations interchangeably.
 ## Registers
 
 The [C64 memory map](https://www.c64-wiki.com/wiki/Memory_Map) 
-reserves addresses D000-DFFF for I/O.
-The REU is typically mapped to region I/O 2 starting at DF00.
-The I/O 2 region has 256 bytes, but the REU has only seven registers.
+reserves addresses D000-DFFF for memory mapped I/O devices.
+The REU is typically mapped to the region known as "I/O 2", which starts at DF00.
+I/O 2 occupies 256 bytes, but the REU has only seven registers spanning 11 bytes.
 Some registers are 1, some 2 and one is even 3 bytes wide.
 
   | Register   | Size | Offset | Hex  | Dec   |
@@ -56,14 +56,14 @@ Some registers are 1, some 2 and one is even 3 bytes wide.
   | `irqmask`  |   1  |    9   | DF09 | 57097 |
   | `addrctrl` |   1  |   10   | DF0A | 57098 |
 
+Each register is descibed in more detail in the subsections below.
 
 ### status @0 ($DF00, 57088)
 
-The status register indicates the status of the last transfer.
-The status flags (3 MSB) are clear upon read. For smaller transfers, 
-the REU is usually so fast (1 kbyte in 1ms, the time of the fastest BASIC statement) 
-that checking this bit is superfluous. If the bit is checked, make sure 
-to clear it, by reading it, before giving the start transfer command.
+The status register indicates the status of the last transfer(s).
+The status flags (3 MSB) are cleared upon read. The REU stalls the 6510
+while transferring, so once the 6502 starts executing again, the transfer is complete.
+In other words checking the END oF BLOCK is superfluous. 
 
 The 4 LSB bits are obsolete for modern REUs.
 
@@ -78,6 +78,9 @@ The 4 LSB bits are obsolete for modern REUs.
 
 ### command @1 ($DF01, 57089)
 
+The command register allows the 6510 to instruct the REU to _start_ a transfer. 
+The source and destination addresses need to be set beforehand.
+
   | Bits | Function          | Details                                                            |
   |:----:|:-----------------:|:-------------------------------------------------------------------|
   |   7  | EXECUTE           | writing 1 starts a transfer (of type TRANSFER TYPE)                |
@@ -87,20 +90,22 @@ The 4 LSB bits are obsolete for modern REUs.
   |  3:2 | reserved          |                                                                    |
   |  1:0 | TRANSFER TYPE     | 00=stash (C64 to REU), 01=fetch (REU to C64), 10=swap, 11=compare  |
 
+There are four types of transfers.
 The transfer type _stash_ transfers data from the C64 memory to the REU memory.
 The transfer type _fetch_ transfers data from the REU memory to the C64 memory.
 The transfer type _swap_ exchanges the data in the C64 memory with the data in the REU memory.
 The transfer type _compare_ compares data from the C64 memory with data in the REU memory
 (no writes, only reads). If there is a difference the FAULT-bit in the status register is set. 
 
-> **note**  
+> **Note on NOFF00**  
 > Some memory regions of the C64 are in [triple use](https://www.c64-wiki.com/wiki/Memory_Map).
 > For example DF00 could be RAM, I/O 2, or character ROM.
-> The REU, when executing a transfer, sees what is configured as active.
-> This means that the REU could never access the RAM or character ROM at DF00.
-> To solve this, EXECUTE can be postponed by clearing NOFF00.
-> The actual transfer is delayed; it starts by writing to FF00, 
-> presumably after the memory configuration has changed.
+> The REU, when executing a transfer, sees what the memory that is configured as active.
+> This means that the REU could never access the RAM or character ROM also present at DF00;
+> it would only see the I/O 2 needed to control it.
+> To solve this, EXECUTE can be postponed by clearing the NOFF00 flag.
+> When set, the actual transfer is delayed; it starts only after writing to FF00, 
+> presumably after the active memory has been changed.
 
 
 ### c64base @2,3 ($DF02, 57090)
@@ -150,7 +155,7 @@ $0316/$0317 for a BRK, as determined via the B flag in PSW). By default 314/315
 routes to $EA31 (e.g. keyboard scan). One would need to write an ISR (REU handler) 
 which **clears the interrupt** by reading $DF00, and then continuous to $EA31. 
 If the interrupt is not cleared, it will fire again as soon as the RTI at the end of 
-the EA31 ISR is executed.
+the EA31 ISR is executed. This will lock up the C64.
 
 Although this interrupt mechanism exists, it is fairly useless.
 The 6510 is halted during the REU transfer and once the REU transfer is completed, 
