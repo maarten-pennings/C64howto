@@ -216,7 +216,7 @@ I struggled with enabling my REU on the Kung Fu Flash 2.
 I wrote several tests to test if the REU is present (active).
 I have combined all tests in one program: 01-presence.
 
-```
+```basic
 100 rem reu presence tester
 110 rem mc pennings, 2026 may 3
 120 print"{clr}{down}{wht}testing presence of reu{lblu}"
@@ -347,7 +347,7 @@ It should have 4 but has 0. So the REU size is 4.
 - On line 430 we "clear" the C64base location with `255-B`;
   we expect to read `B`.
 
-```
+```basic
 100 rem reu size tester
 110 rem mc pennings 2026 may 3
 120 print "reu size tester"
