@@ -46,15 +46,15 @@ The REU is typically mapped to the region known as "I/O 2", which starts at DF00
 I/O 2 occupies 256 bytes, but the REU has only seven registers spanning 11 bytes.
 Some registers are 1, some 2 and one is even 3 bytes wide.
 
-  | Register   | Size | Offset | Hex  | Dec   |
-  |:----------:|:----:|:------:|:----:|:-----:|
-  | `status`   |   1  |    0   | DF00 | 57088 |
-  | `command`  |   1  |    1   | DF01 | 57089 |
-  | `c64base`  |   2  |   2,3  | DF02 | 57090 |
-  | `reubase`  |   3  |  4,5,6 | DF04 | 57092 |
-  | `translen` |   2  |   7,8  | DF07 | 57095 |
-  | `irqmask`  |   1  |    9   | DF09 | 57097 |
-  | `addrctrl` |   1  |   10   | DF0A | 57098 |
+  | Register   | Size | Offset | Hex  | Dec   | Link                               |
+  |:----------:|:----:|:------:|:----:|:-----:|:----------------------------------:|
+  | `status`   |   1  |    0   | DF00 | 57088 | [section](#status-0-df00-57088)    |
+  | `command`  |   1  |    1   | DF01 | 57089 | [section](#command-1-df01-57089)   |
+  | `c64base`  |   2  |   2,3  | DF02 | 57090 | [section](#c64base-23-df02-57090)  |
+  | `reubase`  |   3  |  4,5,6 | DF04 | 57092 | [section](#reubase-456-df04-57092) |
+  | `translen` |   2  |   7,8  | DF07 | 57095 | [section](#translen-78-df07-57095) |
+  | `irqmask`  |   1  |    9   | DF09 | 57097 | [section](#irqmask-9-df09-57097)   |
+  | `addrctrl` |   1  |   10   | DF0A | 57098 | [section](#addrctrl-10-df0a-57098) |
 
 Each register is descibed in more detail in the subsections below.
 
