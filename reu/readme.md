@@ -3,7 +3,7 @@
 In 1985 Commodore released the [REU](https://www.c64-wiki.com/wiki/REU) 
 or **R**AM **E**xpansion **U**nit. I got a [Kung Fu Flash 2](https://codeberg.org/KimJorgensen/KungFuFlash2) cartridge 
 and that [claims](https://codeberg.org/KimJorgensen/KungFuFlash2#:~:text=Kung%20Fu%20Flash%202%20can%20emulate%20a%201%20Mb%20REU) 
-to incorporate a REU. I was wondering if I could use that REU from BASIC.
+to incorporate a REU. I was wondering if I could use that REU, maybe even from BASIC.
 
 ![Kung Fu Flash 2](kungfuflash2.jpg)
 
@@ -191,7 +191,8 @@ would be 12 clock cycles: 4 for LDA, 3 for STA, 2 for INX and 3 for BNE.
 This means that the 6510 reaches 1 000 000 / 12 or 83 kbyte per second or
 65536 bytes in 786 ms. The REU is 12× faster.
 
-A swap transfer is twice as slow since it needs a read and a write of every location.
+A _swap_ transfer is twice as slow as the other three transfer types, 
+since it needs a read and a write of every location.
 
 
 ## Tests
@@ -199,7 +200,7 @@ A swap transfer is twice as slow since it needs a read and a write of every loca
 In this section, we are going to try-out the registers of the REU.
 
 
-### Introduction`
+### Introduction
 
 To follow in VICE, goto Preferences > Settings > Cartridges > RAM Expansion Module.
 Select a Size. Also note that the REU memory can be saved to a file.
