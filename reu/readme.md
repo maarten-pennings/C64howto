@@ -220,6 +220,8 @@ since it needs a read and a write of every location.
 
 In this section, we are going to try-out the registers of the REU.
 
+> All test programs in the chapter are available in a virtual disk image: [reutests.d64](reutests.d64).
+
 
 ### Introduction
 
@@ -343,7 +345,7 @@ It assumes a REU with 4 blocks (columns 0, 1, 2, and 3), but also shows the
 aliased blocks (4, 5, 6, 7 which could have been extended to 255).
 All aliased blocks are enclosed in parenthesis.
 The first row is at step 248, when blocks 255 down to 8 have been written.
-The next rows show the final steps (changes in italics), until the last block, block 0, is written.
+The next rows show the final steps (changes in bold), until the last block, block 0, is written.
 
   | time (action) \ block |   0   |   1   |   2   |   3   |  (4)  |  (5)  |  (6)  |  (7)  | ... | 
   |:----------------------|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:---:|
@@ -605,7 +607,7 @@ On lines 300-380 a fetch is followed by a print of the buffer which now shows 65
 Normally, the REU memory would be undefined, so what is fetched would be "chaotic".
 However, I made the screenshot on VICE, and VICE allows one to control the REU memory. 
 
-I first created an empty image file. In Preferences > Settings > Cartridges > RAM Expansion Module,
+I created an empty image file. In Preferences > Settings > Cartridges > RAM Expansion Module,
 I first entered a non existing file (`C:\Users\maarten\Desktop\reuimage.bin`) and then 
 placed a check mark in  `Enable RAM Expansion Module emulation`. This created a file 
 with "chaotic" contents.
@@ -676,31 +678,74 @@ When cleared, execute waits till there is a write to $FF00.
 ![NOFF00 bit](06-noff00bit.png)
 
 
-### Todo
+### Continuous REU memory
+
+As stated previously, some documents call the byte at offset 6 a "bank", 
+with offset 4 and 5 denoting the offset within that 64 kbyte bank.
+However, the REU has a _continuous_ memory from 0x00 0000 to 0xFF FFFF (assuming a 1M byte REU).
+
+This example shows that.
+
+```basic
+100 rem reu contmem
+110 rem mc pennings 2026 may 4
+120 print "reu contmem"
+130 r=57088:a=49152:rem r=reu,a=c64base
+160 :
+200 for i=0 to 7:poke a+i,i:next
+210 print "filled 0-7":gosub999
+220 :
+300 poke r+2,0:poke r+3,192:rem c000=a
+310 poke r+4,250:poke r+5,255:poker+6,0
+310 poke r+4,250:poke r+5,255:poker+6,0
+320 poke r+7,8:poke r+8,0:rem len=0008
+330 poke r+9,0:rem int mask
+340 poke r+10,0:rem inc both addrs
+350 rem command=ex+noff00+stash
+360 poke r+1,128+16+0
+370 print "stash":gosub999
+380 :
+400 for i=0 to 7:poke a+i,8-i:next
+410 print "filled 8-1":gosub999
+420 :
+500 poke r+2,0:poke r+3,192:rem c000=a
+510 poke r+4,250:poke r+5,255:poker+6,0
+520 poke r+7,8:poke r+8,0:rem len=0008
+530 poke r+9,0:rem int mask
+540 poke r+10,0:rem inc both addrs
+550 rem command=ex+noff00+fetch
+560 poke r+1,128+16+1
+570 print "fetch":gosub999
+580 :
+998 end
+999 print " c000:";:for i=0 to 7:print str$(peek(a+i));:next:print:return
+```
+
+The key change is in lines 310 and 510.
+The 8-byte C64 buffer is transferred to and from 00 FFFA to 01 0001, 
+without problems cross a 64 kbyte boundary.
+
+![07-contmem](07-contmem.png)
 
 
-- continuous REU memory
-- links from tech description to examples?
+## Links
 
+REU specific
 
-## BASIC programs
+- [Codebase64 REU programming](https://www.codebase64.net/doku.php?id=base:reu_programming)
+- [Same article on Zimmers](http://www.zimmers.net/anonftp/pub/cbm/documents/chipdata/programming.reu)
+- [REU registers on Zimmers](http://www.zimmers.net/anonftp/pub/cbm/documents/chipdata/reu.registers)
 
-[reu-presence.prg](reu-presence.prg)
-
-[reu-size.prg](reu-size.prg)
-
-
-## Link
-
-- [codebase64 REU programming](https://www.codebase64.net/doku.php?id=base:reu_programming)
-- [same article on Zimmers](http://www.zimmers.net/anonftp/pub/cbm/documents/chipdata/programming.reu)
-- [registers on Zimmers](http://www.zimmers.net/anonftp/pub/cbm/documents/chipdata/reu.registers)
-
-- [c64-wiki REU](https://www.c64-wiki.com/wiki/REU)
-- [c64-wiki Commodore REU](https://www.c64-wiki.com/wiki/Commodore_REU)
+- [C64-wiki REU](https://www.c64-wiki.com/wiki/REU)
+- [C64-wiki Commodore REU](https://www.c64-wiki.com/wiki/Commodore_REU)
           
 - [Ruud Baltissen E-REU](http://www.baltissen.org/newhtm/e_reu.htm)
 - [REU programming by Robin Harbron](https://psw.ca/robin/?page_id=182)
 
+General
+
 - [BASIC control characters](https://www.c64-wiki.com/wiki/control_character)
+- [Kung Fu Flash 2](https://codeberg.org/KimJorgensen/KungFuFlash2)
+- [Commodore 64 Ultimate](https://commodore.net)
+
 (end)
