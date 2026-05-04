@@ -62,11 +62,7 @@ Each register is descibed in more detail in the sections below - or click in the
 ### status @0 ($DF00, 57088)
 
 The status register indicates the status of the last transfer(s).
-The status flags (3 MSB) are cleared upon read. The REU stalls the 6510
-while transferring, so once the 6502 starts executing again, the transfer is complete.
-In other words checking the END oF BLOCK is superfluous. 
-
-The 4 LSB bits are obsolete for modern REUs.
+The status flags (3 MSB) are cleared upon read. 
 
   | Bits | Function          | Details                                                            |
   |:----:|:-----------------:|:-------------------------------------------------------------------|
@@ -77,17 +73,31 @@ The 4 LSB bits are obsolete for modern REUs.
   |  3:0 | VERSION           | obsolete (version number of Commodore REUs)                        |
 
 
+The REU stalls the 6510 while transferring, so once the 6502 "unstalls", 
+the REU has completed transfer. In other words checking the END OF BLOCK is superfluous. 
+Instead of `200 if peek(57088) and 64 then 200` I suggest to use `200 wait 57088,64` if
+you insist on checking END OF BLOCK.
+
+The stalling of the 6510 also means that the INTERRUPT PENDING flag (interrupts are 
+enabled via `irqmask`) is not needed.
+
+The 4 LSB bits are obsolete for modern REUs.
+
+The only useful bit is FAULT; it indicates a difference is found when the REU transfer 
+runs in _compare_ mode.
+
+
 ### command @1 ($DF01, 57089)
 
 The command register allows the 6510 to instruct the REU to _start_ a transfer. 
-The source and destination addresses need to be set beforehand.
+The source and destination addresses (and size) need to be set beforehand.
 
   | Bits | Function          | Details                                                            |
   |:----:|:-----------------:|:-------------------------------------------------------------------|
   |   7  | EXECUTE           | writing 1 starts a transfer (of type TRANSFER TYPE)                |
   |   6  | reserved          |                                                                    |
   |   5  | LOAD              | 1 = `c64base`, `reubase`, `translen` are reloaded after completion |
-  |   4  | NOFF00            | 1 = start immediately, 0 = wait for write to $FF00; see note       |
+  |   4  | NOFF00            | 1 = start immediately, 0 = wait for write to $FF00                 |
   |  3:2 | reserved          |                                                                    |
   |  1:0 | TRANSFER TYPE     | 00=stash (C64 to REU), 01=fetch (REU to C64), 10=swap, 11=compare  |
 
@@ -98,15 +108,26 @@ The transfer type _swap_ exchanges the data in the C64 memory with the data in t
 The transfer type _compare_ compares data from the C64 memory with data in the REU memory
 (no writes, only reads). If there is a difference the FAULT-bit in the status register is set. 
 
-> **Note on NOFF00**  
-> Some memory regions of the C64 are in [triple use](https://www.c64-wiki.com/wiki/Memory_Map).
-> For example DF00 could be RAM, I/O 2, or character ROM.
-> The REU, when executing a transfer, sees what the memory that is configured as active.
-> This means that the REU could never access the RAM or character ROM also present at DF00;
-> it would only see the I/O 2 needed to control it.
-> To solve this, EXECUTE can be postponed by clearing the NOFF00 flag.
-> When set, the actual transfer is delayed; it starts only after writing to FF00, 
-> presumably after the active memory has been changed.
+During a transfer the `c64base` and `reubase` are incremented by one and `translen` decremented by one 
+for every transferred byte. At the end of the transfer `c64base` is `translen` higher, `reubase` is 
+`translen` higher and `translen` is 1 (not 0). When the LOAD bit is clear that is how you see
+the registers when the transfer stops. When LOAD is set, the `c64base`, `reubase`, `translen` are 
+reloaded with their initial value. Note that for a compare, a transfer stops either at the end,
+when no difference is found, or is aborted mid-way when a difference is found. In the latter case,
+executing with LOAD clear makes sense, because then we know at which location the first difference 
+was found, see [example compare](#compare).
+
+Some memory regions of the C64 are in [triple use](https://www.c64-wiki.com/wiki/Memory_Map).
+For example DF00 could be RAM, I/O 2, or character ROM.
+The REU, when executing a transfer, sees what the memory that is configured as active.
+This means that the REU could never access the RAM or character ROM also present at DF00;
+it would only see the I/O 2 needed to control it.
+To solve this, EXECUTE can be postponed by clearing the NOFF00 flag.
+When set, the actual transfer is delayed; it starts only after writing to FF00, 
+presumably after the active memory has been changed.
+
+I would recommend to have LOAD always set (except for compare mode).
+I would recommend to have NOFF00 always set (except when comparing a memory "under" I/O 2.
 
 
 ### c64base @2,3 ($DF02, 57090)
@@ -202,7 +223,7 @@ In this section, we are going to try-out the registers of the REU.
 
 ### Introduction
 
-To follow in VICE, goto Preferences > Settings > Cartridges > RAM Expansion Module.
+To follow in VICE, go to Preferences > Settings > Cartridges > RAM Expansion Module.
 Select a Size. Also note that the REU memory can be saved to a file.
 That is handy for our experiments.
 
@@ -324,17 +345,17 @@ All aliased blocks are enclosed in parenthesis.
 The first row is at step 248, when blocks 255 down to 8 have been written.
 The next rows show the final steps (changes in italics), until the last block, block 0, is written.
 
-  | time (action) \ block |  0  |  1  |  2  |  3  | (4) | (5) | (6) | (7) | ... | 
-  |:----------------------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-  | time=248: stash 8     | _8_ |  9  | 10  | 11  |_(8)_| (9) |(10) |(11) | ... |
-  | time=249: stash 7     |  8  |  9  | 10  | _7_ | (8) | (9) |(10) |_(7)_| ... |
-  | time=250: stash 6     |  8  |  9  | _6_ |  7  | (8) | (9) |_(6)_| (7) | ... |
-  | time=251: stash 5     |  8  | _5_ |  6  |  7  | (8) |_(5)_| (6) | (7) | ... |
-  | time=252: stash 4     | _4_ |  5  |  6  |  7  |_(4)_| (5) | (6) | (7) | ... |
-  | time=253: stash 3     |  4  |  5  |  6  | _3_ | (4) | (5) | (6) |_(3)_| ... |
-  | time=254: stash 2     |  4  |  5  | _2_ |  3  | (4) | (5) |_(2)_| (3) | ... |
-  | time=255: stash 1     |  4  | _1_ |  2  |  3  | (4) |_(1)_| (2) | (3) | ... |
-  | time=256: stash 0     | _0_ |  1  |  2  |  3  |_(0)_| (1) | (2) | (3) | ... |
+  | time (action) \ block |   0   |   1   |   2   |   3   |  (4)  |  (5)  |  (6)  |  (7)  | ... | 
+  |:----------------------|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:---:|
+  | time=248: stash 8     | **8** |   9   |  10   |  11   |**(8)**|  (9)  | (10)  | (11)  | ... |
+  | time=249: stash 7     |   8   |   9   |  10   | **7** |  (8)  |  (9)  | (10)  |**(7)**| ... |
+  | time=250: stash 6     |   8   |   9   | **6** |   7   |  (8)  |  (9)  |**(6)**|  (7)  | ... |
+  | time=251: stash 5     |   8   | **5** |   6   |   7   |  (8)  |**(5)**|  (6)  |  (7)  | ... |
+  | time=252: stash 4     | **4** |   5   |   6   |   7   |**(4)**|  (5)  |  (6)  |  (7)  | ... |
+  | time=253: stash 3     |   4   |   5   |   6   | **3** |  (4)  |  (5)  |  (6)  |**(3)**| ... |
+  | time=254: stash 2     |   4   |   5   | **2** |   3   |  (4)  |  (5)  |**(2)**|  (3)  | ... |
+  | time=255: stash 1     |   4   | **1** |   2   |   3   |  (4)  |**(1)**|  (2)  |  (3)  | ... |
+  | time=256: stash 0     | **0** |   1   |   2   |   3   |**(0)**|  (1)  |  (2)  |  (3)  | ... |
 
 At the end, blocks 0, 1, 2 and 3 have the correct value, but block 4 is wrong.
 It should have 4 but has 0. So the REU size is 4.
@@ -389,20 +410,275 @@ It should have 4 but has 0. So the REU size is 4.
 ![02-size](02-size.png)
 
 
+### Stash, fetch, swap
+
+Let's now have the main example, using the REU for stash, fetch and swap.
+
+```basic
+100 rem reu stash fetch swap
+110 rem mc pennings 2026 may 4
+120 print "reu stash fetch swap"
+130 r=57088:a=49152:rem r=reu,a=c64base
+160 :
+200 for i=0 to 7:poke a+i,i:next
+210 print "filled 0-7":gosub999
+220 :
+300 poke r+2,0:poke r+3,192:rem c000=a
+310 poke r+4,0:poke r+5,0:poke r+6,0
+320 poke r+7,8:poke r+8,0:rem len=0001
+330 poke r+9,0:rem int mask
+340 poke r+10,0:rem inc both addrs
+350 poke r+1,144:print "stash":gosub999
+360 :
+400 for i=0 to 7:poke a+i,8-i:next
+410 print "filled 8-1":gosub999
+420 :
+500 poke r+2,0:poke r+3,192:rem c000=a
+510 poke r+4,0:poke r+5,0:poke r+6,0
+520 poke r+7,8:poke r+8,0:rem len=0001
+530 poke r+9,0:rem int mask
+540 poke r+10,0:rem inc both addrs
+550 poke r+1,145:print "fetch":gosub999
+560 :
+600 for i=0 to 7:poke a+i,8-i:next
+610 print "filled 8-1":gosub999
+620 :
+700 poke r+2,0:poke r+3,192:rem c000=a
+710 poke r+4,0:poke r+5,0:poke r+6,0
+720 poke r+7,8:poke r+8,0:rem len=0001
+730 poke r+9,0:rem int mask
+740 poke r+10,0:rem inc both addrs
+750 poke r+1,146:print "swap ":gosub999
+760 :
+800 poke r+2,0:poke r+3,192:rem c000=a
+810 poke r+4,0:poke r+5,0:poke r+6,0
+820 poke r+7,8:poke r+8,0:rem len=0001
+830 poke r+9,0:rem int mask
+840 poke r+10,0:rem inc both addrs
+850 poke r+1,146:print "swap ":gosub999
+860 :
+900 print "status";peek(r)and224
+910 print "status";peek(r)and224
+998 end
+999 print " c000:";:for i=0 to 7:print str$(peek(a+i));:next:print:return
+```
+
+The program uses an 8-byte memory buffer at 49152/C000 and transfers that to the REU (address 000000).
+It goes through these phases
+
+- Lines 200-220 fill the memory buffer with the values 0 to 7 and prints the buffer (0-7).
+- Lines 300-360 stash the memory buffer to the REU, and prints the (unmodified) buffer (0-7).
+- Lines 400-420 fill the memory buffer with the values 8 to 1 and prints the buffer (8-1).
+- Lines 500-560 fetch 8 bytes from the REU into the memory buffer, and prints the (fetched) buffer (0-7).
+- Lines 600-620 fill the memory buffer again with the values 8 to 1 and prints the buffer (8-1).
+- Lines 700-760 swap 8 bytes from the REU with 8 bytes from the memory buffer, and prints the buffer (0-7).
+- Lines 800-860 swap again 8 bytes from the REU with 8 bytes from the memory buffer, and prints the buffer (8-1).
+- line 900 shows that the `status` register has the END OF BLOCK set.
+- line 910 shows that the `status` register was cleared by the previous read.
+
+![03-stash-fetch](03-stash-fetch.png)
+
+
+### Compare
+
+The previous example skipped one transfer, the "compare".
+That is the topic of this section.
+
+```basic
+100 rem reu compare
+110 rem mc pennings 2026 may 4
+120 print "reu compare"
+130 r=57088:a=49152:rem r=reu,a=c64base
+160 :
+200 for i=0 to 7:poke a+i,i:next
+210 print "filled 0-7":gosub999
+220 :
+300 poke r+2,0:poke r+3,192:rem c000=a
+310 poke r+4,0:poke r+5,0:poke r+6,0
+320 poke r+7,8:poke r+8,0:rem len=0001
+330 poke r+9,0:rem int mask
+340 poke r+10,0:rem inc both addrs
+350 poke r+1,144:print "stash":gosub999
+360 :
+400 for i=0 to 7:poke a+i,i:next
+410 poke a+4,100
+420 print "filled 0-7 +change":gosub999
+430 :
+500 poke r+2,0:poke r+3,192:rem c000=a
+510 poke r+4,0:poke r+5,0:poke r+6,0
+520 poke r+7,8:poke r+8,0:rem len=0001
+530 poke r+9,0:rem int mask
+540 poke r+10,0:rem inc both addrs
+550 poke r+1,147:print "comp "
+560 :
+600 print "stat"peek(r)and224
+610 print "stat"peek(r)and224
+620 print "c64 "peek(r+2)+256*peek(r+3)
+630 print "reu "peek(r+4)+256*peek(r+5)
+640 print "len "peek(r+7)+256*peek(r+8)
+650 :
+998 end
+999 print " c000:";:for i=0 to 7:print str$(peek(a+i));:next:print:return
+```
+
+Also this program uses an 8-byte memory buffer at 49152/C000 and 
+transfers to the REU (address 000000) and then compares it.
+
+- Lines 200-220 fill the memory buffer with the values 0 to 7 and prints the buffer (0-7).
+- Lines 300-360 stash the memory buffer to the REU, and prints the (unmodified) buffer (0-7).
+- Lines 400-420 fill the memory buffer with the values 0 to 7 but changes item 4 to 100, then prints the buffer (0-7).
+- Lines 500-560 compares the buffer with the REU.
+- Lines 600 prints the status, the FAULT is flagged.
+- Lines 610 prints the status again to show that the previous read cleared the flag.
+- Lines 620-640 print the addresses and length register. 
+  Observe that they retained the value they had when the REU detected the FAULT (difference).
+  That value is, strangely enough one after where the FAULT was.
+  Observe also that the length is decreasing, so it shows the _remaining_ number of bytes to compare.
+
+![04-compare](04-compare.png)
+
+
+### Load bit
+
+As we saw with the [Compare example](#compare), the address registers are incremented
+every time a byte is transferred, and the length is decremented. If the LOAD flag 
+in the `command` register is set the registered are restored to their initial value 
+once the transfer is complete. This is useful if the similar addresses and sizes are 
+needed in consecutive transfers. This was actually used in the [Size example](#size).
+
+Here we test it exclusively.
+
+```basic
+100 rem reu load bit
+110 rem mc pennings 2026 may 4
+120 print "reu load bit"
+130 r=57088:a=49152:rem r=reu,a=c64base
+160 :
+200 for i=0 to 7:poke a+i,i:next
+210 print "filled 0-7":gosub999
+220 :
+300 poke r+2,0:poke r+3,192:rem c000=a
+310 poke r+4,0:poke r+5,0:poke r+6,0
+320 poke r+7,8:poke r+8,0:rem len=0008
+330 poke r+9,0:rem int mask
+340 poke r+10,0:rem inc both addrs
+350 rem command=ex+noff00+fetch
+360 poke r+1,128+16+1
+370 print "fetch (load=0)":gosub999
+380 :
+400 print " c64"peek(r+2)+256*peek(r+3)
+410 print " reu"peek(r+4)+256*peek(r+5)
+420 print " len"peek(r+7)+256*peek(r+8)
+430 :
+500 poke r+2,0:poke r+3,192:rem c000=a
+510 poke r+4,0:poke r+5,0:poke r+6,0
+520 poke r+7,8:poke r+8,0:rem len=0008
+530 poke r+9,0:rem int mask
+540 poke r+10,0:rem inc both addrs
+550 rem command=ex+load+noff00+fetch
+560 poke r+1,128+32+16+1
+570 print "fetch (load=1)":gosub999
+580 :
+600 print " c64"peek(r+2)+256*peek(r+3)
+610 print " reu"peek(r+4)+256*peek(r+5)
+620 print " len"peek(r+7)+256*peek(r+8)
+630 :
+998 end
+999 print " c000:";:for i=0 to 7:print str$(peek(a+i));:next:print:return
+```
+
+- Lines 200-220 fill the memory buffer with the values 0 to 7 and prints the buffer (0-7).
+- Lines 300-380 fetches the memory buffer. Pay attention to lines 350/360: the fetch command does _not_ have LOAD flag set.
+- Lines 400-430 print the addresses and length.
+- Lines 500-580 fetches the memory buffer again. Pay attention to lines 550/560: the fetch command _does_ have LOAD flag set.
+- Lines 600-630 print the addresses and length again.
+
+Observe that in the first fetch (LOAD clear) the addresses point to the end of the buffers and length is 1,
+whereas in the second fetch the addresses point to the start again, and length is also set back to 8.
+
+![05-loadbit](05-loadbit.png)
+
+You might wonder about the buffer values that are printed in the screenshot.
+Lines 200-220 fill the C64 with values 0 to 7. But there is no stash command.
+On lines 300-380 a fetch is followed by a print of the buffer which now shows 65-72.
+
+Normally, the REU memory would be undefined, so what is fetched would be "chaotic".
+However, I made the screenshot on VICE, and VICE allows one to control the REU memory. 
+
+I first created an empty image file. In Preferences > Settings > Cartridges > RAM Expansion Module,
+I first entered a non existing file (`C:\Users\maarten\Desktop\reuimage.bin`) and then 
+placed a check mark in  `Enable RAM Expansion Module emulation`. This created a file 
+with "chaotic" contents.
+
+![Creating a REU image](reu-file-create.png)
+
+Next I opened the file in an editor deleted 8 characters and entered 8 letters (A-H).
+I did it in a plain text editor; it would be wiser to use an editor in hex mode.
+
+![Editing a REU image](reu-file-modify.png)
+
+Finally I unchecked and rechecked `Enable RAM Expansion Module emulation` to force a reload.
+Then I ran the BASIC program.
+
+
+### NOFF00 bit
+
+The `command` register has a second flag next to LOAD, NOFF00.
+When cleared, execute waits till there is a write to $FF00.
+
+
+```basic
+100 rem reu noff00 bit
+110 rem mc pennings 2026 may 4
+120 print "reu noff00 bit"
+130 r=57088:a=49152:rem r=reu,a=c64base
+160 :
+200 for i=0 to 7:poke a+i,i:next
+210 print "filled 0-7":gosub999
+220 :
+300 poke r+2,0:poke r+3,192:rem c000=a
+310 poke r+4,0:poke r+5,0:poke r+6,0
+320 poke r+7,8:poke r+8,0:rem len=0008
+330 poke r+9,0:rem int mask
+340 poke r+10,0:rem inc both addrs
+350 rem command=ex+noff00+stash
+360 poke r+1,128+16+0
+370 print "stash ":gosub999
+380 :
+400 for i=0 to 7:poke a+i,8-i:next
+410 print "filled 8-1":gosub999
+420 :
+500 poke r+2,0:poke r+3,192:rem c000=a
+510 poke r+4,0:poke r+5,0:poke r+6,0
+520 poke r+7,8:poke r+8,0:rem len=0008
+530 poke r+9,0:rem int mask
+540 poke r+10,0:rem inc both addrs
+550 rem command=ex+fetch
+560 poke r+1,128+1
+570 print "fetch (noff00=0)":gosub999
+580 :
+600 i=peek(255*256)
+610 print "peek(ff00)":gosub999
+620 poke 255*256,i
+630 print "poke ff00":gosub999
+640 :
+998 end
+999 print " c000:";:for i=0 to 7:print str$(peek(a+i));:next:print:return
+```
+
+- Lines 200-220 fill the memory buffer with the values 0 to 7 and prints the buffer (0-7).
+- Lines 300-380 stash the memory buffer to the REU, and prints the (unmodified) buffer (0-7).
+- Lines 400-420 fill the memory buffer with the values 8 to 1, then prints the buffer (8-1).
+- Lines 500-580 fetch the memory buffer from the REU. The NOFF00 flag is clear (see lines 550 and 560) so the transfer is not executed. When the buffer prints we see the (unmodified) buffer (8-1).
+- Lines 600 accesses FF00 with a read; line 610 prints the buffer and we see the still (unmodified) buffer (8-1). A read of FF00 is not enough.
+- Lines 620 writes FF00 and line 620 prints the fetched buffer (0-7).
+
+![NOFF00 bit](06-noff00bit.png)
+
+
 ### Todo
 
-- show clear of status by read
-- show end of block
-- show fault
-- show interrupt pending (poke $0314/5 for ISR location. in ISR LDA DF00, JMP EA31)
-- WAIT 57088, 64 for completion
 
-- test stash
-- test fetch
-- test compare
-- test swap
-- test LOAD
-- test FF00
 - continuous REU memory
 - links from tech description to examples?
 
