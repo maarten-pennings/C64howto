@@ -56,7 +56,8 @@ Some registers are 1, some 2 and one is even 3 bytes wide.
   | `irqmask`  |   1  |    9   | DF09 | 57097 | [section](#irqmask-9-df09-57097)   |
   | `addrctrl` |   1  |   10   | DF0A | 57098 | [section](#addrctrl-10-df0a-57098) |
 
-Each register is descibed in more detail in the subsections below.
+Each register is descibed in more detail in the sections below - or click in the last column above.
+
 
 ### status @0 ($DF00, 57088)
 
@@ -402,6 +403,7 @@ It should have 4 but has 0. So the REU size is 4.
 - test LOAD
 - test FF00
 - continuous REU memory
+- links from tech description to examples?
 
 
 ## BASIC programs
