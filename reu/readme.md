@@ -238,8 +238,8 @@ See [KimJorgensen repo](https://codeberg.org/KimJorgensen/KungFuFlash2#reu-emula
 ### Presence
 
 I struggled with enabling my REU on the Kung Fu Flash 2.
-I wrote several tests to test if the REU is present (active).
-I have combined all tests in one program: 01-presence.
+I wrote several tests to check if the REU is present (active).
+I have combined all tests in one program: `01-presence`.
 
 ```basic
 100 rem reu presence tester
@@ -311,7 +311,7 @@ I have combined all tests in one program: 01-presence.
   
 - Test 5 (line 600) is a full transfer command from C000 to 000000 of 5 bytes.
   This should set the END-OF-BLOCK in `status`.
-  The change that another device then a REU has this action-result behavior is small.
+  The chance that another device then a REU has this action-result behavior is small.
 
 - Line 700 presents the conclusion.
   
@@ -322,30 +322,32 @@ I have combined all tests in one program: 01-presence.
 
 The `status` register has one bit indicating size.
 If `status.SIZE` is 0 the REU is 128 kbyte, otherwise it is larger.
+Program `02-size` gives more specific numbers (for larger REUs).
 
 I struggled, again, to determine REU size.
 The problem is that a write to an address beyond the size of the REU is successful; 
-the correct value can even be read back. The reason for this is that the REU 
+the written value can even be read back. The reason for this is that the REU 
 "wraps around" for high addresses. For example, if the REU contains 4 blocks of 
 64 kbyte, a write to block 4 ends up in block 0, a write to 5 ends up in 1, 6 in 2,
-and 7 in 3. Even more, a write to block 8 also wraps to block 0.
+and 7 in 3. This continues: a write to block 8 also wraps to block 0.
 
-I solved the problem of finding a size is to do a single byte write 
-to the highest address of every block. The value I write is the block number.
+I solved the problem of determining the size by doing a single byte write 
+to the highest address of every block. The value I write is the _block number itself_.
 In other words, I write 00 to 00FFFF, 01 to 01FFFF, 02 to 02FFFF and so, up to FF to FFFFFF.
 This takes 256 transfers which can be done in reasonable time. 
-The second part of the solution is to write these values in reverse order:
+The second part of the solution is to write these values in _reverse order_:
 starting with block FF, then FE, down to 00. The effect of this is that
-(the highest byte of a) block contains the block number.
-The higher blocks also write their high block number, but these get overridden 
-by the writes of the lower blocks.
+(the highest byte of) the lower blocks contain their block number.
+The higher blocks also write their block number, but these get overridden 
+by the writes of the lower blocks. This means that only blocks backed by 
+hardware are not overwritten.
 
 Below table shows the content of (the highest byte of) the REU blocks.
 It assumes a REU with 4 blocks (columns 0, 1, 2, and 3), but also shows the 
 aliased blocks (4, 5, 6, 7 which could have been extended to 255).
 All aliased blocks are enclosed in parenthesis.
-The first row is at step 248, when blocks 255 down to 8 have been written.
-The next rows show the final steps (changes in bold), until the last block, block 0, is written.
+The first row shows the testing process at step 248, when blocks 255 down to 8 have been written.
+The next rows show the 8 final steps (changes in bold), until the last block, block 0, is written.
 
   | time (action) \ block |   0   |   1   |   2   |   3   |  (4)  |  (5)  |  (6)  |  (7)  | ... | 
   |:----------------------|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:-----:|:---:|
@@ -359,16 +361,18 @@ The next rows show the final steps (changes in bold), until the last block, bloc
   | time=255: stash 1     |   4   | **1** |   2   |   3   |  (4)  |**(1)**|  (2)  |  (3)  | ... |
   | time=256: stash 0     | **0** |   1   |   2   |   3   |**(0)**|  (1)  |  (2)  |  (3)  | ... |
 
-At the end, blocks 0, 1, 2 and 3 have the correct value, but block 4 is wrong.
-It should have 4 but has 0. So the REU size is 4.
+At the end, blocks 0, 1, 2 and 3 have the correct value (their block number), but block 4 is wrong.
+It should have 4 but contains 0. Blocks 0 to 3 are fine, 4 is not, so the REU size is 4 blocks.
 
-- Note that `CS` has the LOAD flag set (line 140). 
+Notes on the program:
+
+- `CS` has the LOAD flag set (line 140). 
   This means the `c64base`, `reubase` and `translen` 
   are restored after each transfer, which allows us 
   to only poke `R+6` in each loop.
 - Both loops (of 256 iterations) print a progress bar with `:` 
   every 8 (see `P`) iterations.
-- The second loop abort as soon as the REU memory ends (line 440).
+- The second loop aborts as soon as the REU memory ends (line 440).
 - On line 430 we "clear" the C64base location with `255-B`;
   we expect to read `B`.
 
@@ -415,6 +419,7 @@ It should have 4 but has 0. So the REU size is 4.
 ### Stash, fetch, swap
 
 Let's now have the main example, using the REU for stash, fetch and swap.
+This is program `03-stash-fetch-swap` on the virtual disk.
 
 ```basic
 100 rem reu stash fetch swap
@@ -484,7 +489,7 @@ It goes through these phases
 ### Compare
 
 The previous example skipped one transfer, the "compare".
-That is the topic of this section.
+Program `04-compare` is the topic of this section.
 
 ```basic
 100 rem reu compare
@@ -548,7 +553,7 @@ in the `command` register is set the registered are restored to their initial va
 once the transfer is complete. This is useful if the similar addresses and sizes are 
 needed in consecutive transfers. This was actually used in the [Size example](#size).
 
-Here we test it exclusively.
+Program `05-loadbit` tests it exclusively.
 
 ```basic
 100 rem reu load bit
@@ -591,7 +596,9 @@ Here we test it exclusively.
 
 - Lines 200-220 fill the memory buffer with the values 0 to 7 and prints the buffer (0-7).
 - Lines 300-380 fetches the memory buffer. Pay attention to lines 350/360: the fetch command does _not_ have LOAD flag set.
-- Lines 400-430 print the addresses and length.
+- Lines 400-430 print the addresses and length. Note that the code cheats for the REU address.
+  It prints `peek(r+4)+256*peek(r+5)` but this should have been `peek(r+4)+256*peek(r+5)+256*256*peek(r+6)`.
+  The problem is that on my machine the highest byte is unreliable - are the MSB floating?
 - Lines 500-580 fetches the memory buffer again. Pay attention to lines 550/560: the fetch command _does_ have LOAD flag set.
 - Lines 600-630 print the addresses and length again.
 
@@ -627,7 +634,7 @@ Then I ran the BASIC program.
 
 The `command` register has a second flag next to LOAD, NOFF00.
 When cleared, execute waits till there is a write to $FF00.
-
+This is tested by program `06-noff00bit`.
 
 ```basic
 100 rem reu noff00 bit
@@ -684,7 +691,7 @@ As stated previously, some documents call the byte at offset 6 a "bank",
 with offset 4 and 5 denoting the offset within that 64 kbyte bank.
 However, the REU has a _continuous_ memory from 0x00 0000 to 0xFF FFFF (assuming a 1M byte REU).
 
-This example shows that.
+Example `07-contmem` on the disk shows that.
 
 ```basic
 100 rem reu contmem
