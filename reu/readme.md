@@ -152,6 +152,8 @@ That is confusing term because the REU has a _continuous_ memory from 0x00 0000 
 The `translen` is a two-byte register containing the number of bytes for the transfer operation.
 The transfer length is in little endian format: the LSB is at offset 7 and the MSB is at offset 8.
 
+A `translen` of 0000 means 65536 bytes.
+ 
 
 ### irqmask @9 ($DF09, 57097)
 
@@ -220,7 +222,7 @@ since it needs a read and a write of every location.
 
 In this section, we are going to try-out the registers of the REU.
 
-> All test programs in the chapter are available in a virtual disk image: [reutests.d64](reutests.d64).
+> All test programs in the chapter are available in a virtual disk image: [reu-tests.d64](reu-tests.d64).
 
 
 ### Introduction
@@ -432,7 +434,7 @@ This is program `03-stash-fetch-swap` on the virtual disk.
 220 :
 300 poke r+2,0:poke r+3,192:rem c000=a
 310 poke r+4,0:poke r+5,0:poke r+6,0
-320 poke r+7,8:poke r+8,0:rem len=0001
+320 poke r+7,8:poke r+8,0:rem len=0008
 330 poke r+9,0:rem int mask
 340 poke r+10,0:rem inc both addrs
 350 poke r+1,144:print "stash":gosub999
@@ -442,7 +444,7 @@ This is program `03-stash-fetch-swap` on the virtual disk.
 420 :
 500 poke r+2,0:poke r+3,192:rem c000=a
 510 poke r+4,0:poke r+5,0:poke r+6,0
-520 poke r+7,8:poke r+8,0:rem len=0001
+520 poke r+7,8:poke r+8,0:rem len=0008
 530 poke r+9,0:rem int mask
 540 poke r+10,0:rem inc both addrs
 550 poke r+1,145:print "fetch":gosub999
@@ -452,14 +454,14 @@ This is program `03-stash-fetch-swap` on the virtual disk.
 620 :
 700 poke r+2,0:poke r+3,192:rem c000=a
 710 poke r+4,0:poke r+5,0:poke r+6,0
-720 poke r+7,8:poke r+8,0:rem len=0001
+720 poke r+7,8:poke r+8,0:rem len=0008
 730 poke r+9,0:rem int mask
 740 poke r+10,0:rem inc both addrs
 750 poke r+1,146:print "swap ":gosub999
 760 :
 800 poke r+2,0:poke r+3,192:rem c000=a
 810 poke r+4,0:poke r+5,0:poke r+6,0
-820 poke r+7,8:poke r+8,0:rem len=0001
+820 poke r+7,8:poke r+8,0:rem len=0008
 830 poke r+9,0:rem int mask
 840 poke r+10,0:rem inc both addrs
 850 poke r+1,146:print "swap ":gosub999
@@ -502,7 +504,7 @@ Program `04-compare` is the topic of this section.
 220 :
 300 poke r+2,0:poke r+3,192:rem c000=a
 310 poke r+4,0:poke r+5,0:poke r+6,0
-320 poke r+7,8:poke r+8,0:rem len=0001
+320 poke r+7,8:poke r+8,0:rem len=0008
 330 poke r+9,0:rem int mask
 340 poke r+10,0:rem inc both addrs
 350 poke r+1,144:print "stash":gosub999
@@ -513,7 +515,7 @@ Program `04-compare` is the topic of this section.
 430 :
 500 poke r+2,0:poke r+3,192:rem c000=a
 510 poke r+4,0:poke r+5,0:poke r+6,0
-520 poke r+7,8:poke r+8,0:rem len=0001
+520 poke r+7,8:poke r+8,0:rem len=0008
 530 poke r+9,0:rem int mask
 540 poke r+10,0:rem inc both addrs
 550 poke r+1,147:print "comp "
@@ -729,10 +731,70 @@ Example `07-contmem` on the disk shows that.
 ```
 
 The key change is in lines 310 and 510.
-The 8-byte C64 buffer is transferred to and from 00 FFFA to 01 0001, 
-without problems cross a 64 kbyte boundary.
+The 8-byte C64 buffer is transferred to and from REU range 00 FFFA - 01 0001, 
+without problems crossing a 64 kbyte boundary.
 
 ![07-contmem](07-contmem.png)
+
+
+### Fill
+
+The `addrctrl` register has two flags. 
+When `C64BASEFIX` is set, the `c64base` address is not incremented every byte of the transfer.
+When `REUBASEFIX` is set, the `reubase` address is not incremented every byte of the transfer.
+In other words, when these bits are set, the REU transfer acts as a _memory fill_.
+
+Example `08-fill` tests this feature; it fills the C64 memory.
+
+```basic
+100 rem reu contmem
+110 rem mc pennings 2026 may 4
+120 print "reu fill"
+130 r=57088:a=49152:rem r=reu,a=c64base
+160 :
+200 for i=0 to 7:poke a+i,i:next
+210 print "filled 0-7":gosub999
+220 :
+300 poke r+2,0:poke r+3,192:rem c000=a
+310 poke r+4,0:poke r+5,0:poke r+6,0
+320 poke r+7,8:poke r+8,0:rem len=0008
+330 poke r+9,0:rem int mask
+340 poke r+10,0:rem inc both addrs
+350 rem command=ex+load+noff00+stash
+360 poke r+1,128+32+16+0
+370 print "stash":gosub999
+380 :
+400 poke r+2,0:poke r+3,192:rem c000=a
+410 poke r+4,2:poke r+5,0:poke r+6,0
+420 poke r+7,8:poke r+8,0:rem len=0008
+430 poke r+9,0:rem int mask
+440 poke r+10,64:rem fix reu addrs
+450 rem command=ex+load+noff00+fetch
+460 poke r+1,128+32+16+1
+470 print "fetch (reu fixed)":gosub999
+480 :
+998 end
+999 print " c000:";:for i=0 to 7:print str$(peek(a+i));:next:print:return
+```
+
+- Lines 200-220 fill the memory buffer with the values 0 to 7 and prints the buffer (0-7).
+- Lines 300-380 stash the memory buffer to the REU, and prints the (unmodified) buffer (0-7).
+- Lines 400-480 fetch the memory buffer from the REU. 
+The REUBASEFIX flag is clear (see lines 440) so the REU address stays fixed at 000002 (see line 410).
+At the address the value 02 was just stashed, so this is now fetched 8 times in the C64 buffer. 
+When the buffer prints we see that (2-2).
+
+
+![08-fill](08-fill.png)
+
+
+### To do
+
+- Test `translen` of 0 being 64 kbyte.
+- What happens when transferring `len` bytes from/to C64 address `ad`, when `ad+len > $FFFF`.
+- What happens when transferring `len` bytes from/to reu address `ad`, when `ad+len > $FFFFFF`.
+- Try IRQ example.
+
 
 
 ## Links
