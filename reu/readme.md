@@ -73,18 +73,20 @@ The status flags (3 MSB) are cleared upon read.
   |  3:0 | VERSION           | obsolete (version number of Commodore REUs)                        |
 
 
-The REU stalls the 6510 while transferring, so once the 6502 "unstalls", 
-the REU has completed transfer. In other words checking the END OF BLOCK is superfluous. 
-Instead of `200 if peek(57088) and 64 then 200` I would suggest to use `200 wait 57088,64` if
-you insist on checking END OF BLOCK.
+The REU sets END OF BLOCK when the transfer is complete (see [example Stash, fetch, swap](#stash-fetch-swap)).
+However, the REU stalls the 6510 while transferring, and it "unstalls" the 6510
+when the transfer is completed. The 6510 starts running when the the REU is done.
+In other words checking the END OF BLOCK is superfluous. 
+If it feels right to check the status anyhow, I suggest to use `200 wait 57088,64`
+instead of the more classical busy wait loop `200 if peek(57088) and 64 then 200`,
 
-The stalling of the 6510 also means that the INTERRUPT PENDING flag in register `irqmask`
-(interrupts are enabled) is not needed.
+The stalling of the 6510 also means that the INTERRUPT PENDING flag is not needed.
+Use register`irqmask` to enable interrupts.
 
 The 4 LSB bits are obsolete for modern REUs.
 
-what is left is the FAULT bit, they only useful one. It indicates a difference is found when the REU transfer 
-runs in _compare_ mode.
+What is left is the FAULT bit, the only useful one. It indicates a difference is found 
+when the REU transfer runs in _compare_ mode (see [example Compare](#compare)).
 
 
 ### command @1 ($DF01, 57089)
@@ -112,10 +114,11 @@ During a transfer the `c64base` and `reubase` are incremented by one and `transl
 for every transferred byte. At the end of the transfer `c64base` is `translen` higher, `reubase` is 
 `translen` higher and `translen` is 1 (not 0). When the LOAD bit is clear that is how you see
 the registers when the transfer stops. When LOAD is set, the `c64base`, `reubase`, `translen` are 
-reloaded with their initial value. Note that for a compare, a transfer stops either at the end,
-when no difference is found, or is aborted mid-way when a difference is found. In the latter case,
-executing with LOAD clear makes sense, because then we know at which location the first difference 
-was found, see [example compare](#compare).
+reloaded with their initial value (see [example Load bit](#load-bit)). 
+Note that for a compare, a transfer stops either at the end, when no difference is found, 
+or is aborted mid-way when a difference is found. In the latter case, executing with LOAD 
+clear makes sense, because then we know at which location the first difference 
+was found, see [example Compare](#compare).
 
 Some memory regions of the C64 are in [triple use](https://www.c64-wiki.com/wiki/Memory_Map).
 For example DF00 could be RAM, I/O 2, or character ROM.
@@ -125,6 +128,7 @@ it would only see the I/O 2 needed to control it.
 To solve this, EXECUTE can be postponed by clearing the NOFF00 flag.
 When clear, the actual transfer is delayed; it starts only after writing to address FF00, 
 presumably after the active memory has been changed. I don't know why FF00 was chosen.
+See [example NOFF00 bit](#noff00-bit).
 
 I would recommend to have LOAD always set (except for compare mode).
 I would also recommend to have NOFF00 always set (except when comparing a memory "under" I/O 2.
@@ -136,6 +140,8 @@ The `c64base` is a two-byte register containing the address for the _C64 side_ o
 For a _stash_ command it functions as the _source_ address, for a _fetch_ command it functions as the _destination_ address.
 The address is in little endian format: the LSB is at offset 2 and the MSB is at offset 3.
 
+See [example Stash, fetch, swap](#stash-fetch-swap).
+
 
 ### reubase @4,5,6 ($DF04, 57092)
 
@@ -143,8 +149,12 @@ The `reubase` is a three-byte register containing the address for the _REU side_
 For a _stash_ command it functions as the _destination_ address, for a _fetch_ command it functions as the _source_ address.
 The address is in little endian format: the LSB is at offset 4 and the MSB is at offset 6.
 
+See [example Stash, fetch, swap](#stash-fetch-swap).
+
 Some documents call the byte at offset 6 a "bank", with offset 4 and 5 denoting the offset within that 64 kbyte bank.
 That is confusing term because the REU has a _continuous_ memory from 0x00 0000 to 0xFF FFFF (assuming a 1M byte REU).
+
+See [example Continuous REU memory](#continuous-reu-memory).
 
 
 ### translen @7,8 ($DF07, 57095)
@@ -154,6 +164,8 @@ The transfer length is in little endian format: the LSB is at offset 7 and the M
 
 A `translen` of 0000 means 65536 bytes.
  
+See [example Stash, fetch, swap](#stash-fetch-swap)).
+
 
 ### irqmask @9 ($DF09, 57097)
 
@@ -202,6 +214,8 @@ Then the REU is a DMA engine that drives those hardware peripherals.
   |  5:0 | reserved          |                                                                    |
 
 I would recommend to have C64BASEFIX and REUBASEFIX both always clear (except for a fill).
+
+See [example Fill](#fill).
 
 
 ## Timing
