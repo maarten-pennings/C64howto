@@ -75,15 +75,15 @@ The status flags (3 MSB) are cleared upon read.
 
 The REU stalls the 6510 while transferring, so once the 6502 "unstalls", 
 the REU has completed transfer. In other words checking the END OF BLOCK is superfluous. 
-Instead of `200 if peek(57088) and 64 then 200` I suggest to use `200 wait 57088,64` if
+Instead of `200 if peek(57088) and 64 then 200` I would suggest to use `200 wait 57088,64` if
 you insist on checking END OF BLOCK.
 
-The stalling of the 6510 also means that the INTERRUPT PENDING flag (interrupts are 
-enabled via `irqmask`) is not needed.
+The stalling of the 6510 also means that the INTERRUPT PENDING flag in register `irqmask`
+(interrupts are enabled) is not needed.
 
 The 4 LSB bits are obsolete for modern REUs.
 
-The only useful bit is FAULT; it indicates a difference is found when the REU transfer 
+what is left is the FAULT bit, they only useful one. It indicates a difference is found when the REU transfer 
 runs in _compare_ mode.
 
 
@@ -119,15 +119,15 @@ was found, see [example compare](#compare).
 
 Some memory regions of the C64 are in [triple use](https://www.c64-wiki.com/wiki/Memory_Map).
 For example DF00 could be RAM, I/O 2, or character ROM.
-The REU, when executing a transfer, sees what the memory that is configured as active.
+The REU, when executing a transfer, sees the memory that is configured as active.
 This means that the REU could never access the RAM or character ROM also present at DF00;
 it would only see the I/O 2 needed to control it.
 To solve this, EXECUTE can be postponed by clearing the NOFF00 flag.
-When set, the actual transfer is delayed; it starts only after writing to FF00, 
-presumably after the active memory has been changed.
+When clear, the actual transfer is delayed; it starts only after writing to address FF00, 
+presumably after the active memory has been changed. I don't know why FF00 was chosen.
 
 I would recommend to have LOAD always set (except for compare mode).
-I would recommend to have NOFF00 always set (except when comparing a memory "under" I/O 2.
+I would also recommend to have NOFF00 always set (except when comparing a memory "under" I/O 2.
 
 
 ### c64base @2,3 ($DF02, 57090)
@@ -159,9 +159,9 @@ A `translen` of 0000 means 65536 bytes.
 
 The REU has two events: transfer completed and compare failed.
 When such an event happens, the associated bit in the status register 
-is set (END of BLOCK respectively FAULT).
+is set (END OF BLOCK respectively FAULT).
 
-It is possible to generate an interrupt (IRQ, not NMI) when these events occur.
+It is possible to generate an interrupt (IRQ, not NMI) when these bits are set.
 To enable these interrupts, make sure their enable mask is set in `irqmask`.
 Secondly, globally enable interrupts by setting INTERRUPT ENABLE.
 
@@ -173,17 +173,17 @@ Secondly, globally enable interrupts by setting INTERRUPT ENABLE.
   |  4:0 | reserved          |                                                                    |
 
 If an event happens, and its mask is set, and INTERRUPT ENABLE is set, the IRQ is fired.
-It is vectored in hardware at FFFE. The C64 kernal ROM maps that to FF48, which pushes 
+It is vectored (6510 hardware) at FFFE. The C64 kernal ROM maps that to FF48, which pushes 
 the registers and then vectors via $0314/$0315 (for a hardware IRQ; alternatively via 
 $0316/$0317 for a BRK, as determined via the B flag in PSW). By default 314/315 
 routes to $EA31 (e.g. keyboard scan). One would need to write an ISR (REU handler) 
-which **clears the interrupt** by reading $DF00, and then continuous to $EA31. 
+which **clears the interrupt** by reading `status` at $DF00, and then continuous at $EA31. 
 If the interrupt is not cleared, it will fire again as soon as the RTI at the end of 
-the EA31 ISR is executed. This will lock up the C64.
+the EA31 ISR is executed. This will lock up the C64. **Setting INTERRUPT ENABLE without installing an ISR that clears `status` locks the C64**.
 
 Although this interrupt mechanism exists, it is fairly useless.
 The 6510 is halted during the REU transfer and once the REU transfer is completed, 
-the 6510 continuous. One could add a `WAIT 57088` after the `POKE 57089`.
+the 6510 continuous. 
 
 
 ### addrctrl @10 ($DF0A, 57098)
@@ -200,6 +200,8 @@ Then the REU is a DMA engine that drives those hardware peripherals.
   |   7  | C64BASEFIX        | 1 = fixed (e.g. for memory fill), 0 = stepping (copy, compare)     |
   |   6  | REUBASEFIX        | 1 = fixed (e.g. for memory fill), 0 = stepping (copy, compare)     |
   |  5:0 | reserved          |                                                                    |
+
+I would recommend to have C64BASEFIX and REUBASEFIX both always clear (except for a fill).
 
 
 ## Timing
@@ -420,7 +422,7 @@ Notes on the program:
 
 ### Stash, fetch, swap
 
-Let's now have the main example, using the REU for stash, fetch and swap.
+Let's now have the **main example**, using the REU for stash, fetch and swap.
 This is program `03-stash-fetch-swap` on the virtual disk.
 
 ```basic
@@ -555,7 +557,7 @@ in the `command` register is set the registered are restored to their initial va
 once the transfer is complete. This is useful if the similar addresses and sizes are 
 needed in consecutive transfers. This was actually used in the [Size example](#size).
 
-Program `05-loadbit` tests it exclusively.
+Program `05-loadbit` tests the LOAD bit exclusively.
 
 ```basic
 100 rem reu load bit
@@ -634,8 +636,9 @@ Then I ran the BASIC program.
 
 ### NOFF00 bit
 
-The `command` register has a second flag next to LOAD, NOFF00.
-When cleared, execute waits till there is a write to $FF00.
+The `command` register has a second flag next to LOAD, the flag with the funny name NOFF00.
+When cleared, execute waits till there is a write to address $FF00.
+
 This is tested by program `06-noff00bit`.
 
 ```basic
