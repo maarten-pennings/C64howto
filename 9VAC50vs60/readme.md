@@ -7,25 +7,29 @@ This _howto_ documents that.
 
 ## Introduction
 
-I met the guy behind _SPL_ ([SideProjectsLab](https://github.com/sideprojectslab))
-at a Commodore fair in the Netherlands. He is working on a not yet released 
-(per April 2026) USB power supply for the C64. I bought a pre-release model from him. 
-I'm guessing he might be calling it the USB-64.
+I met Vittorio Pascucci, the man behind _SPL_ 
+([SideProjectsLab](https://github.com/sideprojectslab))
+at a Commodore fair in the Netherlands. He made a USB power supply for the C64. 
+It's called the PD-64. I bought a pre-release model from him (April 2026). 
+By now (May 2026) he offically [released](https://github.com/sideprojectslab/PD-64) it.
 
-![USB-64](images/USB-C64-3D.jpg) ![USB-64 plugged in](images/USB-C64-plugged.jpg)
 
-The USB-64 device is a small "block" that you plug into the power socket
-of the C64. The USB-64 itself must be powered by a USB power adapter compliant
-with USB Power Delivery (PD). The circuitry in the USB-64 negotiates 12V from 
+![PD-64](images/USB-C64-3D.jpg) ![PD-64 plugged in](images/USB-C64-plugged.jpg)
+
+The PD-64 device is a small "block" that you plug into the power socket
+of the C64. The PD-64 itself must be powered by a USB power adapter compliant
+with USB Power Delivery (PD). The circuitry in the PD-64 negotiates 12V from 
 the USB power adapter, and converts it to 5V DC and 9V AC. That is already 
-interesting: the USB-64 must generate AC from DC.
+interesting: the PD-64 must generate AC from DC.
 
-![USB-64 front](images/USB-C64-front.jpg) ![USB-64 back](images/USB-C64-back.jpg) 
+![PD-64 front](images/USB-C64-front.jpg) ![PD-64 back](images/USB-C64-back.jpg) 
 
-The USB-64 device has two power LEDs and two switches; I'm assuming one for 5V ok and one for 9V ok. 
-The upper switch is the on/off switch, the lower switch is the 50Hz/60Hz selector. 
+The PD-64 device has two LEDs and two switches.
+I'm assuming the LEDs are for 5V ok and for 9V ok. 
+The upper switch is the on/off switch, the lower switch is the 50Hz/60Hz selector.
+At least that is what I remembered from Vittorio's presentation.
 
-![USB-64 left](images/USB-C64-left.jpg) ![USB-64 right](images/USB-C64-right.jpg)
+![PD-64 left](images/USB-C64-left.jpg) ![PD-64 right](images/USB-C64-right.jpg)
 
 I flipped the 50/60 selector and nothing seemed to happen. 
 This _howto_ is the result of me trying to understand what this frequency switch is about.
@@ -33,9 +37,11 @@ This _howto_ is the result of me trying to understand what this frequency switch
 
 ## 50Hz/60Hz switch
 
-Since the USB-64 was not yet released, there was no documentation.
+Since the PD-64 was not yet released, there was no documentation.
 The lower switch being a 50/60Hz selector was just what I remembered 
 from the creator's presentation. Can I confirm its function?
+
+> By now there is [documentation](https://raw.githubusercontent.com/sideprojectslab/PD-64/main/doc/user_manual.pdf).
 
 My multimeter has a frequency mode, and I measured the frequency over 
 pin 6 and 7, and indeed when the switch is in the down position 
@@ -46,8 +52,8 @@ What is it used for?
 ![Power plug](images/powerplug.png)
 
 By the way, the frequency switch is not momentarily active.
-It seems to be sampled by the USB-64 at startup only
-(when the USB-64 is powered on).
+It seems to be sampled by the PD-64 at startup only
+(when the PD-64 is powered on).
 
 
 
@@ -63,8 +69,7 @@ frequency. The crystal is Y1, we see it right of the top center in below
 photo. The photo shows a part of the C64 breadbin motherboard (below the VIC-II can). 
 The marking on the component Y1 shows 17 or even 17.7 which is the frequency for PAL 
 (17.73447 MHz), NTSC would have 14.31818 MHz. Via U31 (chip in center),
-a [Dual voltage-controlled oscillators](https://www.ti.com/product/SN74LS629), 
-which got later replaced by U32 a [Clock Generator](https://www.renesas.com/en/document/dst/ics8701-data-sheet), 
+a [Clock Generator](https://www.renesas.com/en/document/dst/ics8701-data-sheet), 
 the clock reaches the VIC-II (U19, big chip at the bottom of below image). 
 The VIC-II in my machine is a 6569, the PAL variant; NTSC would have the 6567.
 
@@ -77,13 +82,17 @@ As [c64 wiki](https://www.c64-wiki.com/wiki/Hardware_internals_of_the_C64) expla
 > Y1 defines the _Color Clock_ (17.734472 MHz for PAL).
 
 > The _Pixel Clock_ (PAL: ~7.88 MHz Dot Clock) is generated from the color clock 
-> by the PLL in U32 (or U31 - Maarten); each nine color clock edges there are four pixel clock edges
+> by the PLL in U32; each nine color clock edges there are four pixel clock edges
 > (the ratio for NTSC is 7:4).
 
 > Φ0 (~1 MHz) is an output signal from the VIC, where the pixel clock divided 
 > by 8 is present. 
 
 Signal Φ0 clocks the 6510. 
+
+Note [ASSY 250425](https://www.c64-wiki.com/wiki/Motherboard#ASSY_250425) 
+replaced the clock generation circuit using a single IC (U31, 8701); before that there was 
+the [Dual voltage-controlled oscillators](https://www.ti.com/product/SN74LS629).
 
 
 ## 50Hz/60Hz is for CIA
@@ -127,6 +136,12 @@ Gemini adds
 > This is required for the SID (Sound Interface Device) chip and the video circuitry. 
 > A modern 9V DC supply works fine for this because the bridge rectifier 
 > on the motherboard will happily pass DC through.
+
+Apparently I was too trustful in Gemini because Vittorio 
+commented on [discord](https://discord.gg/gJsCgebkDw):
+
+> One little detail, when you mention that 9v output might as well be DC if one is not interested in the TOD clock, that is not entirely accurate. Only an AC voltage can operate the charge pump that provides the voltage for the on board 12v linear regulator for the SID, the VIC and the RF modulator. Plus it's important to keep in mind that 9vAC corresponds to 12.6v peak, and that's what matters when you plan on putting that voltage through a rectifier, as it will follow and hold the peak rather than the RMS value (minus the diode drop and the ripple)
+
 
 
 ## Writing a BASIC program to test
@@ -236,7 +251,7 @@ The above programs contains three parts: main, CIA and measurement.
 
 ## Test results
 
-I ran the BASIC program, once with the frequency selector on the USB-64 
+I ran the BASIC program, once with the frequency selector on the PD-64 
 in the lower (50Hz) position, and once in the upper (60Hz) position.
 The screenshots are as follows
 
@@ -252,7 +267,7 @@ As it turns out, VICE even emulates the 9V frequency:
 
 ## Conclusion
 
-SPL made a high quality product.
+SPL (Vittorio) made a high quality product.
 If 9V were DC nobody would have probably noticed (who uses the TOD)?
 Extra components had to be added to convert the DC from USB to the AC for the C64.
 SPL goes one step further, not just making AC (fixed 50Hz for "Europe") but making 
