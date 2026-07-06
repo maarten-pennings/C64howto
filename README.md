@@ -3,24 +3,25 @@
 Various "How to xxx" questions and answers for the C64 (Commodore 64) that I want to remember. Some are linking to my old [howto repo](https://github.com/maarten-pennings/howto).
 
 
-## Is there a modern 1541 disk drive replacement
+## Modern 1541 disk drive
 
-Yes, the one that best mimics an 1541, is Pi1514 made by Steve White.
-He separated [documentation](https://cbm-pi1541.firebaseapp.com/) 
-from the [firmware](https://github.com/pi1541/Pi1541)
+The 1541 replacement that best mimics an 1541, is _Pi1541_ made by Steve White.
+Pi1541 runs the original Commodore 1541 firmware on a Raspberry Pi emulating an 6502 and all other chips inside the 1541.
+Steve separated the [documentation](https://cbm-pi1541.firebaseapp.com/) 
+from the [firmware](https://github.com/pi1541/Pi1541).
 I made one, see the associated [repo](https://github.com/maarten-pennings/Pi1541device).
 
 
-## Is there a modern joystick
+## Modern joystick
 
-Yes, with a bit of bridging electronics, 
+With a bit of bridging electronics, 
 you can turn a Nintendo Nunchuk into a C64 joystick.
-See my [repo](https://github.com/maarten-pennings/Nunchuk) dedicated to th Nunchuk.
+See my [repo](https://github.com/maarten-pennings/Nunchuk) dedicated to the Nunchuk for C64.
 
 
-## Is there a modern datasette
+## Modern datasette
 
-Yes, there is a modern take on the old commodore datasette. 
+There is a modern take on the old commodore datasette. 
 It is called _Tapuino_, made by "sweetlilmre" (Peter Edwards), 
 see [repo](https://github.com/sweetlilmre/tapuino).
 Tapuino is basically a digital tape recorder, using an 
@@ -42,14 +43,12 @@ I needed to [study](9VAC50vs60) this to understand what it means.
 
 ## C64 development
 
-It is possible to develop on the C64 itself.
-For BASIC that is possibly the best solution.
-For assembly it starts to be less than ideal, 
-if only because a bad program may crash your C64, 
+It is possible to develop on the C64 itself. For BASIC that is possibly the best solution.
+For assembly it starts to be less than ideal, if only because a bad program may crash your C64, 
 corrupting your work.
 
-The [C64 development (old repo)](https://github.com/maarten-pennings/howto/tree/main/c64development) explains how to
-develop assembler and BASIC on a PC, and test it in VICE.
+The [C64 development (old repo)](https://github.com/maarten-pennings/howto/tree/main/c64development) 
+explains how to develop assembler and BASIC on a PC, and test it in VICE.
 
 
 ## C64 disk drive commands
@@ -104,7 +103,7 @@ How are [C64 chars (old repo)](https://github.com/maarten-pennings/howto/tree/ma
 
 ## Commodore 64 USR() function
 
-How to make the `USR()` function work. Plus, as bonus, a return-to-TMP easily.
+How to make the `USR()` function work. Plus, as bonus, a return-to-TMP (Turbo Macro Pro) easily.
 See [c64usr (old repo)](https://github.com/maarten-pennings/howto/tree/main/c64usr).
 
 
@@ -124,7 +123,6 @@ This [how to (old repo)](https://github.com/maarten-pennings/howto/tree/main/c64
 I was playing with VICE the C64 (Commodore 64) emulator.
 In Turbo Macro Pro, the `←` key is used extensively, so I wanted to remap that to an easy key.
 See [how to (old repo)](https://github.com/maarten-pennings/howto/tree/main/ViceKeyboardRemap/readme.md) do that yourself.
-
 
 
 (end)
