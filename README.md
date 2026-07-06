@@ -3,6 +3,12 @@
 Various "How to xxx" questions and answers for the C64 (Commodore 64) that I want to remember. Some are linking to my old [howto repo](https://github.com/maarten-pennings/howto).
 
 
+## Blinky on a 1541
+
+How to make a program for the Commodore 1541 that blinks the activity LED.
+See [blinky1541](blinky1541).
+
+
 ## Modern 1541 disk drive
 
 The 1541 replacement that best mimics an 1541, is _Pi1541_ made by Steve White.
