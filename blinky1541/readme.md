@@ -133,14 +133,22 @@ We hand assemble using Maaswerk's [6502 instructions](https://www.masswerk.at/65
 032c | 96        | rts
 ```
 
-### Upload and execute
+- At 0320 we have a wait routine. It keeps register X unmodified.
+- The wait takes about 0.33 seconds.
+- The main routine starts at 0300.
+- Register X is used to loop 5 times on/off. it is set st 0300 and decremented at 0318 and looped at 0319.
+- At 0302-030a the activity LED is switched on (by clearing bit 3 of 1c00) for 0.33s.
+- At 030d-0315 the activity LED is switched off (by setting bit 3 of 1c00) for 0.33s.
+
+
+## Upload and execute
 
 With our first task completed (writing the Blinky program) this section
 focusses on how to get the program on the 1541 and run it there.
 We do that via the command channel.
 
 
-## Commands in general
+### Commands in general
 
 Recall that we can _send commands_ to a 1541.
 We do that by opening a byte pipe (file handle), any will do, here we pick `1`.
@@ -217,7 +225,7 @@ slightly faster (without filling the string heap)
 30 GET#1,B$:B=ASC(B$+CHR$(0))
 ```
 
-## memory commands
+### Memory commands
 
 
 ## Links
