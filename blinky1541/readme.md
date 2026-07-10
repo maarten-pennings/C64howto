@@ -151,12 +151,13 @@ We do that via the command channel.
 ### Commands in general
 
 Recall that we can _send commands_ to a 1541.
-We do that by opening a byte pipe (file handle), any will do, here we pick `1`.
-The file is on a specific device, here `8` for the disk drive.
-TDrives have one channel reserved for commands: `15`.
+We do that by opening a byte pipe (file handle), any "slot" will do, 
+in the example below we picked `1`.
+The file is on a specific device, below `8` for the disk drive.
+Commodore drives have one channel reserved for commands: `15`.
 
-Here is an example: we send the command `S` to delete ("scratch") a file.
-It has as argument `HELLO` (the filename).
+In the example we send the command `S` to delete ("scratch") a file.
+It has as argument `HELLO` (the filename). First we create and save that file.
 
 ```basic
 10 PRINT "HELLO, WORLD!"
@@ -173,7 +174,7 @@ OPEN 1,8,15,"S:HELLO":CLOSE 1
 READY.
 ```
 
-The above command `OPEN 1,8,15,"S:HELLO"` is a shorthand for the following 
+The above command `OPEN 1,8,15,"S:HELLO"` is a shorthand for the following lines
 which more clearly shows that we send `"S:HELLO"` to file 1, the command channel 15 of drive 8.
 
 ```basic
@@ -183,6 +184,7 @@ CLOSE 1
 ```
 
 It is also possible to _receive feedback_ from the drive.
+We use either `INPUT#` or `GET#`.
 Typically we get back the drive _status_.
 
 ```basic
@@ -196,8 +198,9 @@ RUN
  1 FILES SCRATCHED 1  0
 ```
 
-The above example scratches the file `HELLO` and then checks for success (`1 FILES SCRATCHED`).
-It is good to realize that the `INPUT#` function is high level.
+The above example scratches the file `HELLO` and then checks 
+for success (`FILES SCRATCHED 1`).
+It is good to realize that the `INPUT#` function is high-level.
 It parses the bytes from the disk, using `,` as field separator, 
 character 13 (CR) as line separator, and even parses integers 
 (e.g. `"00"` becomes `0`). 
@@ -219,13 +222,285 @@ RUN
 
 Having said that, `GET#1,B$` has one flaw. If the byte being read is 0, `B$` is `""`
 instead of `CHR$(0)`. The usual work around is `30 GET#1,B$:B=0:IF B$<>"" THEN B=ASC(B$)` or the 
-slightly faster (without filling the string heap)
+slightly faster (without filling the string heap) concatenation:
 
 ```basic
 30 GET#1,B$:B=ASC(B$+CHR$(0))
 ```
 
-### Memory commands
+
+### Programmer's commands
+
+Next to the high level disk commands (`SAVE` and `LOAD`) and the advanced
+commands (e.g. `S` for scratch, `N` for new (format), `R` for rename), there
+are Programmer's commands. We will investigate three of them write (`M-W`),
+read (`M-R`) and execute (`M-E`). At first they sound complex, but they are 
+not. However, there are many small issues that make them hard to master.
+
+```basic
+100 print "disk write/read"
+110 a$=chr$(0)+chr$(3):rem addr lo/hi
+120 open 8,8,15,"i0"
+190 :
+200 for d=65 to d+3:w$=w$+chr$(d):next
+210 print#8,"m-w";a$;chr$(len(w$));w$;
+220 print" w>";:gosub 500
+290 :
+300 l=16:print#8,"m-r";a$;chr$(l);
+310 get#8,d$:d=asc(d$+chr$(0))
+320 if st<>0 then 360
+330 r1$=r1$+mid$(str$(d),2)+" "
+340 if d<33 or d>127 then d=asc(".")
+350 r2$=r2$+chr$(d):goto310
+360 print" r>";:gosub 500
+370 print r1$:print r2$
+390 :
+400 close 8
+410 end
+490 :
+500 print "st=";st;"dos=";
+510 input#8,en,em$,et,es
+520 if en>9 then print en;em$;et;es
+530 if en<10 then print "ok"
+540 return
+```
+(this program is presented in lower case to make copy and paste in VICE easier).
+
+
+The 1xx section is the start, 2xx the write to memory, 3xx the read 
+from memory, the 4xx is the stop section, and 5xx is error subroutine.
+In more detail:
+
+- 110 variable `A$` is two bytes, first byte is 0, second byte is 3, the 
+  string contains the address $0300 in little enidan format.
+  It is used as address in the `M-W` and `M-R` commands.
+- 120 opens the command channel of drive 8 in "slot" (logical file number) 8.
+  We also send an initialize-drive command (not necesary, but doesn't harm).
+- Line 200 builds string `w$` which will be written to the drive memory.
+  It contains 4 characters 65..68, or A, B, C, D.
+- Line 210 actually writes those bytes to the drive RAM.
+  `M-W` is the command, next two bytes form the start address 
+  (0300 or the first buffer). This is followed by the number of bytes that 
+  will be written; and finally come the bytes.
+- Line 220 is error feedback.
+- Line 300 sends the memory read command to the drive.
+  The `M-R` is alsof followed by the target address 
+  (again 0300, where we have just written `W$`) and 
+  also the number of bytes we want to read. 
+  Here we use `L=16`, so we read 16 bytes, but we wrote only 4.
+- Line 310 is the start of the read loop. We read one byte in `D$`,
+  and use the `""`-workaround to convert it to ASCII in variable `D`.
+- Line 320 breaks the loop if we are at end-of-file (`ST=64`).
+- Line 330 builds a string (`R1$`) of read ASCII values, 
+  lines 340 and 350 build a string (`R2$`) of read characters.
+- Line 360 is error feedback.
+- Line 370 prints the read bytes in the two forms.
+- Lines 400 and 410 close the file and end the program.
+
+This is the typical output when we run the program. We see the written 
+four characters, followed by 12 zeros (my drive was just reset).
+
+```
+DISK WRITE/READ
+ W>ST= 0 DOS=OK
+ R>ST= 64 DOS=OK
+65 66 67 68 0 0 0 0 0 0 0 0 0 0 0 0
+ABCD............
+```
+
+
+### Issues with "M-W"
+
+There are several issues with the "M-W" command.
+We will make small changes to the above program and see how this 
+effects the behavior.
+
+I did reset (my virtual) drive on every experiment, 
+you might see other (non-0) left-overs in the buffer.
+
+
+#### Issue 1: relaxed len byte
+
+When the length byte is less than the size of the data written, 
+the written data is truncated to the specified length.
+
+```basic
+210 print#8,"m-w";a$;chr$(len(w$)-1);w$;
+```
+
+```
+65 66 67 0 0 0 0 0 0 0 0 0 0 0 0 0
+abc.............
+```
+
+When the length byte is greater than the size of the data written, 
+the only the passed data is written. What we will see in the "chunking"
+issue is that only the data from a single `PRINT#` is used, which 
+made me wonder _why_ we need to pass the length.
+
+```basic
+210 print#8,"m-w";a$;chr$(len(w$)+1);w$;
+```
+
+```
+65 66 67 68 0 0 0 0 0 0 0 0 0 0 0 0
+abcd............
+```
+
+
+#### Issue 2: chunking
+
+When more than a handful of bytes needs to be written, it is 
+tempting to `PRINT#` multiple chunks. That does _not_ work;
+all byte to be written must be part of one single `PRINT#`.
+For a remedy, see "repeating".
+
+```basic
+210 print#8,"m-w";a$;chr$(len(w$)*2);w$;
+211 print#8,w$;
+```
+
+```
+65 66 67 68 0 0 0 0 0 0 0 0 0 0 0 0
+abcd............
+```
+
+
+#### Issue 3: syntax
+
+
+Chunking does not work, so how to pass many bytes?
+The main example alreay showed it; build a string (`W$` in the example).
+Multiple strings (or even `CHR$()`) can be passed in one `PRINT`.
+
+```basic
+210 print#8,"m-w";a$;chr$(len(w$)+1+len(w$));w$;chr$(48);w$;
+```
+
+```
+65 66 67 68 48 65 66 67 68 0 0 0 0 0 0 0
+abcd0abcd.......
+```
+
+For some reason `PRINT` doesn't need the `;` (but see issue "terminating CR")
+
+```basic
+210 print#8,"m-w"a$chr$(len(w$)+1+len(w$))w$chr$(48)w$;
+```
+
+```
+65 66 67 68 48 65 66 67 68 0 0 0 0 0 0 0
+abcd0abcd.......
+```
+
+Of course we could explicitly concatenate the strings, but that 
+is probably more computation and memory heavy.
+
+```basic
+210 print#8,"m-w"+a$chr$(len(w$)+1+len(w$))+w$+chr$(48)+w$;
+```
+
+```
+65 66 67 68 48 65 66 67 68 0 0 0 0 0 0 0
+abcd0abcd.......
+```
+
+Do not use the `,` though. In BASIC's `PRINT`, the comma moves to the 
+next tab. The `PRINT` keeps track of the number of chars printed, and
+implements tab by inserting spaces.
+
+The example below prints two strings ``"AB"` and `"CD", but they are 
+separated` by a `,` (instead of a `;`, `+`, ` `, or nothing). We pass 
+a length that is hopefully long enough (30), and use
+the "relaxed len byte".
+
+```basic
+210 print#8,"m-w";a$;chr$(30);"ab","cd";
+```
+
+```
+65 66 32 32 32 32 32 32 32 32 32 32 67 68 0 0
+ab..........cd..
+```
+
+
+#### Issue 4: terminating CR
+
+Every `PRINT` _adds_ a CR, _unless_ the statement 
+is terminated with a `;`. The same holds for `PRINT#`.
+
+
+```basic
+210 print#8,"m-w";a$;chr$(len(w$)+5);w$
+```
+
+Note the trailing CR (13)
+
+```
+65 66 67 68 13 0 0 0 0 0 0 0 0 0 0 0
+abcd............
+```
+
+
+#### Issue 5: command buffer limit
+
+The command buffer in the drive has a limited size. 
+As we saw earlier the buffer is located at 0200-0229.
+This means it is $2A bytes long. In other words a command 
+has a maximum size of 42. 
+
+Since the memory write command starts with "M-W" (3 bytes), 
+then 2 bytes for the addres, and 1 for the length, the command 
+itself is already 6 bytes. This leaves 36 for the data itself.
+
+Writing 35 bytes works:
+
+```basic
+200 for d=65 to d+34:w$=w$+chr$(d):next
+...
+300 l=40:print#8,"m-r";a$;chr$(l);
+```
+
+```
+disk write/read
+ w>st= 0 dos=ok
+ r>st= 64 dos=ok
+65 66 67 68 69 70 71 72 73 74 75 76 77 7
+8 79 80 81 82 83 84 85 86 87 88 89 90 91
+ 92 93 94 95 96 97 98 99 0 0 0 0 0
+abcdefghijklmnopqrstuvwxyz[\]^_.ABC.....
+```
+
+But 36 is too much (see the `32 syntax error`). 
+I can not explain that one byte difference.
+
+```basic
+200 for d=65 to d+35:w$=w$+chr$(d):next
+```
+
+```
+ w>st= 0 dos= 32 syntax error 0  0
+ r>st= 64 dos=ok
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+................
+```
+
+
+#### Issue 6: repeating
+
+So, what if we want to write more than 35 bytes?
+Repeat the "M-W" command to different addresses.
+
+```basic
+210 print#8,"m-w";chr$(0);chr$(3);chr$(5);w$;chr$(48);
+211 print#8,"m-w";chr$(5);chr$(3);chr$(5);w$;chr$(49);
+```
+
+```
+65 66 67 68 48 65 66 67 68 49 0 0 0 0 0 0
+abcd0abcd1......
+```
+
 
 
 ## Links
