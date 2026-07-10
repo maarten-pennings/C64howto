@@ -313,7 +313,7 @@ ABCD............
 
 There are several issues with the "M-W" command.
 We will make small changes to the above program and see how this 
-effects the behavior.
+effects the behavior. Feel free to skip this section.
 
 I did reset (my virtual) drive on every experiment, 
 you might see other (non-0) left-overs in the buffer.
@@ -382,7 +382,7 @@ Multiple strings (or even `CHR$()`) can be passed in one `PRINT`.
 abcd0abcd.......
 ```
 
-For some reason `PRINT` doesn't need the `;` (but see issue "terminating CR")
+For some reason `PRINT` doesn't need the `;` (but see issue "terminating CR").
 
 ```basic
 210 print#8,"m-w"a$chr$(len(w$)+1+len(w$))w$chr$(48)w$;
@@ -406,13 +406,11 @@ abcd0abcd.......
 ```
 
 Do not use the `,` though. In BASIC's `PRINT`, the comma moves to the 
-next tab. The `PRINT` keeps track of the number of chars printed, and
-implements tab by inserting spaces.
+next tab. The `PRINT` implements tab by inserting spaces.
 
 The example below prints two strings ``"AB"` and `"CD", but they are 
 separated` by a `,` (instead of a `;`, `+`, ` `, or nothing). We pass 
-a length that is hopefully long enough (30), and use
-the "relaxed len byte".
+a length that is hopefully long enough (30, relying on the "relaxed len byte").
 
 ```basic
 210 print#8,"m-w";a$;chr$(30);"ab","cd";
@@ -491,6 +489,8 @@ I can not explain that one byte difference.
 So, what if we want to write more than 35 bytes?
 Repeat the "M-W" command to different addresses.
 
+Here we write 5 bytes (ABCD0) to 0300, then 5 bytes (ABCD1) to 0305.
+
 ```basic
 210 print#8,"m-w";chr$(0);chr$(3);chr$(5);w$;chr$(48);
 211 print#8,"m-w";chr$(5);chr$(3);chr$(5);w$;chr$(49);
@@ -501,6 +501,18 @@ Repeat the "M-W" command to different addresses.
 abcd0abcd1......
 ```
 
+
+### Issues with "M-R"
+
+There are also issues with the "M-R" command.
+We will make small changes to our test program and see how this 
+effects the behavior. Feel free to skip this section.
+
+I did reset (my virtual) drive on every experiment, 
+you might see other (non-0) left-overs in the buffer.
+
+
+#### todo
 
 
 ## Links
