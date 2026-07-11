@@ -622,6 +622,54 @@ ready.
 ```
 
 
+## Running Blinky
+
+In this section, we take the previously written assembler program
+and use the "M-W" command to write it in a 1541 RAM buffer.
+Then we execute it.
+
+The `.` on line 32 and 44 is actually a cursor-left character.
+
+```basic 
+10 open 1,8,15,"i0":rem pennings 202607
+20 al=0:ah=3:a$=chr$(al)+chr$(ah):d$=""
+22 readd:ifd>=0thend$=d$+chr$(d):goto22
+30 l=len(d$):print "m-w";l;".#";
+32 for i=0 to l-1 step 32:printi;".@";
+34 :c$=mid$(d$,i+1,32):l$=chr$(len(c$))
+36 :print#1,"m-w"chr$(i);chr$(ah);l$;c$
+38 next i:print
+40 print"m-r";:print#1,"m-r"a$;chr$(l);
+42 for i=1 to l
+44 :get#1,b$:print asc(b$+chr$(0));".";
+46 next i:print
+50 print "m-e (blink 1541 led 5 times)"
+52 print#1,"m-e";a$
+60 close 1:end
+70 data 162,5,173,0,28,41,247,141,0,28
+72 data 32,32,3,173,0,28,9,8,141,0,28
+74 data 32,32,3,202,208,231,96,234,234
+76 data 234,234,169,0,160,0,136,208,253
+78 data 56,233,1,208,246,96,-1
+```
+
+- The 1x lines open the command channel.
+- The 2x lines build up a string containing the assembly program, 
+  which is stored in data statements in the 7x lines.
+- The 3x lines do a repeated "M-W" of chuncks of
+  32 bytes, below the 35 maximum we found for the command buffer.
+- The 4x lines are superfluous, they read the assembly program 
+  back from the 1541 into the C64, just to enable checking 
+  the write was succesful.
+- The 5x lines execute the program.
+  It flashes the activity LED of the drive 5 times).
+  
+This program works on the real C64 with the real 1541;
+with the real C64 and the Pi1541, and it works on VICE.
+
+![Blinky1541 in VICE](blinky1541vice.png)
+
+
 ## Links
 
 - Pagetable [Commodore Peripheral Bus: Part 3: Commodore DOS](https://www.pagetable.com/?p=1038).
