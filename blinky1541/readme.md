@@ -321,26 +321,32 @@ you might see other (non-0) left-overs in the buffer.
 
 #### Issue 1: relaxed len byte
 
-When the length byte is less than the size of the data written, 
+When the length byte is less than the number of bytes written, 
 the written data is truncated to the specified length.
 
 ```basic
 210 print#8,"m-w";a$;chr$(len(w$)-1);w$;
 ```
 
+Although `w$` is `"abcd"`, only `"abc"` is written to the 1541 memory,
+due to the length byte being 3:
+
 ```
 65 66 67 0 0 0 0 0 0 0 0 0 0 0 0 0
 abc.............
 ```
 
-When the length byte is greater than the size of the data written, 
-the only the passed data is written. What we will see in the "chunking"
+When the length byte is greater than the number of bytes written, 
+only the _passed_ data is written. What we will see in the "chunking"
 issue is that only the data from a single `PRINT#` is used, which 
 made me wonder _why_ we need to pass the length.
 
 ```basic
 210 print#8,"m-w";a$;chr$(len(w$)+1);w$;
 ```
+
+Although the length byte is 5, the print transfers only 4 bytes (`w$="abcd"`),
+so only those four are written to the 1541 memory.
 
 ```
 65 66 67 68 0 0 0 0 0 0 0 0 0 0 0 0
@@ -352,13 +358,17 @@ abcd............
 
 When more than a handful of bytes needs to be written, it is 
 tempting to `PRINT#` multiple chunks. That does _not_ work;
-all byte to be written must be part of one single `PRINT#`.
+all bytes to be written must be part of one single `PRINT#`.
 For a remedy, see "repeating".
 
 ```basic
 210 print#8,"m-w";a$;chr$(len(w$)*2);w$;
 211 print#8,w$;
 ```
+
+Although the length byte is 8, and we write 8 bytes 
+(twice `w$` which is `"abcd"`), only the first `print#` 
+is written into the 1541 memory.
 
 ```
 65 66 67 68 0 0 0 0 0 0 0 0 0 0 0 0
@@ -377,6 +387,9 @@ Multiple strings (or even `CHR$()`) can be passed in one `PRINT`.
 210 print#8,"m-w";a$;chr$(len(w$)+1+len(w$));w$;chr$(48);w$;
 ```
 
+The arguments of `print#` are `w$`, a character 48 (`0`), and again `w$`,
+all are transfered to the 1541 memory.
+
 ```
 65 66 67 68 48 65 66 67 68 0 0 0 0 0 0 0
 abcd0abcd.......
@@ -387,6 +400,8 @@ For some reason `PRINT` doesn't need the `;` (but see issue "terminating CR").
 ```basic
 210 print#8,"m-w"a$chr$(len(w$)+1+len(w$))w$chr$(48)w$;
 ```
+
+Arguments of `print#` do not need `;`:
 
 ```
 65 66 67 68 48 65 66 67 68 0 0 0 0 0 0 0
@@ -400,6 +415,8 @@ is probably more computation and memory heavy.
 210 print#8,"m-w"+a$chr$(len(w$)+1+len(w$))+w$+chr$(48)+w$;
 ```
 
+The `print#` has one big argument, a concatenation of multiple strings.
+
 ```
 65 66 67 68 48 65 66 67 68 0 0 0 0 0 0 0
 abcd0abcd.......
@@ -408,13 +425,15 @@ abcd0abcd.......
 Do not use the `,` though. In BASIC's `PRINT`, the comma moves to the 
 next tab. The `PRINT` implements tab by inserting spaces.
 
-The example below prints two strings ``"AB"` and `"CD", but they are 
-separated` by a `,` (instead of a `;`, `+`, ` `, or nothing). We pass 
+The example below prints two strings ``"AB"` and `"CD"`, but they are 
+separated by a `,` (instead of a `;`, `+`, ` `, or nothing). We pass 
 a length that is hopefully long enough (30, relying on the "relaxed len byte").
 
 ```basic
 210 print#8,"m-w";a$;chr$(30);"ab","cd";
 ```
+
+The `,` inroduces 10 spaces (character 32):
 
 ```
 65 66 32 32 32 32 32 32 32 32 32 32 67 68 0 0
@@ -432,7 +451,7 @@ is terminated with a `;`. The same holds for `PRINT#`.
 210 print#8,"m-w";a$;chr$(len(w$)+5);w$
 ```
 
-Note the trailing CR (13)
+The absence of a trailing `;` causes a trailing CR (13):
 
 ```
 65 66 67 68 13 0 0 0 0 0 0 0 0 0 0 0
@@ -448,7 +467,7 @@ This means it is $2A bytes long. In other words a command
 has a maximum size of 42. 
 
 Since the memory write command starts with "M-W" (3 bytes), 
-then 2 bytes for the addres, and 1 for the length, the command 
+then 2 bytes for the address, and 1 for the length, the command 
 itself is already 6 bytes. This leaves 36 for the data itself.
 
 Writing 35 bytes works:
@@ -458,6 +477,8 @@ Writing 35 bytes works:
 ...
 300 l=40:print#8,"m-r";a$;chr$(l);
 ```
+
+We see that 35 bytes are written (65..99):
 
 ```
 disk write/read
@@ -469,12 +490,14 @@ disk write/read
 abcdefghijklmnopqrstuvwxyz[\]^_.ABC.....
 ```
 
-But 36 is too much (see the `32 syntax error`). 
-I can not explain that one byte difference.
+But 36 is too much. 
+I can not explain why it doesn't stop at 37.
 
 ```basic
 200 for d=65 to d+35:w$=w$+chr$(d):next
 ```
+
+We get an error, `32 syntax error`:
 
 ```
  w>st= 0 dos= 32 syntax error 0  0
@@ -489,12 +512,13 @@ I can not explain that one byte difference.
 So, what if we want to write more than 35 bytes?
 Repeat the "M-W" command to different addresses.
 
-Here we write 5 bytes (ABCD0) to 0300, then 5 bytes (ABCD1) to 0305.
 
 ```basic
 210 print#8,"m-w";chr$(0);chr$(3);chr$(5);w$;chr$(48);
 211 print#8,"m-w";chr$(5);chr$(3);chr$(5);w$;chr$(49);
 ```
+
+The fragment writes 5 bytes (ABCD0) to 0300, then 5 bytes (ABCD1) to 0305.
 
 ```
 65 66 67 68 48 65 66 67 68 49 0 0 0 0 0 0
@@ -512,7 +536,19 @@ I did reset (my virtual) drive on every experiment,
 you might see other (non-0) left-overs in the buffer.
 
 
-#### todo
+#### Issue 1: two forms
+
+todo
+
+
+#### Issue 2: end-of-file behavior
+
+todo
+
+
+#### Issue 3: len 13 unsupported
+
+todo
 
 
 ## Links
@@ -523,5 +559,3 @@ you might see other (non-0) left-overs in the buffer.
 - Maaswerk [6502 instructions](https://www.masswerk.at/6502/6502_instruction_set.html).
 
 (end)
-
-
