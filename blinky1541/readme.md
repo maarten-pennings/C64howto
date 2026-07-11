@@ -538,17 +538,87 @@ you might see other (non-0) left-overs in the buffer.
 
 #### Issue 1: two forms
 
-todo
+There are two forms for the memory read command.
+One that has an explicit length byte (as used in the main example),
+and one that has no explicit length byte.
+
+```basic390 :
+300 l=16:print#8,"m-r";a$;
+```
+
+In the latter case, only one byte is read.
+
+```
+disk write/read
+ w>st= 0 dos=ok
+ r>st= 64 dos=ok
+65
+a
+```
 
 
-#### Issue 2: end-of-file behavior
+#### Issue 2: len 13 unsupported
 
-todo
+This issue I nearly consider a _bug_.
+When the length byte has the value 13,
+the 1541 treats this as a single byte read.
+
+```basic 
+300 l=13:print#8,"m-r";a$;chr$(l);
+```
+
+```
+disk write/read
+ w>st= 0 dos=ok
+ r>st= 64 dos=ok
+65
+a
+```
+
+In other words `print#8,"m-r";a$;chr$(13);` and `print#8,"m-r";a$` behave the same.
 
 
-#### Issue 3: len 13 unsupported
+#### Issue 3: end-of-file behavior
 
-todo
+Note the lines 310 and 320.
+
+```basic
+310 get#8,d$:d=asc(d$+chr$(0))
+320 if st<>0 then 360
+```
+
+Line 310 reads a byte (into `d$`).
+Line 320 checks if end-of-file is set, if so, exits byte reading (jump to line 360).
+
+This means that end-of-file flags the first illegal read.
+This is the normal `feof()` behavior in C, so why complain.
+
+As [bumbershootsoft](https://bumbershootsoft.wordpress.com/2017/09/23/c64-basic-disk-io/#:~:text=Unlike%20feof()%20in%20C%2C%20though%2C%20this%20is%20is%20set%20on%20the%20last%20legal%20read%2C%20not%20the%20first%20illegal%20one.%20That%20makes%20the%20loop%20logic%20look%20a%20bit%20different%20than%20we%20might%20otherwise%20expect.)
+explains the normal behavior of end-of-file is BASIC is different:
+
+> "Unlike feof() in C, though, ST is set on the last legal read, not the first illegal one."
+
+See the normal behavior here - a `repeat-until` instead of the above `while-do`.
+
+```
+100 open15,8,15
+110 print "write"
+120 open 3,8,3,"data,seq,w"
+130 print#3,"abcde";
+140 close 3
+150 print "read"
+160 open 3,8,3,"data,seq,r"
+170 get#3,d$:d=asc(d$+chr$(0))
+180 printd;:if st=0 then 170
+190 close 3
+```
+
+```
+write
+read
+ 65  66  67  68  69
+ready.
+```
 
 
 ## Links
