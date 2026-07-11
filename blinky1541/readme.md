@@ -585,20 +585,21 @@ Note the lines 310 and 320.
 ```basic
 310 get#8,d$:d=asc(d$+chr$(0))
 320 if st<>0 then 360
+... processing...
+350 goto 310
 ```
 
 Line 310 reads a byte (into `d$`).
 Line 320 checks if end-of-file is set, if so, exits byte reading (jump to line 360).
 
 This means that end-of-file flags the first illegal read.
-This is the normal `feof()` behavior in C, so why complain.
-
+This is the normal `feof()` behavior in C, so why complain?
 As [bumbershootsoft](https://bumbershootsoft.wordpress.com/2017/09/23/c64-basic-disk-io/#:~:text=Unlike%20feof()%20in%20C%2C%20though%2C%20this%20is%20is%20set%20on%20the%20last%20legal%20read%2C%20not%20the%20first%20illegal%20one.%20That%20makes%20the%20loop%20logic%20look%20a%20bit%20different%20than%20we%20might%20otherwise%20expect.)
-explains the normal behavior of end-of-file is BASIC is different:
+explains the behavior of end-of-file in BASIC is different:
 
 > "Unlike feof() in C, though, ST is set on the last legal read, not the first illegal one."
 
-See the normal behavior here - a `repeat-until` instead of the above `while-do`.
+The program below demonstrates the normal behavior - a `repeat-until` instead of the above `while-do`.
 
 ```
 100 open15,8,15
