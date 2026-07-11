@@ -1,6 +1,6 @@
 # Blinky1541
 
-How to make a program for the Commodore 1541 that blinks the activity LED.
+How to make a program for the Commodore 1541 disk drive that blinks the activity LED.
 
 
 ## Introduction
@@ -12,13 +12,13 @@ The Blinky program blinks an LED connected to the CPU.
 
 Surely the Commodore 64 falls into the first category (`10 PRINT "HELLO, WORLD!"`).
 For sure. However, in this article, we are going to program the _Commodore 1541 disk drive_. 
-It has a 6502, RAM, 6522 VIAs and even an LED connected to the VIA. We are going to blink that LED.
+It has a 6502, RAM, 6522 VIAs (general purpose I/O chips) and even an LED connected to a VIA. We are going to blink that LED.
 
 
 ## Blinky program
 
-Our first task is to write the Blinky program. We do that in this section.
-Next section is about how to get the program on the 1541 and run it there.
+Our first task is to write the Blinky _program_. We do that in this section, in 6502 assembler.
+The next section is about how to get that program on the 1541 and run it there.
 
 
 ### LED control
@@ -37,7 +37,7 @@ Here is an extract.
 - The green LED is connected with its anode to 5V, so it is _low active_.
 - The cathode is connected to port `PB3` of the VIA 6522 (U8).
 
-Also on Zimmers we find the [memory map](https://www.zimmers.net/anonftp/pub/cbm/maps/C1541ram.txt).
+Also on Zimmers we find the [memory map](https://www.zimmers.net/anonftp/pub/cbm/maps/C1541ram.txt) of the disk drive.
 Here is an extract
 
 ```
