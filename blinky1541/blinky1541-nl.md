@@ -4,7 +4,7 @@ Maarten Pennings, Juli 2026
 _Blinky1541_ is een machinetaal programma dat runt op de 1541 disk drive;
 het laat de activity LED van de 1541 vijf keer knipperen.
 
-Dit artikel is een verkorte Nederlands versie van een gedetailleerd artikel 
+Dit artikel is een verkorte Nederlands versie van een gedetailleerd engels artikel 
 [https://github.com/maarten-pennings/C64howto/blob/main/blinky1541/readme.md](https://github.com/maarten-pennings/C64howto/blob/main/blinky1541/readme.md).
 
 
@@ -20,7 +20,7 @@ nieuwe _programmertaal_, is "Blinky" het eerste programma voor nieuwe _hardware_
 Een blinky laat een LED knipperen.
 
 _Blinky1541_ wordt een 6502 machine taal programma. 
-De C64 "upload" het naar de 1541. Als de 1541 het uitvoert
+De C64 "upload" het naar de 1541. Als de 1541 het programma uitvoert
 zal de "activity LED" van de 1541 vijf keer knipperen.
 
 
@@ -34,7 +34,7 @@ dat will zeggen als de pin laag gezet wordt (op 0) gaat de LED aan.
 
 Op dezelfde site vinden we de _memory map_ van de 1541.
 Daaruit leren we dat `control port B` (om de PBx pinnen laag of hoog te trekken)
-op adres $1C00 is gemapped. PB3 is dus het derde bitje op dat adres.
+op adres $1C00 is gemapped. PB3 is dus bit drie op dat adres.
 
 We weten nu dat het op 0 zetten van bit 3 op adres $1C00 de LED aan zet 
 terwijl een 1 op die plek de LED uit zet. Rest nog een vraag, waar 
@@ -54,13 +54,13 @@ Zoals een blinky betaamd, schrijven we een _kort_ programma.
 Omdat we alleen bit 3 van $1C00 willen veranderen doen we een zogeheten 
 _read-modify-write_: we lezen $1C00, maskeren bit 3 naar nul en schrijven 
 het resultaat terug naar $1C00. In assembly wordt dat 
-`LDA $1C00; AND #$F7; STA $1C00` (omdat we bits vanaf 0 tellen staat PB3 op de vierde plasts).
+`LDA $1C00; AND #$F7; STA $1C00` (omdat we bits vanaf 0 tellen staat PB3 op de _vierde_ plaats).
 
-We doen hetzelfde om de bit weer naar een te schrijven. Omdat het
-allemaal te snel gaat roepen we een subroutine aan die executie 
+We doen hetzelfde om het bit weer naar één te schrijven. Omdat het
+anders te snel gaat roepen we na welke schrijf actie een subroutine aan (`JSR $0320`) die executie 
 vertraagt (een "wait").
 
-Dit is het programma:
+Dit is het complete programma:
 
 ```
 0300 | 162,5     | LDX #$5
@@ -95,7 +95,7 @@ Dit is het programma:
   De wachttijd van twee geneste 256-loops is ongeveer 1/3 seconde.
 - Het hoofdprogramma staat op $0300.
 - Register X telt de "blinks" af: 
-  X krijgt zijn beginwaarde op $0300, de aftelling is op $0318 en de loop sprong terug op $0319.
+  X krijgt zijn beginwaarde op $0300, de aftelling is op $0318 en de loop sprong terug staat op $0319.
 - Op 0302-030A wordt de activity LED 1/3 seconde aangezet (bit 3 van $1C00 wordt gewist).
 - Op 030D-0315 wordt de activity LED 1/3 seconde uitgezet (bit 3 van $1C00 wordt hoog gemaakt).
 
@@ -148,7 +148,7 @@ De `.` op regels 30, 32 and 44 is een cursor-links symbol.
 - De regels 2x bouwen de string `D$` die het blinky programma bevat, gelezen van de `DATA` regels.
   String `A$` is het adres ($0300) dat elk commando mee krijgt.
 - De regels 3x doen meerdere memory writes "M-W" naar de disk van `D$` 
-  (meerdere omdat een command maximaal 40 bytes mag bevatten).
+  (meerdere writes omdat een commando maximaal 40 bytes mag bevatten).
 - De regels 4x zijn overbodig, ze lezen het zojuist geschreven blinky programma 
   terug van de disk drive - ter controle.
 - Op regels 5x wordt het programma uitgevoerd.
