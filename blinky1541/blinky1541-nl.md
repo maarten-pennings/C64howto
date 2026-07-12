@@ -4,7 +4,7 @@ Maarten Pennings, Juli 2026
 _Blinky1541_ is een machinetaal programma dat runt op de 1541 disk drive;
 het laat de activity LED van de 1541 vijf keer knipperen.
 
-Dit artikel is een verkorte Nederlands versie van een gedetailleerd engels artikel 
+Dit artikel is een verkorte Nederlandse versie van een gedetailleerder engels artikel 
 [https://github.com/maarten-pennings/C64howto/blob/main/blinky1541/readme.md](https://github.com/maarten-pennings/C64howto/blob/main/blinky1541/readme.md).
 
 
@@ -40,7 +40,7 @@ We weten nu dat het op 0 zetten van bit 3 op adres $1C00 de LED aan zet
 terwijl een 1 op die plek de LED uit zet. Rest nog een vraag, waar 
 plaatsen we het blinky programma zelf?
 
-In memory map op Zimmets zien we dat de 1541 vijf buffers heeft.
+In memory map op Zimmers zien we dat de 1541 vijf buffers heeft.
 Deze RAM buffers worden gebruikt om disk sectors te lezen of te schrijven.
 Zolang we geen file `LOAD`,`SAVE` of `OPEN` doen heeft de 1541 firmware die 
 buffers niet nodig. De buffers staan op pagina 3 (0300-03FF) tot en met 
@@ -64,21 +64,26 @@ Dit is het complete programma:
 
 ```
 0300 | 162,5     | LDX #$5
+
 0302 | 173,0,28  | LDA $1C00
 0305 | 41,247    | AND #$F7
 0307 | 141,0,28  | STA $1C00
 030A | 32,32,3   | JSR $0320
+
 030D | 173,0,28  | LDA $1C00
 0310 | 9,8       | ORA #$08
 0312 | 141,0,28  | STA $1C00
 0315 | 32,32,3   | JSR $0320
+
 0318 | 202       | DEX
 0319 | 208,231   | BNE $0302
 031B | 96        | RTS
+
 031C | 234       | NOP
 031D | 234       | NOP
 031E | 234       | NOP
 031F | 234       | NOP
+
 0320 | 169,0     | LDA #$00
 0322 | 160,0     | LDY #$00
 0324 | 136       | DEY
@@ -144,7 +149,7 @@ De `.` op regels 30, 32 and 44 is een cursor-links symbol.
 78 DATA 56,233,1,208,246,96,-1
 ```
 
-- De regels 1x openen het disk drive commando kanaal (kanaal 15 op apparaat 8).
+- De regels 1x (regels 10 en 12) openen het disk drive commando kanaal (kanaal 15 op apparaat 8).
 - De regels 2x bouwen de string `D$` die het blinky programma bevat, gelezen van de `DATA` regels.
   String `A$` is het adres ($0300) dat elk commando mee krijgt.
 - De regels 3x doen meerdere memory writes "M-W" naar de disk van `D$` 
