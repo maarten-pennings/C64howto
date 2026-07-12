@@ -12,7 +12,8 @@ The Blinky program blinks an LED connected to the CPU.
 
 Surely the Commodore 64 falls into the first category (`10 PRINT "HELLO, WORLD!"`).
 For sure. However, in this article, we are going to program the _Commodore 1541 disk drive_. 
-It has a 6502, RAM, 6522 VIAs (general purpose I/O chips) and even an LED connected to a VIA. We are going to blink that LED.
+It has a 6502, RAM, two 6522 VIAs (general purpose I/O chips) and even 
+an LED connected to one of the VIAs. We are going to blink that LED.
 
 
 ## Blinky program
@@ -23,22 +24,29 @@ The next section is about how to get that program on the 1541 and run it there.
 
 ### LED control
 
-We want to write a Blinky for the 1541 disk drive.
-We need to know _how to control the activity LED_.
+For Blinky, we need to know _how to control the activity LED_ of the 1541 drive.
 
 On Zimmers we find the 
 [schematics of the 1541-ii](https://www.zimmers.net/anonftp/pub/cbm/schematics/drives/new/1541/1541-II.340503.gif). 
-Here is an extract.
+Here is an excerpt.
 
 ![LED connection](schematics-actled.png)
 
 - On the 1541-ii the activity LED is _green_ (`grun`) and the power LED is _red_ (`rot`), 
   which is the reverse of the original 1541.
 - The green LED is connected with its anode to 5V, so it is _low active_.
-- The cathode is connected to port `PB3` of the VIA 6522 (U8).
+- The cathode is connected to port `PB3` of the VIA 2 (U8).
 
-Also on Zimmers we find the [memory map](https://www.zimmers.net/anonftp/pub/cbm/maps/C1541ram.txt) of the disk drive.
-Here is an extract
+At first, I was a bit puzzled why _two_ VIAs are needed, but I was underestimating the I/O needed:
+reading and writing with the magnetic head, controlling the stepper motor for the head,
+enabling the spindle (main disk motor), controlling the activity LED, sensing the 
+write protect tab, configuring the drive address (8, 9, 10, 11), and writing and reading 
+all IEC lines.
+
+We now know e need PB3 on VIA 2, what does that mean for the software side (addresses).
+Also on Zimmers we find the 
+[memory map](https://www.zimmers.net/anonftp/pub/cbm/maps/C1541ram.txt) of the disk drive.
+Here is an excerpt.
 
 ```
 VIA 2: 6522, port for motor and read/write head control
@@ -65,8 +73,9 @@ $1C03	CA, data direction port A
 - At address $1C00 we find the `control port B`, i.e. the value for the pins of port B.
 - The table confirms that the `ACT - LED` is PB3.
 
-> Assuming that the initialization of the drive sets the data direction register such that PB3 is output,
-> the only thing our Blinky program has to do is _clear_ bit 3 to enable the activity LED or _set_ bit 3 to disable the LED.
+> **Conclusion** Assuming that the initialization of the drive sets the data direction 
+> register such that PB3 is _output_, the only thing our Blinky program has to do 
+> is _clear_ bit 3 to enable the activity LED, or _set_ bit 3 to disable the LED.
 
 
 ### Program location 
@@ -95,16 +104,17 @@ we find some other interesting addresses:
 - More specificaslly, we see that the command buffer is $29 or 42 bytes.
 - Pages 3, 4, 5, 6, and 7 ar sector buffers.
 
-> We will use page 3 (Buffer 0) to store our program.
+> **Conclusion**  We will use page 3 (buffer 0, 0300 and up) to store the Blinky program.
 
 
 ### The code
 
-Now that we know we need to manipulate bit 3 in 1c00, and 
-we decided the store our program in page 3 (0300), we are ready to 
-write our Blinky program.
+Now that we know bit 3 in 1c00 controls the LED, and 
+we decided the store our program in page 3 (0300), 
+we are ready to write our Blinky program.
 
-We hand assemble using Maaswerk's [6502 instructions](https://www.masswerk.at/6502/6502_instruction_set.html).
+We hand assemble using Maaswerk's 
+[6502 instructions](https://www.masswerk.at/6502/6502_instruction_set.html).
 
 ```
 0300 | 162,5     | ldx #$5
@@ -133,10 +143,11 @@ We hand assemble using Maaswerk's [6502 instructions](https://www.masswerk.at/65
 032c | 96        | rts
 ```
 
-- At 0320 we have a wait routine. It keeps register X unmodified.
-- The wait takes about 0.33 seconds.
+- At 0320 we have a wait routine. It leaves register X unmodified.
+ The wait takes about 0.33 seconds.
 - The main routine starts at 0300.
-- Register X is used to loop 5 times on/off. it is set st 0300 and decremented at 0318 and looped at 0319.
+- Register X is used to iterate 5 times an on/off cycle. 
+  X is initialized at 0300, decremented at 0318 and looped at 0319.
 - At 0302-030a the activity LED is switched on (by clearing bit 3 of 1c00) for 0.33s.
 - At 030d-0315 the activity LED is switched off (by setting bit 3 of 1c00) for 0.33s.
 
@@ -144,7 +155,7 @@ We hand assemble using Maaswerk's [6502 instructions](https://www.masswerk.at/65
 ## Upload and execute
 
 With our first task completed (writing the Blinky program) this section
-focusses on how to get the program on the 1541 and run it there.
+focusses on how to load the program onto the 1541 and run it there.
 We do that via the command channel.
 
 
@@ -153,11 +164,13 @@ We do that via the command channel.
 Recall that we can _send commands_ to a 1541.
 We do that by opening a byte pipe (file handle), any "slot" will do, 
 in the example below we picked `1`.
-The file is on a specific device, below `8` for the disk drive.
-Commodore drives have one channel reserved for commands: `15`.
+The file is on a specific device, below we use `8` the default disk drive.
+Commodore disk drives have one channel reserved for commands: `15`.
 
 In the example we send the command `S` to delete ("scratch") a file.
-It has as argument `HELLO` (the filename). First we create and save that file.
+It has as argument `HELLO`, the name of the file to delete. 
+
+In the example below, we first create and save a file `HELLO` and then we delete it.
 
 ```basic
 10 PRINT "HELLO, WORLD!"
@@ -185,7 +198,8 @@ CLOSE 1
 
 It is also possible to _receive feedback_ from the drive.
 We use either `INPUT#` or `GET#`.
-Typically we get back the drive _status_.
+Typically we get back the drive _status_: the error number, error message,
+and the track and sector number.
 
 ```basic
 10 OPEN 1,8,15
@@ -200,7 +214,7 @@ RUN
 
 The above example scratches the file `HELLO` and then checks 
 for success (`FILES SCRATCHED 1`).
-It is good to realize that the `INPUT#` function is high-level.
+We must realize that the `INPUT#` function is high-level.
 It parses the bytes from the disk, using `,` as field separator, 
 character 13 (CR) as line separator, and even parses integers 
 (e.g. `"00"` becomes `0`). 
@@ -222,7 +236,7 @@ RUN
 
 Having said that, `GET#1,B$` has one flaw. If the byte being read is 0, `B$` is `""`
 instead of `CHR$(0)`. The usual work around is `30 GET#1,B$:B=0:IF B$<>"" THEN B=ASC(B$)` or the 
-slightly faster (without filling the string heap) concatenation:
+slightly faster (without filling the string heap) concatenation method:
 
 ```basic
 30 GET#1,B$:B=ASC(B$+CHR$(0))
@@ -233,9 +247,13 @@ slightly faster (without filling the string heap) concatenation:
 
 Next to the high level disk commands (`SAVE` and `LOAD`) and the advanced
 commands (e.g. `S` for scratch, `N` for new (format), `R` for rename), there
-are Programmer's commands. We will investigate three of them write (`M-W`),
-read (`M-R`) and execute (`M-E`). At first they sound complex, but they are 
-not. However, there are many small issues that make them hard to master.
+are Programmer's commands. We will investigate three of them: write (`M-W`),
+read (`M-R`), and execute (`M-E`). At first they sound complex, but they are 
+not. However, there are many small issues that make them hard to master,
+we discuss those later.
+
+> This program is presented in lower case to make copy and paste in VICE easier.
+> It is also available as `DISK WRITE/READ` on [`blinky1541.d64`](blinky1541.d64).
 
 ```basic
 100 print "disk write/read"
@@ -264,11 +282,9 @@ not. However, there are many small issues that make them hard to master.
 530 if en<10 then print "ok"
 540 return
 ```
-(this program is presented in lower case to make copy and paste in VICE easier).
 
-
-The 1xx section is the start, 2xx the write to memory, 3xx the read 
-from memory, the 4xx is the stop section, and 5xx is error subroutine.
+The 1xx lines form the start section, 2xx the write to memory, 3xx the read 
+from memory, the 4xx is the stop section, and 5xx is an error checking subroutine.
 In more detail:
 
 - 110 variable `A$` is two bytes, first byte is 0, second byte is 3, the 
@@ -280,20 +296,21 @@ In more detail:
   It contains 4 characters 65..68, or A, B, C, D.
 - Line 210 actually writes those bytes to the drive RAM.
   `M-W` is the command, next two bytes form the start address 
-  (0300 or the first buffer). This is followed by the number of bytes that 
-  will be written; and finally come the bytes.
-- Line 220 is error feedback.
+  (0300 or the first buffer), where we use the prepared `a$`. 
+  This is followed by the number of bytes that will be written; 
+  and finally come the data bytes to be written (`w$`).
+- Line 220 is progress feedback (with error checking).
 - Line 300 sends the memory read command to the drive.
   The `M-R` is alsof followed by the target address 
-  (again 0300, where we have just written `W$`) and 
+  (again 0300, where we have just written `w$`) and 
   also the number of bytes we want to read. 
-  Here we use `L=16`, so we read 16 bytes, but we wrote only 4.
-- Line 310 is the start of the read loop. We read one byte in `D$`,
-  and use the `""`-workaround to convert it to ASCII in variable `D`.
-- Line 320 breaks the loop if we are at end-of-file (`ST=64`).
-- Line 330 builds a string (`R1$`) of read ASCII values, 
-  lines 340 and 350 build a string (`R2$`) of read characters.
-- Line 360 is error feedback.
+  Here we use `l=16`, so we read 16 bytes, although we only wrote 4 bytes.
+- Line 310 is the start of the read loop. We read one byte in `d$`,
+  and use the concatenation-workaround to convert it to ASCII in variable `d`.
+- Line 320 breaks the loop if we are at end-of-file (`st=64`).
+- Line 330 builds a string (`r1$`) of read ASCII values, 
+  lines 340 and 350 build a string (`r2$`) of read characters, replacing unprintable ones with a `.`.
+- Line 360 is progress feedback (with error checking).
 - Line 370 prints the read bytes in the two forms.
 - Lines 400 and 410 close the file and end the program.
 
@@ -601,20 +618,25 @@ explains the behavior of end-of-file in BASIC is different:
 
 The program below demonstrates the normal behavior - a `repeat-until` instead of the above `while-do`.
 
+> This program is presented in lower case to make copy and paste in VICE easier.
+> It is also available as `FILE WRITE/READ` on [`blinky1541.d64`](blinky1541.d64).
+
 ```
-100 open15,8,15
-110 print "write"
-120 open 3,8,3,"data,seq,w"
-130 print#3,"abcde";
-140 close 3
-150 print "read"
-160 open 3,8,3,"data,seq,r"
-170 get#3,d$:d=asc(d$+chr$(0))
-180 printd;:if st=0 then 170
-190 close 3
+100 print "file write/read"
+110 open15,8,15
+120 print "write"
+130 open 3,8,3,"data,seq,w"
+140 print#3,"abcde";
+150 close 3
+160 print "read"
+170 open 3,8,3,"data,seq,r"
+180 get#3,d$:d=asc(d$+chr$(0))
+190 printd;:if st=0 then 180
+200 close 3
 ```
 
 ```
+file write/read
 write
 read
  65  66  67  68  69
@@ -628,10 +650,14 @@ In this section, we take the previously written assembler program
 and use the "M-W" command to write it in a 1541 RAM buffer.
 Then we execute it.
 
-The `.` on line 32 and 44 is actually a cursor-left character.
+The `.` on lines  30, 32 and 44 is actually a cursor-left character.
+
+> This program is presented in lower case to make copy and paste in VICE easier.
+> It is also available as `BLINKY1541` on [`blinky1541.d64`](blinky1541.d64).
 
 ```basic 
-10 open 1,8,15,"i0":rem pennings 202607
+10 print "blinky1541"
+12 open 1,8,15,"i0":rem pennings 202607
 20 al=0:ah=3:a$=chr$(al)+chr$(ah):d$=""
 22 readd:ifd>=0thend$=d$+chr$(d):goto22
 30 l=len(d$):print "m-w";l;".#";
