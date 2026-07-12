@@ -16,7 +16,7 @@ het heeft een 6502 CPU, 16 kB ROM, 2 kB RAM en 2 VIAs.
 
 In dit artikel gaan we een programma voor de 1541 schrijven.
 Zoals "Hello, World" het eerste programma is dat je schrijft voor een 
-nieuwe _programmertaal_, is blinky het eerste programma voor nieuwe _hardware_.
+nieuwe _programmertaal_, is "Blinky" het eerste programma voor nieuwe _hardware_.
 Een blinky laat een LED knipperen.
 
 _Blinky1541_ wordt een 6502 machine taal programma. 
@@ -42,8 +42,8 @@ plaatsen we het blinky programma zelf?
 
 In memory map op Zimmets zien we dat de 1541 vijf buffers heeft.
 Deze RAM buffers worden gebruikt om disk sectors te lezen of te schrijven.
-Zolang we geen file `LOAD` of `SAVE` doen heeft de 1541 firmware die 
-buffers niet nodig. De buffer staan op pagina 3 (0300-03FF) tot en met 
+Zolang we geen file `LOAD`,`SAVE` of `OPEN` doen heeft de 1541 firmware die 
+buffers niet nodig. De buffers staan op pagina 3 (0300-03FF) tot en met 
 pagina 7 (0700-07FF). Wij gaan de eerste buffer gebruiken.
  
 
@@ -54,7 +54,7 @@ Zoals een blinky betaamd, schrijven we een _kort_ programma.
 Omdat we alleen bit 3 van $1C00 willen veranderen doen we een zogeheten 
 _read-modify-write_: we lezen $1C00, maskeren bit 3 naar nul en schrijven 
 het resultaat terug naar $1C00. In assembly wordt dat 
-`LDA $1C00; AND #$F7; STA $1C00`.
+`LDA $1C00; AND #$F7; STA $1C00` (omdat we bits vanaf 0 tellen staat PB3 op de vierde plasts).
 
 We doen hetzelfde om de bit weer naar een te schrijven. Omdat het
 allemaal te snel gaat roepen we een subroutine aan die executie 
@@ -104,8 +104,8 @@ Dit is het programma:
 
 In deze sectie bekijken we het "upload" programma voor de C64.
 Het bevat het blinky programma van de vorige sectie in `DATA` statements.
-We gebruiken het DOS commando "M-W" (memory write) om het in het 
-1541 geheugen te schrijven, en daarna "M-E" (memory execute) om het uit 
+We gebruiken het DOS commando "M-W" (memory write) om blinky in het 
+1541 geheugen te schrijven, en daarna "M-E" (memory execute) om blinky uit 
 te laten voeren. Ter controle hebben we ook nog een "M-R" (memory read)
 om het geschreven programma terug te lezen.
 
