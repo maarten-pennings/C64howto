@@ -2,6 +2,8 @@
 
 How to make a program for the Commodore 1541 disk drive that blinks the activity LED.
 
+There is a summary in [Dutch](blinky1541-nl.md).
+
 
 ## Introduction
 
@@ -43,7 +45,7 @@ enabling the spindle (main disk motor), controlling the activity LED, sensing th
 write protect tab, configuring the drive address (8, 9, 10, 11), and writing and reading 
 all IEC lines.
 
-We now know e need PB3 on VIA 2, what does that mean for the software side (addresses).
+We now know we need PB3 on VIA 2, what does that mean for the software side (addresses).
 Also on Zimmers we find the 
 [memory map](https://www.zimmers.net/anonftp/pub/cbm/maps/C1541ram.txt) of the disk drive.
 Here is an excerpt.
@@ -650,7 +652,7 @@ In this section, we take the previously written assembler program
 and use the "M-W" command to write it in a 1541 RAM buffer.
 Then we execute it.
 
-The `.` on lines  30, 32 and 44 is actually a cursor-left character.
+The `.` on lines 30, 32 and 44 is actually a cursor-left character.
 
 > This program is presented in lower case to make copy and paste in VICE easier.
 > It is also available as `BLINKY1541` on [`blinky1541.d64`](blinky1541.d64).
