@@ -57,7 +57,7 @@ het resultaat terug naar $1C00. In assembly wordt dat
 `LDA $1C00; AND #$F7; STA $1C00` (omdat we bits vanaf 0 tellen staat PB3 op de _vierde_ plaats).
 
 We doen hetzelfde om het bit weer naar één te schrijven. Omdat het
-anders te snel gaat roepen we na welke schrijf actie een subroutine aan (`JSR $0320`) die executie 
+anders te snel gaat roepen we na elke schrijf actie een subroutine aan (`JSR $0320`) die executie 
 vertraagt (een "wait").
 
 Dit is het complete programma:
