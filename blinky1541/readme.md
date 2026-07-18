@@ -167,7 +167,7 @@ Recall that we can _send commands_ to a 1541.
 We do that by opening a byte pipe (file handle), any "slot" will do, 
 in the example below we picked `1`.
 The file is on a specific device, below we use `8` the default disk drive.
-Commodore disk drives have one channel reserved for commands: `15`.
+Commodore disk drives have one channel reserved for commands: `15`. this leads to `OPEN 1,8,15`.
 
 In the example we send the command `S` to delete ("scratch") a file.
 It has as argument `HELLO`, the name of the file to delete. 
@@ -214,7 +214,7 @@ RUN
  1 FILES SCRATCHED 1  0
 ```
 
-The above example scratches the file `HELLO` and then checks 
+The above example scratches/deletes the file `HELLO` and then checks 
 for success (`FILES SCRATCHED 1`).
 We must realize that the `INPUT#` function is high-level.
 It parses the bytes from the disk, using `,` as field separator, 
@@ -249,12 +249,12 @@ slightly faster (without filling the string heap) concatenation method:
 
 Next to the high level disk commands (`SAVE` and `LOAD`) and the advanced
 commands (e.g. `S` for scratch, `N` for new (format), `R` for rename), there
-are Programmer's commands. We will investigate three of them: write (`M-W`),
+are _programmer's commands_. We will investigate three of them: write (`M-W`),
 read (`M-R`), and execute (`M-E`). At first they sound complex, but they are 
 not. However, there are many small issues that make them hard to master,
 we discuss those later.
 
-> This program is presented in lower case to make copy and paste in VICE easier.
+> The following program is presented in lower case to make copy and paste in VICE easier.
 > It is also available as `DISK WRITE/READ` on [`blinky1541.d64`](blinky1541.d64).
 
 ```basic
@@ -335,7 +335,7 @@ We will make small changes to the above program and see how this
 effects the behavior. Feel free to skip this section.
 
 I did reset (my virtual) drive on every experiment, 
-you might see other (non-0) left-overs in the buffer.
+if you don't do that, you might see other (non-0) left-overs in the buffer.
 
 
 #### Issue 1: relaxed len byte
@@ -385,7 +385,7 @@ For a remedy, see "repeating".
 211 print#8,w$;
 ```
 
-Although the length byte is 8, and we write 8 bytes 
+Although the length byte is 8 (4×2), and we write 8 bytes 
 (twice `w$` which is `"abcd"`), only the first `print#` 
 is written into the 1541 memory.
 
@@ -420,7 +420,7 @@ For some reason `PRINT` doesn't need the `;` (but see issue "terminating CR").
 210 print#8,"m-w"a$chr$(len(w$)+1+len(w$))w$chr$(48)w$;
 ```
 
-Arguments of `print#` do not need `;`:
+Without the`;`, the `print#` also works fine:
 
 ```
 65 66 67 68 48 65 66 67 68 0 0 0 0 0 0 0
@@ -442,10 +442,10 @@ abcd0abcd.......
 ```
 
 Do not use the `,` though. In BASIC's `PRINT`, the comma moves to the 
-next tab. The `PRINT` implements tab by inserting spaces.
+next tab position. The `PRINT#` implements tab by inserting spaces.
 
-The example below prints two strings ``"AB"` and `"CD"`, but they are 
-separated by a `,` (instead of a `;`, `+`, ` `, or nothing). We pass 
+The example below prints two strings `"AB"` and `"CD"`, but they are 
+separated by a `,` (instead of a `;`, `+`, ` ` (space), or nothing). We pass 
 a length that is hopefully long enough (30, relying on the "relaxed len byte").
 
 ```basic
@@ -489,7 +489,7 @@ Since the memory write command starts with "M-W" (3 bytes),
 then 2 bytes for the address, and 1 for the length, the command 
 itself is already 6 bytes. This leaves 36 for the data itself.
 
-Writing 35 bytes works:
+Writing 35 bytes (from 65 to 65+34) works:
 
 ```basic
 200 for d=65 to d+34:w$=w$+chr$(d):next
@@ -497,7 +497,7 @@ Writing 35 bytes works:
 300 l=40:print#8,"m-r";a$;chr$(l);
 ```
 
-We see that 35 bytes are written (65..99):
+We confirm that 35 bytes are written (65..99):
 
 ```
 disk write/read
@@ -509,8 +509,8 @@ disk write/read
 abcdefghijklmnopqrstuvwxyz[\]^_.ABC.....
 ```
 
-But 36 is too much. 
-I can not explain why it doesn't stop at 37.
+Altough we expect writing 36 bytes would still work, it doesn't.
+I can not explain why, maybe a terminator or length byte is also stored in that 42 bytes buffer.
 
 ```basic
 200 for d=65 to d+35:w$=w$+chr$(d):next
