@@ -37,7 +37,8 @@ Here is an excerpt.
 - On the 1541-ii the activity LED is _green_ (`grun`) and the power LED is _red_ (`rot`), 
   which is the reverse of the original 1541.
 - The green LED is connected with its anode to 5V.
-- The cathode is connected to port `PB3` of the VIA 2 (U8) with an inverter (U7).
+- The cathode is connected to port `PB3` of the VIA 2 (U8) with a 
+  [7406](https://www.ti.com/lit/ds/symlink/sn7416.pdf) inverter (U7).
 - So a high `PB3` will pull the cathode low, which will light up the LED.
 
 At first, I was a bit puzzled why _two_ VIAs are needed, but I was underestimating the I/O needed:
@@ -725,7 +726,9 @@ m-e (blink 1541 led 5 times)
 - Zimmers [schematics of the 1541-ii](https://www.zimmers.net/anonftp/pub/cbm/schematics/drives/new/1541/1541-II.340503.gif). 
 - Maaswerk [6502 instructions](https://www.masswerk.at/6502/6502_instruction_set.html).
 - The [1541 user manual](https://archive.org/details/Commodore_1541-II_Users_Guide_1986_Commodore).
-- The [Pi1541](https://github.com/maarten-pennings/pi1541device), 
+- The [Pi1541](https://github.com/maarten-pennings/pi1541device).
+- Hex inverter [7406](https://www.ti.com/lit/ds/symlink/sn7416.pdf) datasheet.
+- VIA [6522](https://www.princeton.edu/~mae412/HANDOUTS/Datasheets/6522.pdf) datasheet.
 - Sources [`blinky1541.d64`](https://github.com/maarten-pennings/C64howto/blob/main/blinky1541/blinky1541.d64).
 
 
