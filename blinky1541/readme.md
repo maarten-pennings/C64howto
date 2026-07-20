@@ -28,7 +28,7 @@ The next section is about how to get that program on the 1541 and run it there.
 
 For Blinky, we need to know _how to control the activity LED_ of the 1541 drive.
 
-On Zimmers we find the 
+On Zimmers' web we find the 
 [schematics of the 1541-ii](https://www.zimmers.net/anonftp/pub/cbm/schematics/drives/new/1541/1541-II.340503.gif). 
 Here is an excerpt.
 
@@ -36,8 +36,9 @@ Here is an excerpt.
 
 - On the 1541-ii the activity LED is _green_ (`grun`) and the power LED is _red_ (`rot`), 
   which is the reverse of the original 1541.
-- The green LED is connected with its anode to 5V, so it is _low active_.
-- The cathode is connected to port `PB3` of the VIA 2 (U8).
+- The green LED is connected with its anode to 5V.
+- The cathode is connected to port `PB3` of the VIA 2 (U8) with an inverter (U7).
+- So a high `PB3` will pull the cathode low, which will light up the LED.
 
 At first, I was a bit puzzled why _two_ VIAs are needed, but I was underestimating the I/O needed:
 reading and writing with the magnetic head, controlling the stepper motor for the head,
@@ -46,11 +47,11 @@ write protect tab, configuring the drive address (8, 9, 10, 11), and writing and
 all IEC lines.
 
 We now know we need PB3 on VIA 2, what does that mean for the software side (addresses).
-Also on Zimmers we find the 
+Also on Zimmers' web we find the 
 [memory map](https://www.zimmers.net/anonftp/pub/cbm/maps/C1541ram.txt) of the disk drive.
 Here is an excerpt.
 
-```
+```text
 VIA 2: 6522, port for motor and read/write head control
 ------------------------------------------------------
 
@@ -77,7 +78,7 @@ $1C03	CA, data direction port A
 
 > **Conclusion** Assuming that the initialization of the drive sets the data direction 
 > register such that PB3 is _output_, the only thing our Blinky program has to do 
-> is _clear_ bit 3 to enable the activity LED, or _set_ bit 3 to disable the LED.
+> is _set_ bit 3 to enable the activity LED, or _clear_ bit 3 to disable the LED.
 
 
 ### Program location 
@@ -85,7 +86,7 @@ $1C03	CA, data direction port A
 In the same [memory map](https://www.zimmers.net/anonftp/pub/cbm/maps/C1541ram.txt) on Zimmers
 we find some other interesting addresses:
 
-```
+```text
 0104 - ff	Stack area
 
 0200 - 29 	Buffer for command string
@@ -103,7 +104,7 @@ we find some other interesting addresses:
 - Page 0 (0000-00ff) is in use as zero-page.
 - Page 1 (0100-01ff) is used as stack.
 - Page 2 (0200-02ff) is for general administration.
-- More specificaslly, we see that the command buffer is $29 or 42 bytes.
+- More specifically, we see that the command buffer is $29 or 42 bytes.
 - Pages 3, 4, 5, 6, and 7 ar sector buffers.
 
 > **Conclusion**  We will use page 3 (buffer 0, 0300 and up) to store the Blinky program.
@@ -112,46 +113,49 @@ we find some other interesting addresses:
 ### The code
 
 Now that we know bit 3 in 1c00 controls the LED, and 
-we decided the store our program in page 3 (0300), 
+we decided to store our program in page 3 (0300), 
 we are ready to write our Blinky program.
 
 We hand assemble using Maaswerk's 
 [6502 instructions](https://www.masswerk.at/6502/6502_instruction_set.html).
 
-```
-0300 | 162,5     | ldx #$5
-0302 | 173,0,28  | lda $1c00
-0305 | 41,247    | and #$f7
-0307 | 141,0,28  | sta $1c00
-030a | 32,32,3   | jsr $0320
-030d | 173,0,28  | lda $1c00
-0310 | 9,8       | ora #$08
-0312 | 141,0,28  | sta $1c00
-0315 | 32,32,3   | jsr $0320
-0318 | 202       | dex
-0319 | 208,231   | bne $0302
-031b | 96        | rts
-031c | 234       | nop
-031d | 234       | nop
-031e | 234       | nop
-031f | 234       | nop
-0320 | 169,0     | lda #$00
-0322 | 160,0     | ldy #$00
-0324 | 136       | dey
-0325 | 208,253   | bne $0324
-0327 | 56        | sec
-0328 | 233,1     | sbc #$01
-032a | 208,246   | bne $0322
-032c | 96        | rts
+```asm
+0300 | 162,5     | LDX #$5
+
+0302 | 173,0,28  | LDA $1C00
+0305 | 9,8       | ORA #$08
+0307 | 141,0,28  | STA $1C00
+030A | 32,32,3   | JSR $0320
+030D | 32,32,3   | JSR $0320
+
+0310 | 173,0,28  | LDA $1C00
+0313 | 41,247    | AND #$F7
+0315 | 141,0,28  | STA $1C00
+0318 | 32,32,3   | JSR $0320
+
+031B | 202       | DEX
+031C | 208,228   | BNE $0302
+031E | 96        | RTS
+
+031F | 234       | NOP
+
+0320 | 169,0     | LDA #$00
+0322 | 160,0     | LDY #$00
+0324 | 136       | DEY
+0325 | 208,253   | BNE $0324
+0327 | 56        | SEC
+0328 | 233,1     | SBC #$01
+032A | 208,246   | BNE $0322
+032C | 96        | RTS
 ```
 
 - At 0320 we have a wait routine. It leaves register X unmodified.
- The wait takes about 0.33 seconds.
+  The wait takes about 0.33 seconds.
 - The main routine starts at 0300.
 - Register X is used to iterate 5 times an on/off cycle. 
   X is initialized at 0300, decremented at 0318 and looped at 0319.
-- At 0302-030a the activity LED is switched on (by clearing bit 3 of 1c00) for 0.33s.
-- At 030d-0315 the activity LED is switched off (by setting bit 3 of 1c00) for 0.33s.
+- At 0302-030D the activity LED is switched on (by clearing bit 3 of 1c00) for two times 0.33s.
+- At 0310-0318 the activity LED is switched off (by setting bit 3 of 1c00) for 0.33s.
 
 
 ## Upload and execute
@@ -164,9 +168,10 @@ We do that via the command channel.
 ### Commands in general
 
 Recall that we can _send commands_ to a 1541.
+This is explained in the [1541 user manual](https://archive.org/details/Commodore_1541-II_Users_Guide_1986_Commodore).
 We do that by opening a byte pipe (file handle), any "slot" will do, 
 in the example below we picked `1`.
-The file is on a specific device, below we use `8` the default disk drive.
+The file is on a specific device, below we use `8`, the default disk drive.
 Commodore disk drives have one channel reserved for commands: `15`. this leads to `OPEN 1,8,15`.
 
 In the example we send the command `S` to delete ("scratch") a file.
@@ -245,11 +250,11 @@ slightly faster (without filling the string heap) concatenation method:
 ```
 
 
-### Programmer's commands
+### Programming commands
 
 Next to the high level disk commands (`SAVE` and `LOAD`) and the advanced
 commands (e.g. `S` for scratch, `N` for new (format), `R` for rename), there
-are _programmer's commands_. We will investigate three of them: write (`M-W`),
+are _programming commands_. We will investigate three of them: write (`M-W`),
 read (`M-R`), and execute (`M-E`). At first they sound complex, but they are 
 not. However, there are many small issues that make them hard to master,
 we discuss those later.
@@ -290,10 +295,10 @@ from memory, the 4xx is the stop section, and 5xx is an error checking subroutin
 In more detail:
 
 - 110 variable `A$` is two bytes, first byte is 0, second byte is 3, the 
-  string contains the address $0300 in little enidan format.
+  string contains the address $0300 in little endian format.
   It is used as address in the `M-W` and `M-R` commands.
 - 120 opens the command channel of drive 8 in "slot" (logical file number) 8.
-  We also send an initialize-drive command (not necesary, but doesn't harm).
+  We also send an initialize-drive command (not necessary, but doesn't harm).
 - Line 200 builds string `w$` which will be written to the drive memory.
   It contains 4 characters 65..68, or A, B, C, D.
 - Line 210 actually writes those bytes to the drive RAM.
@@ -319,7 +324,7 @@ In more detail:
 This is the typical output when we run the program. We see the written 
 four characters, followed by 12 zeros (my drive was just reset).
 
-```
+```text
 DISK WRITE/READ
  W>ST= 0 DOS=OK
  R>ST= 64 DOS=OK
@@ -350,7 +355,7 @@ the written data is truncated to the specified length.
 Although `w$` is `"abcd"`, only `"abc"` is written to the 1541 memory,
 due to the length byte being 3:
 
-```
+```text
 65 66 67 0 0 0 0 0 0 0 0 0 0 0 0 0
 abc.............
 ```
@@ -367,7 +372,7 @@ made me wonder _why_ we need to pass the length.
 Although the length byte is 5, the print transfers only 4 bytes (`w$="abcd"`),
 so only those four are written to the 1541 memory.
 
-```
+```text
 65 66 67 68 0 0 0 0 0 0 0 0 0 0 0 0
 abcd............
 ```
@@ -389,7 +394,7 @@ Although the length byte is 8 (4×2), and we write 8 bytes
 (twice `w$` which is `"abcd"`), only the first `print#` 
 is written into the 1541 memory.
 
-```
+```text
 65 66 67 68 0 0 0 0 0 0 0 0 0 0 0 0
 abcd............
 ```
@@ -409,7 +414,7 @@ Multiple strings (or even `CHR$()`) can be passed in one `PRINT`.
 The arguments of `print#` are `w$`, a character 48 (`0`), and again `w$`,
 all are transfered to the 1541 memory.
 
-```
+```text
 65 66 67 68 48 65 66 67 68 0 0 0 0 0 0 0
 abcd0abcd.......
 ```
@@ -422,7 +427,7 @@ For some reason `PRINT` doesn't need the `;` (but see issue "terminating CR").
 
 Without the`;`, the `print#` also works fine:
 
-```
+```text
 65 66 67 68 48 65 66 67 68 0 0 0 0 0 0 0
 abcd0abcd.......
 ```
@@ -436,7 +441,7 @@ is probably more computation and memory heavy.
 
 The `print#` has one big argument, a concatenation of multiple strings.
 
-```
+```text
 65 66 67 68 48 65 66 67 68 0 0 0 0 0 0 0
 abcd0abcd.......
 ```
@@ -454,7 +459,7 @@ a length that is hopefully long enough (30, relying on the "relaxed len byte").
 
 The `,` inroduces 10 spaces (character 32):
 
-```
+```text
 65 66 32 32 32 32 32 32 32 32 32 32 67 68 0 0
 ab..........cd..
 ```
@@ -472,7 +477,7 @@ is terminated with a `;`. The same holds for `PRINT#`.
 
 The absence of a trailing `;` causes a trailing CR (13):
 
-```
+```text
 65 66 67 68 13 0 0 0 0 0 0 0 0 0 0 0
 abcd............
 ```
@@ -499,7 +504,7 @@ Writing 35 bytes (from 65 to 65+34) works:
 
 We confirm that 35 bytes are written (65..99):
 
-```
+```text
 disk write/read
  w>st= 0 dos=ok
  r>st= 64 dos=ok
@@ -509,7 +514,7 @@ disk write/read
 abcdefghijklmnopqrstuvwxyz[\]^_.ABC.....
 ```
 
-Altough we expect writing 36 bytes would still work, it doesn't.
+Although we expect writing 36 bytes would still work, it doesn't.
 I can not explain why, maybe a terminator or length byte is also stored in that 42 bytes buffer.
 
 ```basic
@@ -518,7 +523,7 @@ I can not explain why, maybe a terminator or length byte is also stored in that 
 
 We get an error, `32 syntax error`:
 
-```
+```text
  w>st= 0 dos= 32 syntax error 0  0
  r>st= 64 dos=ok
 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
@@ -539,7 +544,7 @@ Repeat the "M-W" command to different addresses.
 
 The fragment writes 5 bytes (ABCD0) to 0300, then 5 bytes (ABCD1) to 0305.
 
-```
+```text
 65 66 67 68 48 65 66 67 68 49 0 0 0 0 0 0
 abcd0abcd1......
 ```
@@ -567,7 +572,7 @@ and one that has no explicit length byte.
 
 In the latter case, only one byte is read.
 
-```
+```text
 disk write/read
  w>st= 0 dos=ok
  r>st= 64 dos=ok
@@ -586,7 +591,7 @@ the 1541 treats this as a single byte read.
 300 l=13:print#8,"m-r";a$;chr$(l);
 ```
 
-```
+```text
 disk write/read
  w>st= 0 dos=ok
  r>st= 64 dos=ok
@@ -623,7 +628,7 @@ The program below demonstrates the normal behavior - a `repeat-until` instead of
 > This program is presented in lower case to make copy and paste in VICE easier.
 > It is also available as `FILE WRITE/READ` on [`blinky1541.d64`](blinky1541.d64).
 
-```
+```basic
 100 print "file write/read"
 110 open15,8,15
 120 print "write"
@@ -633,11 +638,11 @@ The program below demonstrates the normal behavior - a `repeat-until` instead of
 160 print "read"
 170 open 3,8,3,"data,seq,r"
 180 get#3,d$:d=asc(d$+chr$(0))
-190 printd;:if st=0 then 180
+190 print d;:if st=0 then 180
 200 close 3
 ```
 
-```
+```text
 file write/read
 write
 read
@@ -652,50 +657,65 @@ In this section, we take the previously written assembler program
 and use the "M-W" command to write it in a 1541 RAM buffer.
 Then we execute it.
 
-The `.` on lines 30, 32 and 44 is actually a cursor-left character.
-
 > This program is presented in lower case to make copy and paste in VICE easier.
 > It is also available as `BLINKY1541` on [`blinky1541.d64`](blinky1541.d64).
 
 ```basic 
 10 print "blinky1541"
-12 open 1,8,15,"i0":rem pennings 202607
+12 open 1,8,15:rem pennings 20260720
 20 al=0:ah=3:a$=chr$(al)+chr$(ah):d$=""
 22 readd:ifd>=0thend$=d$+chr$(d):goto22
-30 l=len(d$):print "m-w";l;".#";
-32 for i=0 to l-1 step 32:printi;".@";
+30 l=len(d$):print "m-w";l
+32 for i=0 to l-1 step 32
 34 :c$=mid$(d$,i+1,32):l$=chr$(len(c$))
-36 :print#1,"m-w"chr$(i);chr$(ah);l$;c$
+36 :print#1,"m-w"chr$(i)chr$(ah);l$;c$;
 38 next i:print
 40 print"m-r";:print#1,"m-r"a$;chr$(l);
 42 for i=1 to l
-44 :get#1,b$:print asc(b$+chr$(0));".";
-46 next i:print
+44 :get#1,b$:print asc(b$+chr$(0));
+46 next i:print:print
 50 print "m-e (blink 1541 led 5 times)"
 52 print#1,"m-e";a$
 60 close 1:end
-70 data 162,5,173,0,28,41,247,141,0,28
-72 data 32,32,3,173,0,28,9,8,141,0,28
-74 data 32,32,3,202,208,231,96,234,234
-76 data 234,234,169,0,160,0,136,208,253
-78 data 56,233,1,208,246,96,-1
+70 data 162,5,173,0,28,9,8,141,0,28,32
+72 data 32,3,32,32,3,173,0,28,41,247
+74 data 141,0,28,32,32,3,202,208,228,96
+76 data 234,169,0,160,0,136,208,253,56
+78 data 233,1,208,246,96,-1
 ```
 
 - The 1x lines open the command channel.
 - The 2x lines build up a string containing the assembly program, 
   which is stored in data statements in the 7x lines.
-- The 3x lines do a repeated "M-W" of chuncks of
+- The 3x lines do a repeated "M-W" of substrings of
   32 bytes, below the 35 maximum we found for the command buffer.
 - The 4x lines are superfluous, they read the assembly program 
   back from the 1541 into the C64, just to enable checking 
-  the write was succesful.
+  the write was successful.
 - The 5x lines execute the program.
-  It flashes the activity LED of the drive 5 times).
+  It flashes the activity LED of the drive 5 times.
   
 This program works on the real C64 with the real 1541;
-with the real C64 and the Pi1541, and it works on VICE.
+with the real C64 and the [Pi1541](https://github.com/maarten-pennings/pi1541device), 
+and it works on VICE (make sure Preferences > Show status bas is checked).
 
 ![Blinky1541 in VICE](blinky1541vice.png)
+
+Runtime is about 7 seconds (mainly due to the 5 times 3 delays of 0.33 second)
+and prints
+
+```text
+blinky1541
+m-w 45
+
+m-r 162  5  173  0  28  9  8  141  0  28
+  32  32  3  32  32  3  173  0  28  41
+247  141  0  28  32  32  3  202  208  22
+8  96  234  169  0  160  0  136  208  25
+3  56  233  1  208  246  96
+
+m-e (blink 1541 led 5 times)
+```
 
 
 ## Links
@@ -704,5 +724,9 @@ with the real C64 and the Pi1541, and it works on VICE.
 - Zimmers [memory map](https://www.zimmers.net/anonftp/pub/cbm/maps/C1541ram.txt).
 - Zimmers [schematics of the 1541-ii](https://www.zimmers.net/anonftp/pub/cbm/schematics/drives/new/1541/1541-II.340503.gif). 
 - Maaswerk [6502 instructions](https://www.masswerk.at/6502/6502_instruction_set.html).
+- The [1541 user manual](https://archive.org/details/Commodore_1541-II_Users_Guide_1986_Commodore).
+- The [Pi1541](https://github.com/maarten-pennings/pi1541device), 
+- Sources [`blinky1541.d64`](https://github.com/maarten-pennings/C64howto/blob/main/blinky1541/blinky1541.d64).
+
 
 (end)
