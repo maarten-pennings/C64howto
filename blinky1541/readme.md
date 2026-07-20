@@ -73,7 +73,7 @@ $1C03	CA, data direction port A
     CA 3:	read/write
 ```
 
-- At address $1C02 we find the `data direction port B`, it determines wether a pin of port B is input or output.
+- At address $1C02 we find the `data direction port B`, it determines whether a pin of port B is input or output.
 - At address $1C00 we find the `control port B`, i.e. the value for the pins of port B.
 - The table confirms that the `ACT - LED` is PB3.
 
@@ -84,7 +84,7 @@ $1C03	CA, data direction port A
 
 ### Program location 
 
-In the same [memory map](https://www.zimmers.net/anonftp/pub/cbm/maps/C1541ram.txt) on Zimmers
+In the same [memory map](https://www.zimmers.net/anonftp/pub/cbm/maps/C1541ram.txt) on Zimmers' web
 we find some other interesting addresses:
 
 ```text
@@ -101,7 +101,7 @@ we find some other interesting addresses:
 07ff		End of RAM
 ```
 
-- It tells us that the 1541 has 2 kbyte RAM (8 pages, $0000-$07ff).
+- It tells us that the 1541 has 2 k Byte RAM (8 pages, $0000-$07ff).
 - Page 0 (0000-00ff) is in use as zero-page.
 - Page 1 (0100-01ff) is used as stack.
 - Page 2 (0200-02ff) is for general administration.
@@ -154,7 +154,7 @@ We hand assemble using Maaswerk's
   The wait takes about 0.33 seconds.
 - The main routine starts at 0300.
 - Register X is used to iterate 5 times an on/off cycle. 
-  X is initialized at 0300, decremented at 0318 and looped at 0319.
+  X is initialized at 0300, decremented at 031B and looped at 031C.
 - At 0302-030D the activity LED is switched on (by clearing bit 3 of 1c00) for two times 0.33s.
 - At 0310-0318 the activity LED is switched off (by setting bit 3 of 1c00) for 0.33s.
 
@@ -405,7 +405,7 @@ abcd............
 
 
 Chunking does not work, so how to pass many bytes?
-The main example alreay showed it; build a string (`W$` in the example).
+The main example already showed it; build a string (`W$` in the example).
 Multiple strings (or even `CHR$()`) can be passed in one `PRINT`.
 
 ```basic
@@ -458,7 +458,7 @@ a length that is hopefully long enough (30, relying on the "relaxed len byte").
 210 print#8,"m-w";a$;chr$(30);"ab","cd";
 ```
 
-The `,` inroduces 10 spaces (character 32):
+The `,` introduces 10 spaces (character 32):
 
 ```text
 65 66 32 32 32 32 32 32 32 32 32 32 67 68 0 0
@@ -688,7 +688,7 @@ Then we execute it.
 - The 1x lines open the command channel.
 - The 2x lines build up a string containing the assembly program, 
   which is stored in data statements in the 7x lines.
-- The 3x lines do a repeated "M-W" of substrings of
+- The 3x lines do a repeated "M-W" of sub-strings of
   32 bytes, below the 35 maximum we found for the command buffer.
 - The 4x lines are superfluous, they read the assembly program 
   back from the 1541 into the C64, just to enable checking 
@@ -698,7 +698,7 @@ Then we execute it.
   
 This program works on the real C64 with the real 1541;
 with the real C64 and the [Pi1541](https://github.com/maarten-pennings/pi1541device), 
-and it works on VICE (make sure Preferences > Show status bas is checked).
+and it works on VICE (make sure Preferences > Show status bar is checked).
 
 ![Blinky1541 in VICE](blinky1541vice.png)
 

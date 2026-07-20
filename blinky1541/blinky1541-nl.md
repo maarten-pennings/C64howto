@@ -2,43 +2,45 @@
 Maarten Pennings, Juli 2026
 
 _Blinky1541_ is een machinetaal programma dat runt op de 1541 disk drive;
-het laat de activity LED van de 1541 vijf keer knipperen.
+het laat de _activity LED_ van de 1541 vijf keer knipperen.
 
-Dit artikel is een verkorte Nederlandse versie van een engels artikel 
-[https://github.com/maarten-pennings/C64howto/blob/main/blinky1541/readme.md](https://github.com/maarten-pennings/C64howto/blob/main/blinky1541/readme.md). Dat bevat meer details en bijvoorbeeld ook source files.
+Dit artikel is een verkorte Nederlandse versie van een engels artikel.
+Dat bevat meer details en bijvoorbeeld ook source files.
+
+> [https://github.com/maarten-pennings/C64howto/blob/main/blinky1541/readme.md](https://github.com/maarten-pennings/C64howto/blob/main/blinky1541/readme.md). 
 
 
 ## Introductie
 
-De Commodore 1541 disk drive wordt een "smart peripheral" genoemd.
+De Commodore 1541 disk drive wordt een _smart peripheral_ genoemd.
 Het is eigenlijk een computer op zichzelf; het kleine broertje van de C64:
 het heeft een 6502 CPU, 16 kB ROM, 2 kB RAM en 2 VIAs.
 
 In dit artikel gaan we een programma voor de 1541 schrijven.
 Zoals "Hello, World" het eerste programma is dat je schrijft voor een 
-nieuwe _programmertaal_, is "Blinky" het eerste programma voor nieuwe _hardware_.
-Een blinky laat een LED knipperen.
+nieuwe programmertaal, is Blinky het eerste programma voor nieuwe hardware.
+Een Blinky laat een LED knipperen.
 
 _Blinky1541_ wordt een 6502 machine taal programma. 
-De C64 "upload" het naar de 1541. Als de 1541 het programma uitvoert
-zal de "activity LED" van de 1541 vijf keer knipperen.
+De C64 _upload_ het naar de 1541. Als de 1541 het programma uitvoert
+zal de "_activity LED_" van de 1541 vijf keer knipperen.
 
 
-## Activity LED
+## _activity LED_
 
 Op [https://www.zimmers.net](https://www.zimmers.net)
 vinden we schemas en documentatie voor de 1541 drive.
-Daar leren we dat de activity LED met de anode aan de 5V verbonden is
-en met de cathode door een inverter aan pin PB3 van VIA 2. Met andere woorden,
-als PB3 hoog is zorgt de inverter voor een lage cathode, en de LED gaat aan.
+Daar leren we dat de _activity LED_ met de anode aan de 5V verbonden is
+en met de kathode door een _inverter_ aan pin PB3 van VIA 2. Met andere woorden,
+als PB3 hoog is zorgt de _inverter_ voor een lage kathode, en de LED gaat aan.
 
 Op dezelfde site vinden we de _memory map_ van de 1541.
 Daaruit leren we dat `control port B` (om de PBx pinnen laag of hoog te trekken)
-op adres $1C00 is gemapped. PB3 is dus bit drie op dat adres.
+op adres $1C00 is ligt. PB3 is dus bit drie op dat adres.
 
 We weten nu dat het op 1 zetten van bit 3 op adres $1C00 de LED aan zet 
 terwijl een 0 op die plek de LED uit zet. Rest nog een vraag, waar 
-plaatsen we het blinky programma zelf?
+plaatsen we het Blinky programma zelf?
 
 In memory map op Zimmers zien we dat de 1541 vijf buffers heeft.
 Deze RAM buffers worden gebruikt om disk sectors te lezen of te schrijven.
@@ -50,17 +52,17 @@ pagina 7 (0700-07FF). Wij gaan de eerste buffer gebruiken.
 ## Het blinky programma
 
 
-Zoals een blinky betaamd, schrijven we een _kort_ programma.
+Zoals een Blinky betaamd, schrijven we een _kort_ programma.
 Omdat we alleen bit 3 van $1C00 willen veranderen doen we een zogeheten 
-_read-modify-write_: we lezen $1C00, maskeren bit 3 naar een en schrijven 
-het resultaat terug naar $1C00. In assembly wordt dat 
+_read-modify-write_: we lezen $1C00, maskeren bit 3 naar één en schrijven 
+het resultaat terug naar $1C00. In assembler wordt dat 
 `LDA $1C00; OR #$08; STA $1C00` (omdat we bits vanaf 0 tellen staat PB3 op de _vierde_ plaats).
 
-We doen hetzelfde om het bit weer naar één te schrijven. Omdat het
+We doen hetzelfde om het bit weer naar nul te schrijven. Omdat het
 anders te snel gaat roepen we na elke schrijf actie een subroutine aan (`JSR $0320`) 
-die executie vertraagt (een "wait"). We kiezen voor een dubbele "wait" bij aan.
+die executie vertraagt (een "wait"). We kiezen voor een dubbele "wait" bij LED aan.
 
-Dit is het complete programma:
+Dit is het complete assembler programma:
 
 ```asm
 0300 | 162,5     | LDX #$5
@@ -98,27 +100,27 @@ Dit is het complete programma:
   De wachttijd van twee geneste 256-loops is ongeveer 0.33 seconde.
 - Het hoofdprogramma staat op $0300.
 - Register X telt de "blinks" af: 
-  X krijgt zijn beginwaarde op $0300, de aftelling is op $0318 en de loop sprong terug staat op $0319.
-- Op 0302-030D wordt de activity LED 2×0.33 seconde aangezet (bit 3 van $1C00 wordt hoog gemaakt).
-- Op 030D-0315 wordt de activity LED 0.33 seconde uitgezet (bit 3 van $1C00 wordt laag gemaakt).
+  X krijgt zijn beginwaarde op $0300, de aftelling is op $031B en de loop sprong terug staat op $031C.
+- Op 0302-030D wordt de _activity LED_ 2×0.33 seconde aangezet (bit 3 van $1C00 wordt hoog gemaakt).
+- Op 030D-0315 wordt de _activity LED_ 0.33 seconde uitgezet (bit 3 van $1C00 wordt laag gemaakt).
 
 
 ## De C64 uploader
 
-In deze sectie bekijken we het "upload" programma voor de C64.
-Het bevat het blinky programma van de vorige sectie in `DATA` statements.
-We gebruiken het DOS commando "M-W" (memory write) om blinky in het 
-1541 geheugen te schrijven, en daarna "M-E" (memory execute) om blinky uit 
-te laten voeren. Ter controle hebben we ook nog een "M-R" (memory read)
+In deze sectie bekijken we het _upload_ programma voor de C64, geschreven in BASIC.
+Het bevat het Blinky programma van de vorige sectie in `DATA` statements.
+We gebruiken het DOS commando "M-W" (_memory write_) om Blinky in het 
+1541 geheugen te schrijven, en daarna "M-E" (_memory execute_) om Blinky uit 
+te laten voeren. Ter controle hebben we ook nog een "M-R" (_memory read_)
 om het geschreven programma terug te lezen.
 
-Alle drie de memory opdrachten moeten gevolgd worden door een extra argument:
+Alle drie de _memory_ opdrachten moeten gevolgd worden door een extra argument:
 het adres (waar de bytes geschreven, gelezen, uitgevoerd moeten worden).
 Dat zijn twee bytes in _little endian_ vorm, dat wil zeggen het 
 _least significant byte_ eerst.
 
 De schrijf en lees opdracht hebben daarna nog een argument: een byte 
-die de lengte van de te schrijven/lezen data aangeeft.
+dat de lengte van de te schrijven/lezen data aangeeft.
 
 Hieronder volgt het hele programma.
 
@@ -147,17 +149,22 @@ Hieronder volgt het hele programma.
 ```
 
 - De regels 1x (regels 10 en 12) openen het disk drive commando kanaal (kanaal 15 op apparaat 8).
-- De regels 2x bouwen de string `D$` die het blinky programma bevat, gelezen van de `DATA` regels.
+- De regels 2x bouwen de string `D$` die het Blinky programma bevat, gelezen van de `DATA` regels.
   String `A$` is het adres ($0300) dat elk commando mee krijgt.
-- De regels 3x doen meerdere memory writes "M-W" van stukken van `D$` naar de disk 
-  (meerdere writes omdat een commando maximaal 40 bytes mag bevatten).
-- De regels 4x zijn overbodig, ze lezen het zojuist geschreven blinky programma 
+- De regels 3x doen meerdere _memory writes_ "M-W" van stukken van `D$` naar de disk. 
+  Meerdere _memory writes_ zijn nodig omdat een opdracht maximaal 40 bytes mag bevatten.
+- De regels 4x zijn overbodig, ze lezen het zojuist geschreven Blinky programma 
   terug van de disk drive - alleen maar ter controle.
 - Op regels 5x wordt het programma uitgevoerd.
-  De activity LED blinkt vijf keer.
+  De _activity LED_ blinkt vijf keer.
+- Op regel 6x sluit het disk kanaal en eindigt het BASIC programma. 
+- De `DATA` regels 7x bevatten het 1541 Blinky programma in 6502 assembler.
   
 Dit program werkt op de echte C64 met de echte 1541 drive;
 maar ook op de echte C64 met de Pi1541 drive emulator; 
 en zelfs op VICE.
+
+![Blinky1541 in VICE](blinky1541vice.png)
+
 
 (end)
