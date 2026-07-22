@@ -26,7 +26,7 @@ De C64 _upload_ het naar de 1541. Als de 1541 het programma uitvoert
 zal de "_activity LED_" van de 1541 vijf keer knipperen.
 
 
-## _activity LED_
+## _Activity LED_
 
 Op [https://www.zimmers.net](https://www.zimmers.net)
 vinden we schemas en documentatie voor de 1541 drive.
@@ -52,7 +52,7 @@ pagina 7 (0700-07FF). Wij gaan de eerste buffer gebruiken.
 ## Het blinky programma
 
 
-Zoals een Blinky betaamd, schrijven we een _kort_ programma.
+Een Blinky is een _kort_ programma.
 Omdat we alleen bit 3 van $1C00 willen veranderen doen we een zogeheten 
 _read-modify-write_: we lezen $1C00, maskeren bit 3 naar één en schrijven 
 het resultaat terug naar $1C00. In assembler wordt dat 
