@@ -155,8 +155,9 @@ We hand assemble using Maaswerk's
 - The main routine starts at 0300.
 - Register X is used to iterate 5 times an on/off cycle. 
   X is initialized at 0300, decremented at 031B and looped at 031C.
-- At 0302-030D the activity LED is switched on (by clearing bit 3 of 1c00) for two times 0.33s.
-- At 0310-0318 the activity LED is switched off (by setting bit 3 of 1c00) for 0.33s.
+- At 0302-030D the activity LED is switched on (by setting bit 3 of 1c00) for two times 0.33s.
+- At 0310-0318 the activity LED is switched off (by clearing bit 3 of 1c00) for 0.33s.
+- LED duty cycle is now 66% on and 33% off, this allows us to verify that setting bit 3 is indeed "on".
 
 
 ## Upload and execute
@@ -406,7 +407,7 @@ abcd............
 
 Chunking does not work, so how to pass many bytes?
 The main example already showed it; build a string (`W$` in the example).
-Multiple strings (or even `CHR$()`) can be passed in one `PRINT`.
+It is also possible to pass multiple strings (or even `CHR$()`) in one `PRINT`.
 
 ```basic
 210 print#8,"m-w";a$;chr$(len(w$)+1+len(w$));w$;chr$(48);w$;
@@ -426,7 +427,7 @@ For some reason `PRINT` doesn't need the `;` (but see issue "terminating CR").
 210 print#8,"m-w"a$chr$(len(w$)+1+len(w$))w$chr$(48)w$;
 ```
 
-Without the`;`, the `print#` also works fine:
+Here we see that without the`;`, the `print#` works fine too:
 
 ```text
 65 66 67 68 48 65 66 67 68 0 0 0 0 0 0 0
@@ -434,20 +435,20 @@ abcd0abcd.......
 ```
 
 Of course we could explicitly concatenate the strings, but that 
-is probably more computation and memory heavy.
+is probably more computation and memory intensive.
 
 ```basic
 210 print#8,"m-w"+a$chr$(len(w$)+1+len(w$))+w$+chr$(48)+w$;
 ```
 
-The `print#` has one big argument, a concatenation of multiple strings.
+Here the `print#` has one big argument, a concatenation of multiple strings:
 
 ```text
 65 66 67 68 48 65 66 67 68 0 0 0 0 0 0 0
 abcd0abcd.......
 ```
 
-Do not use the `,` though. In BASIC's `PRINT`, the comma moves to the 
+Do _not_ use the `,` though. In BASIC's `PRINT`, the comma moves to the 
 next tab position. The `PRINT#` implements tab by inserting spaces.
 
 The example below prints two strings `"AB"` and `"CD"`, but they are 
@@ -488,12 +489,13 @@ abcd............
 
 The command buffer in the drive has a limited size. 
 As we saw earlier the buffer is located at 0200-0229.
-This means it is $2A bytes long. In other words a command 
+This means the buffer is $2A bytes long. In other words a command 
 has a maximum size of 42. 
 
 Since the memory write command starts with "M-W" (3 bytes), 
 then 2 bytes for the address, and 1 for the length, the command 
 itself is already 6 bytes. This leaves 36 for the data itself.
+In practice we found that 35 is the maximum.
 
 Writing 35 bytes (from 65 to 65+34) works:
 
@@ -543,7 +545,8 @@ Repeat the "M-W" command to different addresses.
 211 print#8,"m-w";chr$(5);chr$(3);chr$(5);w$;chr$(49);
 ```
 
-The fragment writes 5 bytes (ABCD0) to 0300, then 5 bytes (ABCD1) to 0305.
+The fragment writes 5 bytes (ABCD0) to 0300 (`chr$(0);chr$(3)`), 
+then 5 bytes (ABCD1) to 0305 (`chr$(5);chr$(3)`).
 
 ```text
 65 66 67 68 48 65 66 67 68 49 0 0 0 0 0 0
@@ -584,9 +587,9 @@ a
 
 #### Issue 2: len 13 unsupported
 
-This issue I nearly consider a _bug_.
-When the length byte has the value 13,
-the 1541 treats this as a single byte read.
+This issue I nearly consider a _bug_. 
+When the length byte has the value 13, the 1541 treats this as a single byte read.
+Recall that character code 13 is the ASCII code for CR (carriage return, i.e. "end-of-line").
 
 ```basic 
 300 l=13:print#8,"m-r";a$;chr$(l);
@@ -695,14 +698,16 @@ Then we execute it.
   the write was successful.
 - The 5x lines execute the program.
   It flashes the activity LED of the drive 5 times.
+- Line 60 closes the command channel and ends the program.
+- Lines 7x contain the Blinky assembly code in `DATA` statements.
   
-This program works on the real C64 with the real 1541;
-with the real C64 and the [Pi1541](https://github.com/maarten-pennings/pi1541device), 
+This program works on the real C64 with a real 1541; but also
+with the real C64 and the [Pi1541](https://github.com/maarten-pennings/pi1541device); 
 and it works on VICE (make sure Preferences > Show status bar is checked).
 
 ![Blinky1541 in VICE](blinky1541vice.png)
 
-Runtime is about 7 seconds (mainly due to the 5 times 3 delays of 0.33 second)
+Runtime is about 7 seconds (mainly due to the 5 times 3 "waits" of 0.33 second in Blinky)
 and prints
 
 ```text
