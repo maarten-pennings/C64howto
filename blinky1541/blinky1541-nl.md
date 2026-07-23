@@ -35,11 +35,11 @@ en met de kathode door een _inverter_ aan pin PB3 van VIA 2. Met andere woorden,
 als PB3 hoog is zorgt de _inverter_ voor een lage kathode, en de LED gaat aan.
 
 Op dezelfde site vinden we de _memory map_ van de 1541.
-Daaruit leren we dat `control port B` (om de PBx pinnen laag of hoog te trekken)
+Daaruit leren we dat VIA2 register `control port B` (om de PBx pinnen laag of hoog te trekken)
 op adres $1C00 is ligt. PB3 is dus bit drie op dat adres.
 
 We weten nu dat het op 1 zetten van bit 3 op adres $1C00 de LED aan zet 
-terwijl een 0 op die plek de LED uit zet. Rest nog een vraag, waar 
+terwijl een 0 op die plek de LED uit zet. Rest nog de vraag, waar 
 plaatsen we het Blinky programma zelf?
 
 In memory map op Zimmers zien we dat de 1541 vijf buffers heeft.
