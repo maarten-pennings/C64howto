@@ -3,6 +3,16 @@
 Various "How to xxx" questions and answers for the C64 (Commodore 64) that I want to remember. Some are linking to my old [howto repo](https://github.com/maarten-pennings/howto).
 
 
+
+## Commodore 64 rows versus lines
+
+Lines in a Commodore 64 BASIC program can be up to 80 characters. 
+A line longer than 40 characters is spread over two rows of the screen.
+The two rows forming one line is a feature of the C64 "terminal".
+
+This [howto](rowsvslines) describes the details.
+
+
 ## Blinky on a 1541
 
 How to make a program for the Commodore 1541 that blinks the activity LED.
