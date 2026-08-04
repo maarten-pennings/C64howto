@@ -26,7 +26,7 @@ De C64 _upload_ het naar de 1541. Als de 1541 het programma uitvoert
 zal de "_activity LED_" van de 1541 vijf keer knipperen.
 
 
-## _activity LED_
+## _Activity LED_
 
 Op [https://www.zimmers.net](https://www.zimmers.net)
 vinden we schemas en documentatie voor de 1541 drive.
@@ -35,11 +35,11 @@ en met de kathode door een _inverter_ aan pin PB3 van VIA 2. Met andere woorden,
 als PB3 hoog is zorgt de _inverter_ voor een lage kathode, en de LED gaat aan.
 
 Op dezelfde site vinden we de _memory map_ van de 1541.
-Daaruit leren we dat `control port B` (om de PBx pinnen laag of hoog te trekken)
+Daaruit leren we dat VIA2 register `control port B` (om de PBx pinnen laag of hoog te trekken)
 op adres $1C00 is ligt. PB3 is dus bit drie op dat adres.
 
 We weten nu dat het op 1 zetten van bit 3 op adres $1C00 de LED aan zet 
-terwijl een 0 op die plek de LED uit zet. Rest nog een vraag, waar 
+terwijl een 0 op die plek de LED uit zet. Rest nog de vraag, waar 
 plaatsen we het Blinky programma zelf?
 
 In memory map op Zimmers zien we dat de 1541 vijf buffers heeft.
@@ -52,7 +52,7 @@ pagina 7 (0700-07FF). Wij gaan de eerste buffer gebruiken.
 ## Het blinky programma
 
 
-Zoals een Blinky betaamd, schrijven we een _kort_ programma.
+Een Blinky is een _kort_ programma.
 Omdat we alleen bit 3 van $1C00 willen veranderen doen we een zogeheten 
 _read-modify-write_: we lezen $1C00, maskeren bit 3 naar één en schrijven 
 het resultaat terug naar $1C00. In assembler wordt dat 
