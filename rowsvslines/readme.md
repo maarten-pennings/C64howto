@@ -127,7 +127,7 @@ We have made a series of screenshots - one at each scroll.
 
 ![Screenshot of scrolling the 10 PRINT program](10print1.png)
 
-Note that ever other scrolls is _two_ rows instead of one 
+Note that ever other scroll is _two_ rows instead of one 
 (see the solid blue row at the bottom of the screen in 
 shot 3, 5, and 7).
 
@@ -155,7 +155,7 @@ sense (easier terminal code?), and we have to live with it.
 
 ## Line link table
 
-How does the terminal know that a two rows form one line?
+How does the terminal know that two rows form one line?
 Enter the _line link table_, stored at addresses $00D9-$00F2.
 
 For details of the line link table, see e.g. the famous book
@@ -243,10 +243,10 @@ setting the link flag of row 1. This results in smooth scrolling.
 Note that if `GOTO` has no line number it jumps to line 0, a small optimization.
 
 When you run this program it scrolls one row at a time.
-Remove the POKE and it alternates between scrolling one and two lines.
+Remove the POKE and it alternates between scrolling one and two rows.
 
-The line link table contains other bits. A save variant would be
-`POKE 218,PEEK(218) OR 128` but this is slower, and the line is 
+The line link table contains other bits. A safer variant would be
+`POKE 218,PEEK(218) OR 128` but this is slower, and the row is 
 scrolled out soon anyhow...
 
 ## Links
