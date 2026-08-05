@@ -1,17 +1,16 @@
 # Commodore 64 rows versus lines
 
-Lines in a Commodore 64 BASIC program can be up to 80 characters. 
+Program lines in a Commodore 64 BASIC program can be up to 80 characters. 
 Not more. A line longer than 40 characters is spread over two rows of the screen.
-That two rows can form one line is not only a feature of BASIC, 
-it is also a feature of the programming environment; or should I say of 
-the C64 "terminal".
+That two rows can form one line is not only a feature of BASIC, it is also 
+a feature of the environment; or should I say of the C64 "terminal".
 
 In this article we have a look at how C64 treats rows and lines.
 
 
 ## Hello program
 
-We enter the following program, but with one special step.
+We enter the following program, with one special step.
 Lines 100 and 110 are terminated with an ENTER, 
 but line 200 is extended with 6 spaces and then we 
 continue entering line 210 which we terminate with an ENTER.
@@ -32,11 +31,11 @@ When we `LIST` the program it looks "normal"; the same as how we entered it.
 
 ![Listing the HELLO program](hello2.png)
 
-But when we run it, we miss the `HEY` from line 210.
+But when we `RUN` it, we miss the `HEY` from line 210.
 
 ![Running the HELLO program](hello3.png)
 
-When we list the individual lines, line 100 and 110 are fine.
+When we `LIST` the individual lines, line 100 and 110 are fine.
 But `LIST 200` also lists `210`, and `LIST 210` lists nothing.
 
 ![Lines of the HELLO program](hello4.png)
@@ -95,7 +94,7 @@ In other words: **scrolling is not per row but per line** (at the top of the scr
 
 ## 10 PRINT
 
-Recall the famous 10PRINT program.
+Recall the famous 10 PRINT program.
 
 ```
 10 PRINT CHR$(205.5+RND(1));:GOTO 10
@@ -132,7 +131,7 @@ Note that ever other scroll is _two_ rows instead of one
 shot 3, 5, and 7).
 
 You might wonder why.
-The 10PRINT program prints character after character never 
+The 10 PRINT program prints character after character never 
 ending the line: every `PRINT` ends with a semicolon (`;`).
 So after 40 PRINTs the first screen _row_ is full, but the _line_
 continues. After 80 PRINTs also the second screen _row_ is full,
@@ -144,7 +143,7 @@ That one continues till the fourth row, and again a new line is
 forced by the terminal. As a result the screen is filled with 
 several lines of 80 characters, each occupying 2 rows.
 
-As a result the scrolling of 10PRINT is two rows, one row, two rows, one row.
+As a result the scrolling of 10 PRINT is two rows, one row, two rows, one row.
 
 The "scrolling is not per row but per line" might sound reasonable.
 The screen never starts with the second half of a line.
@@ -175,7 +174,7 @@ The first half of the program prints a screen full of lines (program lines 100-1
 Some output lines will be less than 40 characters (one row), some will be less 
 than 80 (two rows) and some are even longer (3 rows) - maximum is 40×3½ characters. 
 
-We use the characters from the 10PRINT program to fill the lines.
+We use the characters from the 10 PRINT program to fill the lines.
 Line 130 tags the _beginning of each line_ with an increasing 
 letter (`A`, `B`, etc).
 
@@ -223,13 +222,13 @@ The next row is the third part of the `B` line. That third part did not fit on t
 first two rows, so the terminal started a new row, hence the slash is white.
 
 
-## Better 10PRINT
+## Better 10 PRINT
 
 It is also possible to _write_ to the line link table.
 We can break long lines (two rows) into two parts (two rows).
 One advantage is smoother scrolling.
 
-Find below an improved version of the 10PRINT program.
+Find below an improved version of the 10 PRINT program.
 Every 40 characters printed, it splits row 1 from row 0 by 
 setting the link flag of row 1. This results in smooth scrolling.
 
@@ -253,6 +252,6 @@ scrolled out soon anyhow...
 
 - [D64image](rowsvslines.d64) of all BASIC programs in this article.
 - Line link table in [Mapping the 64](https://www.pagetable.com/c64ref/c64mem/#:~:text=Screen-,Line%20Link,-Table/Editor%20Temporary).
-- 10PRINT [website](https://10print.org/).
+- 10 PRINT [website](https://10print.org/).
 
 (end)
