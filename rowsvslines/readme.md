@@ -180,8 +180,10 @@ letter (`A`, `B`, etc).
 Line 110 seeds the random number generator so that each run produces 
 the same output; delete it if you don't want that.
 
-> This program is listed in lower case to make copy&paste to VICE easier.
-> It is available as `LINELINKTABLE` on the [disk](rowsvslines.d64).
+> This program is listed in lower case to make copy&paste to VICE easier, unfortunately, the 
+> [petcal braced token](https://techtinkering.com/articles/tokenize-detokenize-commodore-basic-programs-using-petcat/#:~:text=Unprintable%20/%20Special%20Characters)
+> such as `{home}` break that.
+> The program is available as `LINELINKTABLE` on the [disk](rowsvslines.d64).
 
 ```
 100 rem print lines with random length
@@ -199,7 +201,7 @@ the same output; delete it if you don't want that.
 220 for i=0 to 24
 230 :l=peek(217+i):rem line link row r
 240 :lh=int(l/16):ll=l and 15
-250 :print left$(d$,i+3);"{RVSon}";lh;ll;"RVSoff";
+250 :print left$(d$,i+3);"{rvon}";lh;ll;"rvoff";
 260 next i:print "{home}"
 270 get a$:if a$="" then 270
 ```
@@ -268,5 +270,7 @@ scrolled out soon anyhow...
 - [D64image](rowsvslines.d64) of all BASIC programs in this article.
 - Line link table in [Mapping the 64](https://www.pagetable.com/c64ref/c64mem/#:~:text=Screen-,Line%20Link,-Table/Editor%20Temporary).
 - 10 PRINT [website](https://10print.org/).
+- [petcat](https://techtinkering.com/articles/tokenize-detokenize-commodore-basic-programs-using-petcat/)
+  utility (from VICE) that converts BASIC `.PRG` files to ASCII text files and back. 
 
 (end)
