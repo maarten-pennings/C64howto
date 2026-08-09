@@ -161,21 +161,20 @@ For details of the line link table, see e.g. the famous book
 [Mapping the 64](https://www.pagetable.com/c64ref/c64mem/#:~:text=Screen-,Line%20Link,-Table/Editor%20Temporary).
 We will simplify it here.
 
-The line link table has one byte per row.
+The line link table has one byte per screen row.
 Bit 7 at offset _r_ in the line link table is the link flag for row _r_.
 That flag is _set_ when that row contains the first half of a line (or an entire line).
 That flag is _clear_ when that row contains the second half of a line.
-
 The first row has its link flag at address $00D9 or 217, 
 the second row at $00DA or 218, etc.
 
 The following program demonstrates the line link table.
-The first half of the program prints a screen full of lines (program lines 100-190).
+The first half of the program (program lines 100-190) prints a screen full of lines.
 Some output lines will be less than 40 characters (one row), some will be less 
 than 80 (two rows) and some are even longer (3 rows) - maximum is 40×3½ characters. 
 
 We use the characters from the 10 PRINT program to fill the lines.
-Line 130 tags the _beginning of each line_ with an increasing 
+Line 140 tags the _beginning of each line_ with an increasing 
 letter (`A`, `B`, etc).
 
 Line 110 seeds the random number generator so that each run produces 
@@ -187,39 +186,55 @@ the same output; delete it if you don't want that.
 ```
 100 rem print lines with random length
 110 c=rnd(-123)
-120 for l=0 to 12
-130 :print chr$(65+l);
-140 :for c=0 to rnd(1)*40*3.5
-150 ::print chr$(205.5+rnd(1));
-160 :next c
-170 :print
-180 next l
+120 for i=0 to 13
+130 :print
+140 :print chr$(65+i);
+150 :for c=0 to rnd(1)*40*3.5
+160 ::print chr$(205.5+rnd(1));
+170 :next c
+180 next i
 190 :
-200 for l=0 to 24
-220 :lk=(peek(217+l) and 128)=0
-230 :poke 55296+l*40,lk+1
-240 next l
-250 get a$:if a$="" then 250
+200 rem show line link info for rows
+210 d$="{home}{right}{right}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}"
+220 for i=0 to 24
+230 :l=peek(217+i):rem line link row r
+240 :lh=int(l/16):ll=l and 15
+250 :print left$(d$,i+3);"{RVSon}";lh;ll;"RVSoff";
+260 next i:print "{home}"
+270 get a$:if a$="" then 270
 ```
 
-The interesting part is the second half of the program (program lines 200-250)
-which runs once the screen is filled. It loops over all rows (L from 0 to 24)
-and inspects the line link table entry for that row: `PEEK(217+L)`.
-Variable `LK` is true if the link flag is clear, e.g. when that row contains 
-a second half. Recall that true is -1 in C64 BASIC and false is 0 so `LK+1` 
-is 0 (corresponding to color "black") for a second half and 1 (i.e. "white") 
-for a first half. This value is POKEd on line 230 as the character color for 
-the first character of each row. Line 250 waits for a key press, ending the 
-program, leading to `READY` and a scroll.
+The interesting part is the second half of the program (program lines 200-270)
+which runs once the screen is filled. It loops over all rows (I from 0 to 24)
+and inspects the line link table entry for that row: `L=PEEK(217+I)`.
+Variable `LH` is the _high_ nibble of the line link, and 
+variable `LL` is the _low_ nibble of the line link (see 240).
+
+Line 210 constructs a constant string `D$`, used for positioning the cursor 
+on column 2 of any row. Line 250 uses `D$` to print `LH` and `LL` 
+(in reverse video) on row `I`.
+
+Line 250 waits for a key press, ending the 
+program, leading to `READY`, the `print"{home}"` on line 260 prevents a scroll.
 
 ![The output of LINELINKTABLE](linelinktable1.png)
 
 The output is as expected.
-Line `A` is short, two characters, it fits on one row, so `A` is white.
-Line `B` is extra long, more than 2 rows. The first row is the first part of the line 
-so `B` is white. The next row is the second part of the `B` line so the slash is black. 
+Line `A` is short, two characters, it fits on one row; the row contains an 
+_entire line_ so the high nibble of the line link is `8` to indicate that.
+Line `B` is extra long, more than 2 rows. The first row is the the _first half of a line_
+which results in the high nibble of the line link to be `8` again.
+The next row is the _second half of a line_ of the `B` line: the high nibble is 
+`0` to indicate that.
 The next row is the third part of the `B` line. That third part did not fit on the 
-first two rows, so the terminal started a new row, hence the slash is white.
+first two rows, so the terminal started a new line (max line length is 80).
+The third row is thus the the _first half of a line_ and
+the high nibble is `8` again.
+
+We ignored (and will continue doing that) the low nibble of the line link.
+It denotes the memory page (high byte of an address) of the video memory 
+where that row is stored. Video memory starts at $0400. This means the first row 
+is stored in page $04, hence the low nibble of $00D9 is 4.
 
 
 ## Better 10 PRINT
