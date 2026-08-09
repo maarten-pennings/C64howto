@@ -181,7 +181,7 @@ Line 110 seeds the random number generator so that each run produces
 the same output; delete it if you don't want that.
 
 > This program is listed in lower case to make copy&paste to VICE easier, unfortunately, the 
-> [petcal braced token](https://techtinkering.com/articles/tokenize-detokenize-commodore-basic-programs-using-petcat/#:~:text=Unprintable%20/%20Special%20Characters)
+> [petcat braced tokens](https://techtinkering.com/articles/tokenize-detokenize-commodore-basic-programs-using-petcat/#:~:text=Unprintable%20/%20Special%20Characters)
 > such as `{home}` break that.
 > The program is available as `LINELINKTABLE` on the [disk](rowsvslines.d64).
 
