@@ -55,6 +55,78 @@ The only way to split is to `LIST` the line to be split, delete the part you don
 prepend a fresh line number and pres ENTER. And then `LIST` the original line again and 
 delete the part you just copied to the fresh line and pres ENTER again.
 
+In other words **BASIC lines are terminated by ENTER, they may span two rows.**
+
+
+## Tab
+
+The hello program is contrived. In this section we have a look at the 
+`tab()` function. It makes a distinction between screen rows and lines too.
+
+Recall that the `tab(x)` function can only be used in the context of a `print` 
+statement. It advances the cursor to column `x` of the current line 
+(counting from 0). Unlike `spc(x)` which moves `x` positions from the current 
+cursor position, `tab(x)` moves to an absolute position. However,
+`tab(x)` does _not_ jump back. If the cursor is at position 30 and there is 
+a `tab(25)`, the cursor does not move.
+
+The program `TAB` demonstrates `tab()`.
+
+> This program is listed in lower case to make copy&paste to VICE easier.
+> It is available as `TAB` on the [disk](rowsvslines.d64).
+
+```basic
+100 up$=chr$(145)
+110 a10$="---------+"
+120 a30$=a10$+a10$+a10$
+130 a60$=a30$+a30$
+140 :
+200 print a30$
+210 print up$;tab(6);"x"
+220 print
+230 :
+300 print a60$
+310 print up$;tab(6);"x"
+320 print
+330 :
+400 print a60$
+410 print up$;tab(46);"x"
+420 print
+430 :
+500 print a60$
+510 print up$;up$;tab(46);"x"
+520 print
+```
+
+The program begins by defining a string `UP$` that moves the cursor one row up.
+Next it defines a string of 10, 30 and 60 dashes.
+
+This program then runs four tests. Each test it prints a line (of 30 or 60 characters), 
+see lines 200, 300, 400, and 500. Note that the print does not end with a semicolon 
+so the cursor moves to the next line. Then the test moves the cursor back up to the just 
+printed line, jumps to a tab position and prints an `X` there, see lines 210, 310, 410, and 510.
+A white line (lines 220, 320, 420, and 520) separate a test from the next test.
+
+![Output of the TAB program](tab1.png)
+
+The first test is as expected. We print 30 lines, go back to the printed line, `tab(6)` and the
+`X` is printed inc column 6 (counting from 0).
+
+The second test might come as a surprise. After printing 60 characters (2 screen rows), 
+program line 310 moves up one _row_ up. This means the cursor is at position 40, and 
+`tab(6)` would move the cursor back, so it is ignored. The `X` is printed at the start 
+of the second row.
+
+The third fragment tests this. Again 60 characters are printed, the cursor is moved 
+one row up. Now program line 410 tabs to position 46, which is right of 40.
+So the cursor moves to position 46 of the _two row lines_ and the `X` is printed.
+
+The third fragment is a similar test. here, after printing 60 characters, two rows, 
+program line 510 moves _two rows_ up. So the cursor is in column 0 of the line.
+a `tab(46)` moves to column 46, which is column 6 on the next row.
+
+In other words **the terminal remembers which rows form one line.**
+
 
 ## Scrolling 
 
@@ -67,7 +139,7 @@ and one line that spans two rows (110).
 > This program is listed in lower case to make copy&paste to VICE easier.
 > It is available as `SCROLL` on the [disk](rowsvslines.d64).
 
-```
+```basic
 100 print "hello, world!"
 110 print "this is a line that spans two rows"
 120 print "short again"
@@ -89,14 +161,14 @@ screen rows, an ENTER now scrolls _two_ rows. Also notice that
 not only the top two rows scroll off the screen, but there is 
 also an irregularity at the bottom: the cursor moved one row up!
 
-In other words: **scrolling is not per row but per line** (at the top of the screen).
+In other words **scrolling is not per row but per line** (at the top of the screen).
 
 
 ## 10 PRINT
 
 Recall the famous 10 PRINT program.
 
-```
+```basic
 10 PRINT CHR$(205.5+RND(1));:GOTO 10
 ```
 
@@ -107,7 +179,7 @@ each time the cursor reaches the bottom right corner of the screen.
 > This program is listed in lower case to make copy&paste to VICE easier.
 > It is available as `10PRINT` on the [disk](rowsvslines.d64).
 
-```
+```basic
 100 i=rnd(-123)
 110 for i=1 to 24*40-1
 120 :print chr$(205.5+rnd(1));
@@ -126,15 +198,15 @@ We have made a series of screenshots - one at each scroll.
 
 ![Screenshot of scrolling the 10 PRINT program](10print1.png)
 
-Note that ever other scroll is _two_ rows instead of one 
+Note that every other scroll is _two_ rows instead of one 
 (see the solid blue row at the bottom of the screen in 
 shot 3, 5, and 7).
 
 You might wonder why.
 The 10 PRINT program prints character after character never 
 ending the line: every `PRINT` ends with a semicolon (`;`).
-So after 40 PRINTs the first screen _row_ is full, but the _line_
-continues. After 80 PRINTs also the second screen _row_ is full,
+So after 40 characters printed the first screen _row_ is full, but the _line_
+continues. After 80 characters printed also the second screen _row_ is full,
 and still the _line_ continues. 
 
 However the C64 terminal can not handle lines longer than two rows.
@@ -143,11 +215,12 @@ That one continues till the fourth row, and again a new line is
 forced by the terminal. As a result the screen is filled with 
 several lines of 80 characters, each occupying 2 rows.
 
-As a result the scrolling of 10 PRINT is two rows, one row, two rows, one row.
+As a result the scrolling of 10 PRINT is two rows, two rows, two rows...
 
 The "scrolling is not per row but per line" might sound reasonable.
 The screen never starts with the second half of a line.
-However, I think I could live with half lines at the top and have smoother scrolling. 
+However, I think I could live with half lines at the top and 
+have the smoother scrolling instead. 
 I guess this is just an implementation choice; it probably made 
 sense (easier terminal code?), and we have to live with it.
 
@@ -162,11 +235,15 @@ For details of the line link table, see e.g. the famous book
 We will simplify it here.
 
 The line link table has one byte per screen row.
-Bit 7 at offset _r_ in the line link table is the link flag for row _r_.
+Bit 7 at offset _r_ in the line link table is the link _flag_ for row _r_.
 That flag is _set_ when that row contains the first half of a line (or an entire line).
 That flag is _clear_ when that row contains the second half of a line.
 The first row has its link flag at address $00D9 or 217, 
-the second row at $00DA or 218, etc.
+the second row at $00DA or 218, ..., the 25th at $00F1 or 241.
+The entry at $00F2 or 242 is needed to easily implement scrolling.
+Since the high nibble of a link like only contains the link flag 
+and the other 3 bits are always 0, the high nibble is `8` for "first half or entire line"
+and `0` for "second half".
 
 The following program demonstrates the line link table.
 The first half of the program (program lines 100-190) prints a screen full of lines.
@@ -185,7 +262,7 @@ the same output; delete it if you don't want that.
 > such as `{home}` break that.
 > The program is available as `LINELINKTABLE` on the [disk](rowsvslines.d64).
 
-```
+```basic
 100 rem print lines with random length
 110 c=rnd(-123)
 120 for i=0 to 13
@@ -207,8 +284,8 @@ the same output; delete it if you don't want that.
 ```
 
 The interesting part is the second half of the program (program lines 200-270)
-which runs once the screen is filled. It loops over all rows (I from 0 to 24)
-and inspects the line link table entry for that row: `L=PEEK(217+I)`.
+which runs once the screen is filled. It loops over all rows (`I` from 0 to 24)
+and retrieves the line link table entry for that row: `L=PEEK(217+I)`.
 Variable `LH` is the _high_ nibble of the line link, and 
 variable `LL` is the _low_ nibble of the line link (see 240).
 
@@ -236,13 +313,14 @@ the high nibble is `8` again.
 We ignored (and will continue doing that) the low nibble of the line link.
 It denotes the memory page (high byte of an address) of the video memory 
 where that row is stored. Video memory starts at $0400. This means the first row 
-is stored in page $04, hence the low nibble of $00D9 is 4.
+is stored in page $04, hence the low nibble of $00D9 is 4. 256 characters further
+the page is 5.
 
 
 ## Better 10 PRINT
 
 It is also possible to _write_ to the line link table.
-We can break long lines (two rows) into two parts (two rows).
+We can _break_ long lines (two rows) into two unconnected parts.
 One advantage is smoother scrolling.
 
 Find below an improved version of the 10 PRINT program.
@@ -252,7 +330,7 @@ setting the link flag of row 1. This results in smooth scrolling.
 > This program is listed in lower case to make copy&paste to VICE easier.
 > It is available as `10PRINTSMOOTH` on the [disk](rowsvslines.d64).
 
-```
+```basic
 0 fori=1to40:printchr$(205.5+rnd(1));:next:poke218,128:goto
 ```
 
