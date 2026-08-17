@@ -215,7 +215,7 @@ That one continues till the fourth row, and again a new line is
 forced by the terminal. As a result the screen is filled with 
 several lines of 80 characters, each occupying 2 rows.
 
-As a result the scrolling of 10 PRINT is two rows, two rows, two rows...
+As a result the scrolling of 10 PRINT is two rows, no rows, two rows, no rows, two rows ...
 
 The "scrolling is not per row but per line" might sound reasonable.
 The screen never starts with the second half of a line.
