@@ -57,6 +57,13 @@ I got a retrofit power supply for my C64 with a switch for 50 or 60 Hz.
 I needed to [study](9VAC50vs60) this to understand what it means.
 
 
+## C64 Bouncing box
+
+Inspired by Robin's 8-Bit Show And Tell channel, more specifically his Code Golf video
+on a bouncing box on the C64, I wrote an assembly version.
+The [C64 Bouncing box (other repo)](https://github.com/maarten-pennings/C64-bouncingbox) .
+
+
 ## C64 development
 
 It is possible to develop on the C64 itself. For BASIC that is possibly the best solution.
