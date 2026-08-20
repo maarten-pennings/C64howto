@@ -7,9 +7,10 @@ to incorporate a REU. I was wondering if I could use that REU, maybe even from B
 
 ![Kung Fu Flash 2](kungfuflash2.jpg)
 
-The answer is "yes". In this article we first have a look at the registers 
-that control the REU. Next we run tests to confirm our understanding.
-We finish by writing a simple REU application: the `10 PRINT CHR$(205.5+RND(1));:GOTO 10`
+The answer is "yes". In this article we first have a look at the [registers](#registers) 
+that control the REU. Next we run [tests](#tests) to confirm our understanding.
+We finish by writing a simple REU [application](#fast-10-print-with-reu): the 
+`10 PRINT CHR$(205.5+RND(1));:GOTO 10`
 using the REU. It will be much longer than one line, but also much faster.
 
 If you don't have a kung Fu Flash 2, do not despair. 
@@ -837,36 +838,38 @@ its argument to either 205 or 206, printing either `\` or `/`. The `GOTO 10` loo
 many (back) slashes to be printed leading to a sort of maze.
 
 The problem is that this is slow because we need to compute 1000 (back) slashes for 
-one screen. And we want a continous scroll of (back) slashes.
+one screen (40 characters on 25 rows). And we want a continous scroll of (back) slashes.
 
 
 ### REU and 10 PPRINT
 
-The REU can transfer 1000 characters from its internal memory to the screen buffer 
-(at address $0400) at a 1MHz rate. In other words, the REU copies one screen in 1 ms.
+The REU can transfer 1000 characters from its internal memory to the screen  
+(frame buffer is at address $0400) at a 1MHz rate. 
+In other words, the REU copies one screen in 1 ms.
 
 The idea is that we stash the (back) slashes from the 10 PRINT program into the REU memory, 
-a lot of them. We stash them starting at address 0 ($000000). Once enough (back) slashes are stashed 
-we start the scrolling maze animation.
+a lot of them. We stash them starting at address 0 ($000000) in the REU. 
+Once enough (back) slashes are stashed we start the scrolling maze animation.
 
 We fetch 1000 bytes from REU address 0 into C64 address $0400 (the screen).
 Then we fetch 1000 bytes from REU address 40 and store those at $0400. 
 This effectively scrolls the screen one row up.
 Then we fetch 1000 from 80 and store at $0400; another scroll up. And so on. 
-Each fetch takes 1ms, however, we also need a couple of BASIC statements to execute the fetch. 
+This fast. No need to compute slashes, and no need for the kernel to implement scrolling.
+Each fetch takes only 1ms (but we also need a couple of BASIC statements to execute the fetch). 
 
 
 ### REU memory layout
 
-There are two problems with the REU version. 
+There are two problems with the above sketched REU version of 10 PRINT. 
 
 The first problem is that every (back) slash we fetch 
 for the screen, must be in the REU first, so we must compute it. Gone is the gain in time.
 To solve this, we cheat. We generate only 256 (back) slashes and repeatedly stash them in the REU.
 Wouldn't we notice that? If you look carefully yes. However, 256 is 6 screen rows (of 40) 
-plus 16 characters. This means that the second block of 256 (back) slashes is moved by 
+plus 16 characters. This means that the second block of 256 (back) slashes is displaced by 
 16 characters. This makes it much harder to spot the repeating pattern. Good enough 
-for this simple demo. From now on, we will refer to blocks as _pages_.
+for this simple demo. From now on, we will refer to these blocks as _pages_.
 
 The second problem is that, like the original 10 PRINT program, we want our version 
 to loop infinitely. Clearly we cannot have an infinite amount of 256 (identical) pages.
@@ -882,7 +885,8 @@ we loop back and fetch a screen from row 0. They are identical.
 We should realize that we fetch a _screen of 1000 bytes_ starting at row 31.
 Therefore, at least 1000 (back) slashes should still be in the REU from 31 onwards. 
 As the infographic below shows, we need 9 pages in the REU to have enough (back) slashes 
-to scroll all the way to row 31. We believe that is enough for this proof of concept example.
+to scroll all the way to row 31. 
+We believe that is enough variation for this proof of concept example.
 
 ![REU rows and pages](memory.drawio.png)
 
@@ -891,7 +895,7 @@ to scroll all the way to row 31. We believe that is enough for this proof of con
 
 See "FAST 10PRINT REU" on d64.
 
-Also filll with REU for color mem buffer.
+Also fill with REU for color mem buffer at $D800.
 
 
 ## Links
@@ -913,5 +917,10 @@ General
 - [BASIC control characters](https://www.c64-wiki.com/wiki/control_character)
 - [Kung Fu Flash 2](https://codeberg.org/KimJorgensen/KungFuFlash2)
 - [Commodore 64 Ultimate](https://commodore.net)
+
+10 PRINT
+
+- [10 PRINT website](https://10print.org/)
+- [Please, Just Stop Ruining "10 PRINT". Seriously.](https://www.masswerk.at/nowgobang/2026/please-just-stop)
 
 (end)
