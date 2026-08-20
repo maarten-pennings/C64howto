@@ -846,13 +846,14 @@ The REU can transfer 1000 characters from its internal memory to the screen buff
 (at address $0400) at a 1MHz rate. In other words, the REU copies one screen in 1 ms.
 
 The idea is that we stash the (back) slashes from the 10 PRINT program into the REU memory, 
-a lot of them. We stash then starting at address 0 ($000000). Once enough slashes are stashed 
+a lot of them. We stash them starting at address 0 ($000000). Once enough (back) slashes are stashed 
 we start the scrolling maze animation.
 
 We fetch 1000 bytes from REU address 0 into C64 address $0400 (the screen).
-Then we fetch 1000 bytes from REU address 40 and store those at $0400.
-Then we fetch 1000 from 80 and store at $0400. And so on. 
-Each fetch itself is 1ms, but we also need a couple of BASIC statements to execute the fetch. 
+Then we fetch 1000 bytes from REU address 40 and store those at $0400. 
+This effectively scrolls the screen one row up.
+Then we fetch 1000 from 80 and store at $0400; another scroll up. And so on. 
+Each fetch takes 1ms, however, we also need a couple of BASIC statements to execute the fetch. 
 
 
 ### REU memory layout
@@ -881,7 +882,7 @@ we loop back and fetch a screen from row 0. They are identical.
 We should realize that we fetch a _screen of 1000 bytes_ starting at row 31.
 Therefore, at least 1000 (back) slashes should still be in the REU from 31 onwards. 
 As the infographic below shows, we need 9 pages in the REU to have enough (back) slashes 
-to scroll all the way to row 31.
+to scroll all the way to row 31. We believe that is enough for this proof of concept example.
 
 ![REU rows and pages](memory.drawio.png)
 
@@ -890,7 +891,7 @@ to scroll all the way to row 31.
 
 See "FAST 10PRINT REU" on d64.
 
-
+Also filll with REU for color mem buffer.
 
 
 ## Links
