@@ -61,14 +61,14 @@ In other words **BASIC lines are terminated by ENTER, they may span two rows.**
 ## Tab
 
 The hello program is contrived. In this section we have a look at the 
-`tab()` function. It makes a distinction between screen rows and lines too.
+`tab()` function. It makes a distinction between rows and lines too.
 
 Recall that the `tab(x)` function can only be used in the context of a `print` 
 statement. It advances the cursor to column `x` of the current line 
 (counting from 0). Unlike `spc(x)` which moves `x` positions from the current 
 cursor position, `tab(x)` moves to an absolute position. However,
 `tab(x)` does _not_ jump back. If the cursor is at position 30 and there is 
-a `tab(25)`, the cursor does not move.
+a `tab(25)`, the cursor stays at position 30.
 
 The program `TAB` demonstrates `tab()`.
 
@@ -105,25 +105,25 @@ This program then runs four tests. Each test it prints a line (of 30 or 60 chara
 see lines 200, 300, 400, and 500. Note that the print does not end with a semicolon 
 so the cursor moves to the next line. Then the test moves the cursor back up to the just 
 printed line, jumps to a tab position and prints an `X` there, see lines 210, 310, 410, and 510.
-A white line (lines 220, 320, 420, and 520) separate a test from the next test.
+A empty line (lines 220, 320, 420, and 520) separate a test from the next test.
 
 ![Output of the TAB program](tab1.png)
 
-The first test is as expected. We print 30 lines, go back to the printed line, `tab(6)` and the
-`X` is printed inc column 6 (counting from 0).
+The first test is as expected. We print a line of 30 characters, go up to the printed line, `tab(6)` and the
+`X` is printed in column 6 (counting from 0).
 
 The second test might come as a surprise. After printing 60 characters (2 screen rows), 
-program line 310 moves up one _row_ up. This means the cursor is at position 40, and 
-`tab(6)` would move the cursor back, so it is ignored. The `X` is printed at the start 
+program line 310 moves the cursor up one _row_ up. This means the cursor is at position 40, and 
+`tab(6)` would move the cursor back, so it is ignored. The cursor doesn't move and the `X` is printed at the start 
 of the second row.
 
 The third fragment tests this. Again 60 characters are printed, the cursor is moved 
 one row up. Now program line 410 tabs to position 46, which is right of 40.
-So the cursor moves to position 46 of the _two row lines_ and the `X` is printed.
+So the cursor moves to position 46 of the _two-row line_ and the `X` is printed.
 
-The third fragment is a similar test. here, after printing 60 characters, two rows, 
+The third fragment is a similar test. Here, after printing 60 characters, two rows, 
 program line 510 moves _two rows_ up. So the cursor is in column 0 of the line.
-a `tab(46)` moves to column 46, which is column 6 on the next row.
+a `tab(46)` moves to column 46, which is column 6 on the second row.
 
 In other words **the terminal remembers which rows form one line.**
 
