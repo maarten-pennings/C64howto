@@ -870,23 +870,23 @@ The first problem is that every (back) slash we fetch
 for the screen, must be in the REU first, so we must compute it. Gone is the gain in time.
 To solve this, we cheat. We generate only 256 (back) slashes and repeatedly stash them in the REU.
 Wouldn't we notice that? If you look carefully yes. However, 256 is 6 screen rows (of 40) 
-plus 16 characters. This means that the second block of 256 (back) slashes is displaced by 
-16 characters. This makes it much harder to spot the repeating pattern. Good enough 
-for this simple demo. From now on, we will refer to these blocks as _pages_.
+plus 16 characters. This means that the second series of 256 (back) slashes is displaced by 
+16 characters. This makes it harder to spot the repeating pattern. Good enough 
+for this simple demo. From now on, we will refer to a series of 256 (back) slashes as one _page_.
 
 The second problem is that, like the original 10 PRINT program, we want our version 
 to loop infinitely. Clearly we cannot have an infinite amount of 256 (identical) pages.
 Here math comes to the rescue. The _least common multiple_ of the row size 40 and the 
-block size 256 is 1280. This means that we can fit exactly 5 pages of 256 into 1280, 
-_and_ that we can fit exactly 32 rows of 40 into 1280. If the REU is filled with enough 
-pages, and we start by fetching (1000 bytes) from row 0 (address 0), then 1000 from 
-row 1 (address 40), ... , and at some momemt we start fetching 1000 bytes from row 32 
+page size 256 is 1280. This means that we can fit exactly 5 pages (of 256) into 1280, 
+_and_ that we can fit exactly 32 rows (of 40) into 1280. If the REU is filled with enough 
+pages, and we start by fetching (1000 bytes) from row 0 (address 0), then fetching 1000 from 
+row 1 (address 40), ... , and at some moment we fetch 1000 bytes from row 32 
 (address 1280) we hit a cycle: the bytes (starting) at row 32 equal the ones at row 0.
 So after fetching the screen from row 31, we do not fetch the screen from row 32, instead 
-we loop back and fetch a screen from row 0. They are identical.
+we loop back and fetch a screen from row 0 again. It is identical to the one at 32.
 
-We should realize that we fetch a _screen of 1000 bytes_ starting at row 31.
-Therefore, at least 1000 (back) slashes should still be in the REU from 31 onwards. 
+We should realize that we fetch a _screen of 1000 bytes_, the last one starting at row 31.
+Therefore, at least 1000 (back) slashes should still be in the REU from row 31 onwards. 
 As the infographic below shows, we need 9 pages in the REU to have enough (back) slashes 
 to scroll all the way to row 31. 
 We believe that is enough variation for this proof of concept example.
