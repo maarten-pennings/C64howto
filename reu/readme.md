@@ -824,7 +824,7 @@ When the buffer prints we see that (2-2).
 
 In this section we are going to use the REU to speed up the 10 PRINT program. 
 
-This is _not_ an attempt to "improve" on the 10 PRINT program, it is just a vehicle to demonstrate some features of the REU.
+This is _not_ an attempt to "improve" on the 10 PRINT program, it is just a vehicle to demonstrate some features of the REU in a well-known application.
 
 
 ### Examining 10 PRINT
@@ -838,28 +838,28 @@ of one line:
 
 It uses the `RND(1)` function to generate a random float number between 0 and 1.
 As a result `205.5+RND(1)` will be between 205.5 and 206.5. The `CHR$()` function truncates 
-its argument to either 205 or 206, printing either `\` or `/`. The `GOTO 10` loops, causes
-many (back) slashes to be printed leading to a sort of maze.
+its argument to either 205 or 206, printing either `\` or `/`. The `GOTO 10` loops, causing 
+many (back) slashes to be printed, leading to a sort of maze.
 
-The program is slow because we need to compute 1000 (back) slashes for 
-one screen (40 characters on 25 rows). And we want a continous scroll of (back) slashes.
+The program is rather slow because it needs to compute 1000 (back) slashes for 
+one screen (40 characters on 25 rows). We also want a continuous (infinite) scroll of (back) slashes.
 
 
-### REU and 10 PPRINT
+### REU and 10 PRINT
 
-The REU can transfer 1000 characters from its internal memory to the screen  
-(frame buffer is at address $0400) at a 1MHz rate. 
+The REU can transfer 1000 characters from its internal memory to the C64 memory 
+(more specifically to the screen; the frame buffer is at address $0400), at a 1MHz rate. 
 In other words, the REU copies one screen in 1 ms.
 
 The idea is that we stash the (back) slashes from the 10 PRINT program into the REU memory, 
 a lot of them. We stash them starting at address 0 ($000000) in the REU. 
 Once enough (back) slashes are stashed we start the scrolling maze animation.
 
-We fetch 1000 bytes from REU address 0 into C64 address $0400 (the screen).
-Then we fetch 1000 bytes from REU address 40 and store those at $0400. 
+We fetch 1000 bytes from REU address 0 and place then at C64 address $0400 (the screen).
+Then we fetch 1000 bytes from REU address 40 and again store those at $0400. 
 This effectively scrolls the screen one row up.
 Then we fetch 1000 from 80 and store at $0400; another scroll up. And so on. 
-This is fast. No need to compute slashes, and no need for the kernel to implement scrolling.
+This is fast. No need to compute slashes and no need for the kernel to implement scrolling.
 Each fetch takes only 1ms (but we also need a couple of BASIC statements to execute the fetch). 
 
 
@@ -868,9 +868,9 @@ Each fetch takes only 1ms (but we also need a couple of BASIC statements to exec
 There are two problems with the above sketched REU version of 10 PRINT. 
 
 The first problem is that every (back) slash we fetch 
-for the screen, must be in the REU first, so we must compute it. Gone is the gain in time.
-To solve this, we cheat. We generate only 256 (back) slashes and repeatedly stash them in the REU.
-Wouldn't we notice that? If you look carefully yes. However, 256 is 6 screen rows (of 40) 
+for the screen, must be in the REU first, so we must compute it. Gone is the gain in "slashes compute" time.
+To solve this, we cheat. We generate only 256 (back) slashes and sequentially stash them in the REU.
+Wouldn't we notice that? If we look carefully yes. However, 256 is 6 screen rows (of 40) 
 plus 16 characters. As a result the second series of 256 (back) slashes is displaced by 
 16 characters. This makes it harder to spot the repeating pattern. Good enough 
 for our simple demo. From now on, we will refer to a series of 256 (back) slashes as one _page_.
@@ -881,7 +881,7 @@ Here math comes to the rescue. The _least common multiple_ of the row size 40 an
 page size 256 is 1280. We can fit exactly 5 pages (of 256) into 1280, 
 _and_ that we can fit exactly 32 rows (of 40) into 1280. If the REU is filled with enough 
 pages, and we start by fetching (1000 bytes) from row 0 (address 0), then fetching 1000 from 
-row 1 (address 40), ... , and at some moment we fetch 1000 bytes from row 32 
+row 1 (address 40), ... , and at some moment fetching 1000 bytes from row 32 
 (address 1280) we hit a cycle: the bytes (starting) at row 32 equal the ones at row 0.
 So after fetching the screen from row 31, we do not fetch the screen from row 32, instead 
 we loop back and fetch a screen from row 0 again. It is identical to the one at 32.
