@@ -822,7 +822,10 @@ When the buffer prints we see that (2-2).
 
 ## Fast 10 PRINT with REU
 
-In this section we are going to use the REU to speed up the 10 PRINT program.
+In this section we are going to use the REU to speed up the 10 PRINT program. 
+
+This is _not_ an attempt to "improve" on the 10 PRINT program, it is just a vehicle to demonstrate some features of the REU.
+
 
 ### Examining 10 PRINT
 
@@ -897,14 +900,13 @@ Todo...
 
 See "FAST 10PRINT REU" on d64.
 
-explain it
+Explain the basic program
 
-mention that they is never a space character 
+mention that thete is never a space character 
+
+Also fill with REU is used for color mem buffer at $D800.
 
 measure speed (fps)
-
-
-Also fill with REU for color mem buffer at $D800.
 
 change memory picture with shades of darker and darker blue, but restart at row 32
 
