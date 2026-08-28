@@ -893,9 +893,20 @@ We believe that is enough variation for this proof of concept example.
 
 ### The BASIC program
 
+Todo...
+
 See "FAST 10PRINT REU" on d64.
 
+explain it
+
+mention that they is never a space character 
+
+measure speed (fps)
+
+
 Also fill with REU for color mem buffer at $D800.
+
+change memory picture with shades of darker and darker blue, but restart at row 32
 
 
 ## Links
