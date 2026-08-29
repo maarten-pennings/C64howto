@@ -16,7 +16,7 @@ using the REU. It will be much longer than one line, but also much faster.
 If you don't have a kung Fu Flash 2, do not despair. 
 The [Commodore 64 Ultimate](https://commodore.net/computer/#:~:text=16%20MB%20system%2C-,16%20MB%20REU,-%2C%2016%20MB%20GeoRAM)
 and [TheC64](https://c64os.com/c64os/usersguide/viceconfiguration_thec64#:~:text=Enables%20an%20REU%20with%20the%20maximum%20of%2016MB)
-both contains a REU. And even VICE emulates a REU.
+both contain a REU. And even VICE emulates a REU.
 
 
 ## Introduction
@@ -70,13 +70,13 @@ Each register is descibed in more detail in the sections below - or click in the
 The status register indicates the status of the last transfer(s).
 The status flags (3 MSB) are cleared upon read. 
 
-  | Bits | Function          | Details                                                            |
-  |:----:|:-----------------:|:-------------------------------------------------------------------|
-  |   7  | INTERRUPT PENDING | 1 = interrupt needs servicing; only when INTERRUPT ENABLE is set   |
-  |   6  | END OF BLOCK      | 1 = transfer completed; flags completion of all 4 transfer types   |
-  |   5  | FAULT             | 1 = compare failed; only for transfer type compare                 |
-  |   4  | SIZE              | obsolete (0 for 128k, 1 for >= 256k)                               |
-  |  3:0 | VERSION           | obsolete (version number of Commodore REUs)                        |
+  | Bits | Function          | Details                                                                              |
+  |:----:|:-----------------:|:-------------------------------------------------------------------------------------|
+  |   7  | INTERRUPT PENDING | 1 = interrupt needs servicing; only when INTERRUPT ENABLE is set (clear on read)  |
+  |   6  | END OF BLOCK      | 1 = transfer completed; flags completion of all 4 transfer types (clear on read)  |
+  |   5  | FAULT             | 1 = compare failed; only for transfer type _compare_ (clear on read)               |
+  |   4  | SIZE              | obsolete (0 for 128k, 1 for >= 256k)                                                |
+  |  3:0 | VERSION           | obsolete (version number of Commodore REUs)                                         |
 
 
 The REU sets END OF BLOCK when the transfer is complete (see [example Stash, fetch, swap](#stash-fetch-swap)).
@@ -126,18 +126,18 @@ or is aborted mid-way when a difference is found. In the latter case, executing 
 clear makes sense, because then we know at which location the first difference 
 was found, see [example Compare](#compare).
 
-Some memory regions of the C64 are in [triple use](https://www.c64-wiki.com/wiki/Memory_Map).
-For example DF00 could be RAM, I/O 2, or character ROM.
+Some memory regions of the C64 are in [dual or even triple use](https://www.c64-wiki.com/wiki/Memory_Map).
+For example, address DF00 could be RAM, I/O 2, or character ROM.
 The REU, when executing a transfer, sees the memory that is configured as active.
 This means that the REU could never access the RAM or character ROM also present at DF00;
-it would only see the I/O 2 needed to control it.
+it would only see the I/O 2 needed to control itself.
 To solve this, EXECUTE can be postponed by clearing the NOFF00 flag.
 When clear, the actual transfer is delayed; it starts only after writing to address FF00, 
 presumably after the active memory has been changed. I don't know why FF00 was chosen.
 See [example NOFF00 bit](#noff00-bit).
 
 I would recommend to have LOAD always set (except for compare mode).
-I would also recommend to have NOFF00 always set (except when comparing a memory "under" I/O 2.
+I would also recommend to have NOFF00 always set (except when copying memory "under" I/O 2.
 
 
 ### c64base @2,3 ($DF02, 57090)
@@ -170,7 +170,7 @@ The transfer length is in little endian format: the LSB is at offset 7 and the M
 
 A `translen` of 0000 means 65536 bytes.
  
-See [example Stash, fetch, swap](#stash-fetch-swap)).
+See [example Stash, fetch, swap](#stash-fetch-swap).
 
 
 ### irqmask @9 ($DF09, 57097)
@@ -181,7 +181,7 @@ is set (END OF BLOCK respectively FAULT).
 
 It is possible to generate an interrupt (IRQ, not NMI) when these bits are set.
 To enable these interrupts, make sure their enable mask is set in `irqmask`.
-Secondly, globally enable interrupts by setting INTERRUPT ENABLE.
+Secondly, globally enable interrupts by setting the INTERRUPT ENABLE bit in this register.
 
   | Bits | Function          | Details                                                            |
   |:----:|:-----------------:|:-------------------------------------------------------------------|
@@ -193,11 +193,11 @@ Secondly, globally enable interrupts by setting INTERRUPT ENABLE.
 If an event happens, and its mask is set, and INTERRUPT ENABLE is set, the IRQ is fired.
 It is vectored (6510 hardware) at FFFE. The C64 kernal ROM maps that to FF48, which pushes 
 the registers and then vectors via $0314/$0315 (for a hardware IRQ; alternatively via 
-$0316/$0317 for a BRK, as determined via the B flag in PSW). By default 314/315 
+$0316/$0317 for a BRK, as determined via the B flag in PSW). By default $0314/$0315 
 routes to $EA31 (e.g. keyboard scan). One would need to write an ISR (REU handler) 
 which **clears the interrupt** by reading `status` at $DF00, and then continuous at $EA31. 
 If the interrupt is not cleared, it will fire again as soon as the RTI at the end of 
-the EA31 ISR is executed. This will lock up the C64. **Setting INTERRUPT ENABLE without installing an ISR that clears `status` locks the C64**.
+the $EA31 ISR is executed. This will lock up the C64. **Setting INTERRUPT ENABLE without installing an ISR that clears `status` locks the C64**.
 
 Although this interrupt mechanism exists, it is fairly useless.
 The 6510 is halted during the REU transfer and once the REU transfer is completed, 
@@ -209,7 +209,7 @@ the 6510 continuous.
 The registers `c64base`, `reubase`, and `translen` are configured before an EXECUTE.
 During the transfer the base registers are stepped `translen` times to advance through 
 the memories. However, it is also possible to not step the addresses, but keep them fixed.
-This is useful in case of a memory fill (memory clear). Another use case is when the
+This is useful in case of a _memory fill_ (memory clear). Another use case is when the
 C64 address is fixed and this is a hardware register for sound or a GPIO pin.
 Then the REU is a DMA engine that drives those hardware peripherals.
 
@@ -229,7 +229,7 @@ See [example Fill](#fill).
 The transfer is performed by the controller in the REU, not by the 6510, the controller of the C64.
 It performs the copy at the C64 clock speed - that is what the C64's memory chips can handle.
 In other words the REU reads or writes at 1 MHz, or 1 Mbyte per second.
-A full C64 memory range (64k) can be read or written in 1/16 second (62.5 ms).
+A full C64 memory range (64k) can be read or written by the REU in 1/16 second (62.5 ms).
 
 When the 6510 would perform the transfer, a typical loop (copying max 256 bytes) 
 would be 12 clock cycles: 4 for LDA, 3 for STA, 2 for INX and 3 for BNE.
@@ -237,7 +237,7 @@ This means that the 6510 reaches 1 000 000 / 12 or 83 kbyte per second or
 65536 bytes in 786 ms. The REU is 12× faster.
 
 A _swap_ transfer is twice as slow as the other three transfer types, 
-since it needs a read and a write of every location.
+since it needs a read _and_ a write for every location.
 
 
 ## Tests
