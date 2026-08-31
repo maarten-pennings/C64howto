@@ -18,6 +18,8 @@ The [Commodore 64 Ultimate](https://commodore.net/computer/#:~:text=16%20MB%20sy
 and [TheC64](https://c64os.com/c64os/usersguide/viceconfiguration_thec64#:~:text=Enables%20an%20REU%20with%20the%20maximum%20of%2016MB)
 both contain a REU. And even VICE emulates a REU.
 
+> Note to self: enabling REU in VICE together with KCS power cartridge does _not_ work.
+
 
 ## Introduction
 
@@ -62,7 +64,7 @@ Some registers are 1, some 2 and one is even 3 bytes wide.
   | `irqmask`  |   1  |    9   | DF09 | 57097 | [section](#irqmask-9-df09-57097)   |
   | `addrctrl` |   1  |   10   | DF0A | 57098 | [section](#addrctrl-10-df0a-57098) |
 
-Each register is descibed in more detail in the sections below - or click in the last column above.
+Each register is described in more detail in the sections below - or click in the last column above.
 
 
 ### status @0 ($DF00, 57088)
@@ -70,13 +72,13 @@ Each register is descibed in more detail in the sections below - or click in the
 The status register indicates the status of the last transfer(s).
 The status flags (3 MSB) are cleared upon read. 
 
-  | Bits | Function          | Details                                                                              |
-  |:----:|:-----------------:|:-------------------------------------------------------------------------------------|
-  |   7  | INTERRUPT PENDING | 1 = interrupt needs servicing; only when INTERRUPT ENABLE is set (clear on read)  |
-  |   6  | END OF BLOCK      | 1 = transfer completed; flags completion of all 4 transfer types (clear on read)  |
-  |   5  | FAULT             | 1 = compare failed; only for transfer type _compare_ (clear on read)               |
-  |   4  | SIZE              | obsolete (0 for 128k, 1 for >= 256k)                                                |
-  |  3:0 | VERSION           | obsolete (version number of Commodore REUs)                                         |
+  | Bits | Function          | Details                                                                          |
+  |:----:|:-----------------:|:---------------------------------------------------------------------------------|
+  |   7  | INTERRUPT PENDING | 1 = interrupt needs servicing; only when INTERRUPT ENABLE is set (clear on read) |
+  |   6  | END OF BLOCK      | 1 = transfer completed; flags completion of all 4 transfer types (clear on read) |
+  |   5  | FAULT             | 1 = compare failed; only for transfer type _compare_ (clear on read)             |
+  |   4  | SIZE              | obsolete (0 for 128k, 1 for >= 256k)                                             |
+  |  3:0 | VERSION           | obsolete (version number of Commodore REUs)                                      |
 
 
 The REU sets END OF BLOCK when the transfer is complete (see [example Stash, fetch, swap](#stash-fetch-swap)).
@@ -245,6 +247,8 @@ since it needs a read _and_ a write for every location.
 In this section, we are going to try-out the registers of the REU.
 
 > All test programs in the chapter are available in a virtual disk image: [reu-tests.d64](reu-tests.d64).
+
+> Enabling REU in VICE together with KCS power cartridge does _not_ work.
 
 
 ### Introduction
@@ -889,7 +893,7 @@ So after fetching the screen from row 31, we do not fetch the screen from row 32
 we loop back and fetch a screen from row 0 again. It is identical to the one at 32.
 
 We should realize that we fetch a _screen of 1000 bytes_, the last one starting at row 31.
-Therefore, at least 1000 (back) slashes should still be in the REU from row 31 onwards. 
+Therefore, at least 1000 (back) slashes should still be in the REU from row 31 onward. 
 As the infographic below shows, we need 9 pages in the REU to have enough (back) slashes 
 to scroll all the way to row 31. 
 We believe that is enough variation for our proof of concept example.
@@ -899,22 +903,159 @@ We believe that is enough variation for our proof of concept example.
 
 ### The BASIC program
 
-Todo...
+Below is the listing of the BASIC program that mimics 10 PRINT using the REU.
+The program `10PRINT-WITH-REU` can be found on [reu-tests.d64](reu-tests.d64); 
+the listing below is obtained via `petcat` to make the "magic" characters 
+(like switch t0 light blue) readable (`{lblu}.
 
-See "FAST 10PRINT REU" on d64. <<< change name (drop fast)
+```basic
+100 r=57088:rem 10print-with-reu
+110 poke 53280,14:poke 53281,6
+120 print "{clr}{lblu}";tab(54);"please wait{blu}"
+190 :
+200 print chr$(206);
+210 for i=0 to 254
+220 :print chr$(205.5+rnd(1));
+230 next
+290 :
+300 poke r+2,80:poke r+3,4
+310 poke r+4, 0:poke r+5,0:poke r+6,0
+320 poke r+7, 0:poke r+8,1
+330 poke r+9,0
+340 poke r+10,0
+350 for p=0 to 8
+360 :poke r+5,p
+370 :poke r+1,128+32+16+0
+380 next p
+390 :
+400 print "{clr}{lblu}"
+410 if peek(r) and 64 = 64 then 430
+420 print "error:reu expected":end
+430 if peek(r) and 64 <> 0 then 420
+490 :
+500 poke r+2,0:poke r+3,216
+510 poke r+4,0:poke r+5,0:poke r+6,0
+520 poke r+7,0:poke r+8,4
+530 poke r+9,0
+540 poke r+10,64
+550 poke r+1,128+32+16+1
+590 :
+600 poke r+2,0:poke r+3,4
+610 poke r+4,0:poke r+5,0:poke r+6,0
+620 poke r+7,0:poke r+8,4
+630 poke r+9,0
+640 poke r+10,0
+650 for y=0 to 31
+660 :a=y*40:ah=int(a/256):al=a and 255
+670 :poke r+4,al:poke r+5,ah
+680 :poke r+1,128+32+16+1
+690 next y:goto 650
+```
 
-Add REU presence in basic program
+todo: bug in program: line 410 and 430 need ().
 
-Explain the basic program (and the use of colors)
+todo: slow down 685 for t=0 to99:next T
 
-mention that there is never a space character 
+Notes
 
-Also fill with REU is used for color mem buffer at $D800.
+- Line 100 defines `R` to be the base address of the REU.
 
-measure speed (fps)
+- As explained, we use the REU to copy 1000 (back) slashes with one command 
+  from the REU memory to the C64 _screen memory_ (at address $0400 or 1024).
+  To make the characters visible, the _color memory_ (at address $D800 or 55296)
+  must also be set. What color to use. The design decision is that the 
+  program starts be setting all colors to default. 
+  Line 110 sets the border (53280) to light blue (color 14) and the screen
+  background (53281) to dark blue (color 6).
+  Finally line 120 sets the cursor (foreground) color to light blue (14)
+  and prints `PLEASE  WAIT` in that color (`{lblu}`). 
+  This establishes all defaults.
+  
+- The end of line 120 switches the cursor (foreground) color to dark blue 
+  (6, `{blu}`). The reason for this is that the program will now print 256 
+  (back) slashes. Once printed, they will be stashed in the REU memory.
+  But we do not want to show this intermediate step to the user, therefore 
+  we print the (back) slashes in the screen background color.
 
-change memory picture with shades of darker and darker blue, but restart at row 32
+- Lines 200-230 print the 256 (back) slashes in the 10 PRINT way.
+  One thing is special, the very first character of the 256 is forced to be 
+  206 (`/`). As it happens `PRINT 206 AND 15` prints 14. 
+  We later misuse the first character of the 256 byte page to let the REU
+  fetch, no _fill_ t the color memory with 100 bytes 206.
+  Since the color memory only stores the lower 4 bits, the color memory 
+  will have 1000 times 14, which happens to be light blue, out chosen 
+  cursor (foreground) color.
+  
+- Lines 300-380 is the stash loop. This stashes the 256 byte page 9 times 
+  in the REU memory. 
+  
+  Line 300 sets `c64base` MSB to 4, since the screen memory starts at $0400. 
+  LSB is set to 80 because, due to the `print tab(54);"please wait"` the 
+  (back) slashes start at the third row.
+  Line 310 sets `reubase` to $000000, but the loop sets the middle byte 
+  (line 360) to the page number in the REU. 
+  Line 320 sets the `translen` to $0100, that is 1 page (256 bytes).
+  We do not want interrupts (line 330) and we do want address stepping (line 340).
+  
+  The actual loop has 9 iteration (line 350 and line 380), 9 times stashing a page.
+  Line 360 selects the destination page in the REU, line 370 is the actual stash:
+  128 (EXECUTE) + 32 (LOAD) + 16 (NOFF00) + 0 (STASH).
 
+- The next block, 400 starts by clearing the screen. 
+  This gets rid of the `PLEASE WAIT` message and the 256 invisible (back) slashes.
+
+  But the main goal of lines 400-430 is to check if there is a REU active in the C64.
+  After the stashes (lines 300-380) the STATUS.ENDOFBLOCK flag should be set (line 410).
+  If it was not, line 420 prints an error and stops.
+  If the flag was set, it should now be cleared, since STATUS.ENDOFBLOCK is 
+  "clear on read". If not there is a jump back to 420.
+
+- The final prep step before the animation start is to fill the color memory 
+  (lines 500-550). This will be a fetch (not a stash), but without stepping 
+  `reubase`, so the fetch is a fill.
+  
+  Just for clarity, this is a REU demo after all, all REU 
+  registers are written (again). Line 500 sets the `C64base` to 216 (MSB) 
+  and 0 (LSB), or $D800 or 55296, the color memory. The `reubase` is 
+  $000000, the location where line 200 put value 206 or $CE, so the low nibble 
+  is $E or 14 or light blue. In line 520 we are lazy and set `translen` to 
+  4 pages (1024) where 1000 would be enough.
+
+  Again, we do not want interrupts (line 530) and but the stepping is special: 
+  stepping for `C64base` but fixed for `reubase` (line 540).
+  Line 550 is the actual (fill-)fetch:
+  128 (EXECUTE) + 32 (LOAD) + 16 (NOFF00) + 1 (FETCH).
+
+- The animation runs in lines 600-690.
+
+  All REU registers are written (again). 
+  Line 600 sets the `C64base` to 4 (MSB) and 0 (LSB), or $0400 or 1024, the screen memory. 
+  Line 610 sets `reubase` to $000000, but the loop sets the two LSB bytes
+  (line 670) to the row number in the REU. 
+  In line 620 we are lazy again and set `translen` to 4 pages (1024) 
+  where 1000 would be enough.
+  Again, we do not want interrupts (line 630) and we do want address stepping (line 640).
+  
+  Line 650 loops `Y` over the 32 rows that are in the REU.
+  Line 660 first computes the address `A` of row `Y` in the REU,
+  and then splits `A` in high byte (`AH`) and low byte (`AL`).
+  In 670 these are used to set the `c64base`.
+  
+  Line 680 is the actual fetch:
+  128 (EXECUTE) + 32 (LOAD) + 16 (NOFF00) + 1 (FETCH).
+  
+  Line 690 ensures that after copying the screen that starts with row 31,
+  we go back to the screen starting at row 0, this is achieved with the 
+  `GOTO 650` at the end of the program.
+  
+- Observe that the animation loop fetches one complete screen a row at a time.
+  As a result, there is never two empty rows, nor one empty row, not even 
+  an empty screen position at column 80 in row 25.
+
+- I added `T0=TI` before the `FOR` loop, and `T1=TI` after `NEXT` 
+  (instead of the `GOTO`). Printing `T1-T0` reveals that fetching 32 rows 
+  takes 88 jiffies of 1.5 seconds. That is 45 ms per fetch/scroll.
+  
 
 ## Links
 

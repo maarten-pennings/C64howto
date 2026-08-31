@@ -1,4 +1,4 @@
-# C64howto
+ # C64howto
 
 Various "How to xxx" questions and answers for the C64 (Commodore 64) that I want to remember. Some are linking to my old [howto repo](https://github.com/maarten-pennings/howto).
 
@@ -98,6 +98,8 @@ The [BMC64 KBD (old repo)](https://github.com/maarten-pennings/howto/tree/main/c
 Writing a UI to control the SID registers, and using the VICE tools
 to extract the BASIC program to PC, see [c64sid (old repo)](https://github.com/maarten-pennings/howto/tree/main/c64sid).
 
+I also discovered [petcat](https://github.com/maarten-pennings/howto/tree/main/c64sid#files) in the process.
+
 
 ## How to use the compare instruction of the 6502?
 
@@ -114,7 +116,7 @@ Article [c64functions (old repo)](https://github.com/maarten-pennings/howto/tree
 
 ## Commodore 64 memory partitioning
 
-Can we partition the C64 memory, storing two programs simultaneously?A multi-app setup?
+Can we partition the C64 memory, storing two programs simultaneously? A multi-app setup?
 No multitasking, we activate one, run it, activate another and run it.
 The howto [c64mempart (old repo)](https://github.com/maarten-pennings/howto/tree/main/c64mempart) explains it.
 
