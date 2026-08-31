@@ -823,7 +823,7 @@ The following aspects have not yet been tried and are topics for future experime
 
 ## 10 PRINT with REU
 
-In this section we are going to use the REU to speed up the 10 PRINT program. 
+In this section we are going to use the REU to implement the 10 PRINT program. 
 
 This variant is _not_ an attempt to "improve" on the 10 PRINT program, 
 it is just a vehicle to demonstrate some features of the REU in a well-known application.
@@ -831,8 +831,7 @@ it is just a vehicle to demonstrate some features of the REU in a well-known app
 
 ### Examining 10 PRINT
 
-The classic 10 PRINT program consists 
-of one line:
+The classic 10 PRINT program consists of one line:
 
 ```basic
   10 PRINT CHR$(205.5+RND(1));:GOTO 10
@@ -844,7 +843,8 @@ its argument to either 205 or 206, printing either `\` or `/`. The `GOTO 10` loo
 many (back) slashes to be printed, leading to a sort of maze.
 
 The program is rather slow because it needs to compute 1000 (back) slashes for 
-one screen (40 characters on 25 rows). We also want a continuous (infinite) scroll of (back) slashes.
+one screen (40 characters on 25 rows). We want a continuous scroll of (back) slashes.
+Scrolling on C64 is comes with an irregularity: two rows are scrolled at a time.
 
 
 ### REU and 10 PRINT
