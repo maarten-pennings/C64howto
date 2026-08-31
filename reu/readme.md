@@ -9,9 +9,9 @@ to incorporate a REU. I was wondering if I could use that REU, maybe even from B
 
 The answer is "yes". In this article we first have a look at the [registers](#registers) 
 that control the REU. Next we run [tests](#tests) to confirm our understanding.
-We finish by writing a simple REU [application](#fast-10-print-with-reu): the 
+We finish by writing a simple REU [application](#10-print-with-reu): the 
 `10 PRINT CHR$(205.5+RND(1));:GOTO 10`
-using the REU. It will be much longer than one line, but also much faster.
+using the REU. It will be much longer than one line, but also faster.
 
 If you don't have a kung Fu Flash 2, do not despair. 
 The [Commodore 64 Ultimate](https://commodore.net/computer/#:~:text=16%20MB%20system%2C-,16%20MB%20REU,-%2C%2016%20MB%20GeoRAM)
@@ -811,20 +811,22 @@ When the buffer prints we see that (2-2).
 ![08-fill](08-fill.png)
 
 
-### To do
+### Future work
+
+The following aspects have not yet been tried and are topics for future experiments:
 
 - Test `translen` of 0 being 64 kbyte.
 - What happens when transferring `len` bytes from/to C64 address `ad`, when `ad+len > $FFFF`.
 - What happens when transferring `len` bytes from/to reu address `ad`, when `ad+len > $FFFFFF`.
-- Try IRQ example.
+- Test IRQ example.
 
 
-
-## Fast 10 PRINT with REU
+## 10 PRINT with REU
 
 In this section we are going to use the REU to speed up the 10 PRINT program. 
 
-This is _not_ an attempt to "improve" on the 10 PRINT program, it is just a vehicle to demonstrate some features of the REU in a well-known application.
+This variant is _not_ an attempt to "improve" on the 10 PRINT program, 
+it is just a vehicle to demonstrate some features of the REU in a well-known application.
 
 
 ### Examining 10 PRINT
@@ -859,8 +861,8 @@ We fetch 1000 bytes from REU address 0 and place then at C64 address $0400 (the 
 Then we fetch 1000 bytes from REU address 40 and again store those at $0400. 
 This effectively scrolls the screen one row up.
 Then we fetch 1000 from 80 and store at $0400; another scroll up. And so on. 
-This is fast. No need to compute slashes and no need for the kernel to implement scrolling.
-Each fetch takes only 1ms (but we also need a couple of BASIC statements to execute the fetch). 
+This executes relatively fast. No need to compute slashes and no need for the kernel scroll.
+Each fetch takes only 1ms (keep in mind we also need a couple of BASIC statements to trigger the fetch). 
 
 
 ### REU memory layout
@@ -899,11 +901,13 @@ We believe that is enough variation for our proof of concept example.
 
 Todo...
 
-See "FAST 10PRINT REU" on d64.
+See "FAST 10PRINT REU" on d64. <<< change name (drop fast)
 
-Explain the basic program
+Add REU presence in basic program
 
-mention that thete is never a space character 
+Explain the basic program (and the use of colors)
+
+mention that there is never a space character 
 
 Also fill with REU is used for color mem buffer at $D800.
 
