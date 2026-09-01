@@ -1052,7 +1052,7 @@ the listing below is obtained via `petcat` to make the "magic" characters
   we go back to the "screen starting at row 0", this is achieved with the 
   `GOTO 650` after the `NEXT`.
 
-![](10print-with-reu.png)
+![10 PRINT output](10print-with-reu.png)
 
 Some notes
 
@@ -1064,6 +1064,9 @@ Some notes
 - I added `T0=TI` before the `FOR` loop, and `T1=TI` after `NEXT` 
   (instead of the `GOTO`). Printing `T1-T0` reveals that fetching 32 rows 
   takes 88 jiffies or 1.5 seconds. That is 45 ms per fetch/scroll.
+  
+- I wanted to slow down the animation by inserting a `WAIT 53265,128` for 
+  the VIC-II raster beam. Did not work.
   
 
 ## Links
