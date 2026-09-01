@@ -958,35 +958,43 @@ todo: slow down 685 for t=0 to99:next T
 
 Notes
 
-- Line 100 defines `R` to be the base address of the REU.
+- **100-120 color management**
+  
+  The first block, lines 100 to 120 are about color managament.
+  The exception is line 100; it defines `R` to be the base address of the REU
+  and annotates the program's name.
 
-- As explained, we use the REU to copy 1000 (back) slashes with one command 
-  from the REU memory to the C64 _screen memory_ (at address $0400 or 1024).
-  To make the characters visible, the _color memory_ (at address $D800 or 55296)
-  must also be set. What color to use. The design decision is that the 
-  program starts be setting all colors to default. 
+  As explained, we use the REU's fetch command to copy 1000 (back) slashes, 
+  from the REU memory, to the C64 _screen memory_ (at address $0400 or 1024).
+  To make the slashes visible, the _color memory_ (at address $D800 or 55296)
+  must also be set. What color to use? The design decision is that the 
+  program starts by setting all colors to default. 
   Line 110 sets the border (53280) to light blue (color 14) and the screen
   background (53281) to dark blue (color 6).
-  Finally line 120 sets the cursor (foreground) color to light blue (14)
-  and prints `PLEASE  WAIT` in that color (`{lblu}`). 
-  This establishes all defaults.
+  Finally line 120 sets the cursor (foreground) color to light blue
+  (`{lblu}` color 14) and prints `PLEASE  WAIT`. 
+  This establishes all default colors.
   
-- The end of line 120 switches the cursor (foreground) color to dark blue 
-  (6, `{blu}`). The reason for this is that the program will now print 256 
-  (back) slashes. Once printed, they will be stashed in the REU memory.
+  The end of line 120 switches the cursor (foreground) color to dark blue 
+  (6, `{blu}`). The reason for this is that the next step of the program is to
+  print 256 (back) slashes. Once printed, they will be stashed in the REU memory.
   But we do not want to show this intermediate step to the user, therefore 
   we print the (back) slashes in the screen background color.
 
-- Lines 200-230 print the 256 (back) slashes in the 10 PRINT way.
+- **200-230 generate (back) slashes**
+  
+  Lines 200-230 print the 256 (back) slashes, in the familiar 10 PRINT way.
   One thing is special, the very first character of the 256 is forced to be 
-  206 (`/`). As it happens `PRINT 206 AND 15` prints 14. 
+  206 (`/`). As it happens `206 AND 15` equals 14. 
   We later misuse the first character of the 256 byte page to let the REU
-  fetch, no _fill_ t the color memory with 100 bytes 206.
+  fetch, no _fill_, the color memory with 1000 bytes 206 (lines 500-550).
   Since the color memory only stores the lower 4 bits, the color memory 
-  will have 1000 times 14, which happens to be light blue, out chosen 
+  will have 1000 times 14, which happens to be light blue, our chosen 
   cursor (foreground) color.
   
-- Lines 300-380 is the stash loop. This stashes the 256 byte page 9 times 
+- **300-380 stash loop**
+
+  Lines 300-380 is the stash loop. This stashes the 256 byte page 9 times 
   in the REU memory. 
   
   Line 300 sets `c64base` MSB to 4, since the screen memory starts at $0400. 
@@ -1001,7 +1009,9 @@ Notes
   Line 360 selects the destination page in the REU, line 370 is the actual stash:
   128 (EXECUTE) + 32 (LOAD) + 16 (NOFF00) + 0 (STASH).
 
-- The next block, 400 starts by clearing the screen. 
+- **400-430 REU presence check**
+
+  The next block, 400 starts by clearing the screen. 
   This gets rid of the `PLEASE WAIT` message and the 256 invisible (back) slashes.
 
   But the main goal of lines 400-430 is to check if there is a REU active in the C64.
@@ -1010,7 +1020,9 @@ Notes
   If the flag was set, it should now be cleared, since STATUS.ENDOFBLOCK is 
   "clear on read". If not there is a jump back to 420.
 
-- The final prep step before the animation start is to fill the color memory 
+- **500-550 color memory fill**
+
+  The final prep step before the animation start is to fill the color memory 
   (lines 500-550). This will be a fetch (not a stash), but without stepping 
   `reubase`, so the fetch is a fill.
   
@@ -1026,7 +1038,9 @@ Notes
   Line 550 is the actual (fill-)fetch:
   128 (EXECUTE) + 32 (LOAD) + 16 (NOFF00) + 1 (FETCH).
 
-- The animation runs in lines 600-690.
+- **600-690 animation**
+
+  The animation runs in lines 600-690.
 
   All REU registers are written (again). 
   Line 600 sets the `C64base` to 4 (MSB) and 0 (LSB), or $0400 or 1024, the screen memory. 
