@@ -912,27 +912,28 @@ the listing below is obtained via `petcat` to make the "magic" characters
 ```basic
 100 r=57088:rem 10print-with-reu
 110 poke 53280,14:poke 53281,6
-120 print "{clr}{lblu}";tab(54);"please wait{blu}"
+120 print "{clr}{lblu}";tab(54);"please wait"
 190 :
-200 print chr$(206);
-210 for i=0 to 254
-220 :print chr$(205.5+rnd(1));
-230 next
+200 print "{blu}";
+210 print chr$(206);
+220 for i=0 to 254
+230 :print chr$(205.5+rnd(1));
+240 next
+250 print "{lblu}"
 290 :
 300 poke r+2,80:poke r+3,4
 310 poke r+4, 0:poke r+5,0:poke r+6,0
 320 poke r+7, 0:poke r+8,1
 330 poke r+9,0
 340 poke r+10,0
-350 for p=0 to 8
-360 :poke r+5,p
+350 for i=0 to 8
+360 :poke r+5,i
 370 :poke r+1,128+32+16+0
-380 next p
+380 next
 390 :
-400 print "{clr}{lblu}"
-410 if peek(r) and 64 = 64 then 430
-420 print "error:reu expected":end
-430 if peek(r) and 64 <> 0 then 420
+400 if (peek(r) and 64) = 64 then 420
+410 print "error:reu expected":end
+420 if (peek(r) and 64) <> 0 then 410
 490 :
 500 poke r+2,0:poke r+3,216
 510 poke r+4,0:poke r+5,0:poke r+6,0
@@ -946,29 +947,23 @@ the listing below is obtained via `petcat` to make the "magic" characters
 620 poke r+7,0:poke r+8,4
 630 poke r+9,0
 640 poke r+10,0
-650 for y=0 to 31
-660 :a=y*40:ah=int(a/256):al=a and 255
+650 for i=0 to 31
+660 :a=i*40:ah=int(a/256):al=a and 255
 670 :poke r+4,al:poke r+5,ah
 680 :poke r+1,128+32+16+1
-690 next y:goto 650
+690 next:goto 650
 ```
-
-todo: bug in program: line 410 and 430 need ().
-
-todo: slow down 685 for t=0 to99:next T
-
-Notes
 
 - **100-120 color management**
   
-  The first block, lines 100 to 120 are about color managament.
+  The first block, lines 100 to 120 are about color management.
   The exception is line 100; it defines `R` to be the base address of the REU
   and annotates the program's name.
 
   As explained, we use the REU's fetch command to copy 1000 (back) slashes, 
   from the REU memory, to the C64 _screen memory_ (at address $0400 or 1024).
   To make the slashes visible, the _color memory_ (at address $D800 or 55296)
-  must also be set. What color to use? The design decision is that the 
+  must also be set. What color to use? The design decision made is that the 
   program starts by setting all colors to power-on-default. 
   Line 110 sets the border (53280) to light blue (color 14) and the screen
   background (53281) to dark blue (color 6).
@@ -976,19 +971,17 @@ Notes
   (`{lblu}` color 14) and prints `PLEASE  WAIT`. 
   This establishes all default colors.
   
-  The end of line 120 switches the cursor (foreground) color to dark blue 
-  (6, `{blu}`). The reason for this is that the next step of the program is to
-  print 256 (back) slashes. Once printed, they will be stashed in the REU memory.
-  But we do not want to show this intermediate step to the user, therefore 
-  we print the (back) slashes in the screen background color.
-
-- **200-230 generate (back) slashes**
+- **200-250 generate (back) slashes**
   
-  Lines 200-230 print the 256 (back) slashes, in the familiar 10 PRINT way.
+  Lines 200-250 print the 256 (back) slashes, in the familiar 10 PRINT way.
+  However, we do not want the user to see them (yet). Therefore, line 200 
+  switches the cursor (foreground) color to dark blue (6, `{blu}`),
+  and line 250 switches back to light blue (14, `{lblu}`).
+  
   One thing is special, the very first character of the 256 is forced to be 
-  206 (`/`). As it happens `206 AND 15` equals 14. 
+  206 (`/`) by line 210. As it happens `206 AND 15` equals 14. 
   We later re-use the first character of the 256 byte page to let the REU
-  fetch, no _fill_, the color memory with 1000 bytes 206 (lines 500-550).
+  fetch, no _fill_, the _color_ memory with 1000 bytes 206 (lines 500-550).
   Since the color memory only stores the lower 4 bits, the color memory 
   will have 1000 times the value 14, which happens to be light blue, our chosen 
   cursor (foreground) color.
@@ -999,8 +992,8 @@ Notes
   in the REU memory. 
   
   Line 300 sets `c64base` MSB to 4, since the screen memory starts at $0400. 
-  LSB is set to 80 because, due to the `print tab(54);"please wait"` the 
-  (back) slashes start at the third row.
+  LSB is set to 80 because, due to the `print tab(54);"please wait"`, the 
+  (back) slashes start at the third row, i.e. offset 80.
   Line 310 sets `reubase` to $000000, but the loop sets the middle byte 
   (line 360) to the page number in the REU. 
   Line 320 sets the `translen` to $0100, that is 1 page (256 bytes).
@@ -1010,16 +1003,13 @@ Notes
   Line 360 selects the destination page in the REU, line 370 is the actual stash:
   128 (EXECUTE) + 32 (LOAD) + 16 (NOFF00) + 0 (STASH).
 
-- **400-430 REU presence check**
+- **400-420 REU presence check**
 
-  The next block, 400 starts by clearing the screen. 
-  This gets rid of the `PLEASE WAIT` message and the 256 invisible (back) slashes.
-
-  But the main goal of lines 400-430 is to check if there is a REU active in the C64.
-  After the stashes (lines 300-380) the STATUS.ENDOFBLOCK flag should be set (line 410).
-  If it was not, line 420 prints an error and stops.
+  The goal of lines 400-430 is to check if there is a REU active in the C64.
+  After the stashes (lines 300-380) the STATUS.ENDOFBLOCK flag should be set.
+  This is checked in line 400. If it was not, line 410 prints an error and stops.
   If the flag was set, it should now be cleared, since STATUS.ENDOFBLOCK is 
-  "clear on read". If not there is a jump back to 420 to print an error and stop.
+  "clear on read". If not there is a jump back to 410 to print an error and stop.
 
 - **500-550 color memory fill**
 
@@ -1034,9 +1024,9 @@ Notes
   is $E or 14 or light blue. In line 520 we are lazy and set `translen` to 
   4 pages (1024) where 1000 would be enough.
 
-  Again, we do not want interrupts (line 530) and but the stepping is special: 
-  stepping for `C64base` but fixed for `reubase` (line 540), a _fill_ configuration.
-  Line 550 is the actual (fill-)fetch:
+  Again, we do not want interrupts (line 530) but the address control is special: 
+  stepping for `C64base` but this time fixed for `reubase` (line 540), 
+  a _fill_ configuration. Line 550 is the actual (fill-)fetch:
   128 (EXECUTE) + 32 (LOAD) + 16 (NOFF00) + 1 (FETCH).
 
 - **600-690 animation**
@@ -1051,26 +1041,29 @@ Notes
   where 1000 would be enough.
   Again, we do not want interrupts (line 630) and we do want address stepping (line 640).
   
-  Line 650 loops `Y` over the 32 rows that are in the REU memory.
-  Line 660 first computes the address `A` of row `Y` in the REU,
+  Line 650 loops `I` over the 32 rows that are in the REU memory.
+  Line 660 first computes the address `A` of row `I` in the REU,
   and then splits `A` in high byte (`AH`) and low byte (`AL`).
   In 670 these are used to set the `c64base`.
-  
   Line 680 is the actual fetch:
   128 (EXECUTE) + 32 (LOAD) + 16 (NOFF00) + 1 (FETCH).
   
   Line 690 ensures that after copying the "screen starting at row 31",
   we go back to the "screen starting at row 0", this is achieved with the 
-  `GOTO 650` at the end of the program.
-  
-- Observe that the animation loop fetches one complete screen a row at a time.
+  `GOTO 650` after the `NEXT`.
+
+![](10print-with-reu.png)
+
+Some notes
+
+- Observe that the animation loop fetches one complete screen, a row at a time.
   As a result, unlike the scrolling solution of the original 10 PRINT, there
   are never two empty rows, nor one empty row, not even an empty screen position
   at column 80 in row 25.
 
 - I added `T0=TI` before the `FOR` loop, and `T1=TI` after `NEXT` 
   (instead of the `GOTO`). Printing `T1-T0` reveals that fetching 32 rows 
-  takes 88 jiffies of 1.5 seconds. That is 45 ms per fetch/scroll.
+  takes 88 jiffies or 1.5 seconds. That is 45 ms per fetch/scroll.
   
 
 ## Links
