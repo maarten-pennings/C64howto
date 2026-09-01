@@ -1022,8 +1022,8 @@ Notes
 
 - **500-550 color memory fill**
 
-  The final prep step before the animation start is to fill the color memory 
-  (lines 500-550). This will be a fetch (not a stash), but without stepping 
+  The final prep step before the animation starts is to fill the color memory.
+  This will be a fetch (not a stash), but without stepping 
   `reubase`, so the fetch is a fill.
   
   Just for clarity, this is a REU demo after all, all REU 
