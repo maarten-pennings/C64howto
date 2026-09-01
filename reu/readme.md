@@ -20,6 +20,7 @@ both contain a REU. And even VICE emulates a REU.
 
 > Note to self: enabling REU in VICE together with KCS power cartridge does _not_ work.
 
+> Note to self: for enabling the REU in Kung Fu Flash 2 see [repo](https://codeberg.org/KimJorgensen/KungFuFlash2#reu-emulation).
 
 ## Introduction
 
@@ -968,7 +969,7 @@ Notes
   from the REU memory, to the C64 _screen memory_ (at address $0400 or 1024).
   To make the slashes visible, the _color memory_ (at address $D800 or 55296)
   must also be set. What color to use? The design decision is that the 
-  program starts by setting all colors to default. 
+  program starts by setting all colors to power-on-default. 
   Line 110 sets the border (53280) to light blue (color 14) and the screen
   background (53281) to dark blue (color 6).
   Finally line 120 sets the cursor (foreground) color to light blue
@@ -986,10 +987,10 @@ Notes
   Lines 200-230 print the 256 (back) slashes, in the familiar 10 PRINT way.
   One thing is special, the very first character of the 256 is forced to be 
   206 (`/`). As it happens `206 AND 15` equals 14. 
-  We later misuse the first character of the 256 byte page to let the REU
+  We later re-use the first character of the 256 byte page to let the REU
   fetch, no _fill_, the color memory with 1000 bytes 206 (lines 500-550).
   Since the color memory only stores the lower 4 bits, the color memory 
-  will have 1000 times 14, which happens to be light blue, our chosen 
+  will have 1000 times the value 14, which happens to be light blue, our chosen 
   cursor (foreground) color.
   
 - **300-380 stash loop**
@@ -1018,23 +1019,23 @@ Notes
   After the stashes (lines 300-380) the STATUS.ENDOFBLOCK flag should be set (line 410).
   If it was not, line 420 prints an error and stops.
   If the flag was set, it should now be cleared, since STATUS.ENDOFBLOCK is 
-  "clear on read". If not there is a jump back to 420.
+  "clear on read". If not there is a jump back to 420 to print an error and stop.
 
 - **500-550 color memory fill**
 
-  The final prep step before the animation starts is to fill the color memory.
+  The final preparation step before the animation starts is to fill the color memory.
   This will be a fetch (not a stash), but without stepping 
   `reubase`, so the fetch is a fill.
   
   Just for clarity, this is a REU demo after all, all REU 
   registers are written (again). Line 500 sets the `C64base` to 216 (MSB) 
-  and 0 (LSB), or $D800 or 55296, the color memory. The `reubase` is 
+  and 0 (LSB), for $D800 or 55296, the color memory. The `reubase` is 
   $000000, the location where line 200 put value 206 or $CE, so the low nibble 
   is $E or 14 or light blue. In line 520 we are lazy and set `translen` to 
   4 pages (1024) where 1000 would be enough.
 
   Again, we do not want interrupts (line 530) and but the stepping is special: 
-  stepping for `C64base` but fixed for `reubase` (line 540).
+  stepping for `C64base` but fixed for `reubase` (line 540), a _fill_ configuration.
   Line 550 is the actual (fill-)fetch:
   128 (EXECUTE) + 32 (LOAD) + 16 (NOFF00) + 1 (FETCH).
 
@@ -1042,15 +1043,15 @@ Notes
 
   The animation runs in lines 600-690.
 
-  All REU registers are written (again). 
-  Line 600 sets the `C64base` to 4 (MSB) and 0 (LSB), or $0400 or 1024, the screen memory. 
+  All REU registers are written (once again). 
+  Line 600 sets the `C64base` to 4 (MSB) and 0 (LSB), for $0400 or 1024, the screen memory. 
   Line 610 sets `reubase` to $000000, but the loop sets the two LSB bytes
   (line 670) to the row number in the REU. 
   In line 620 we are lazy again and set `translen` to 4 pages (1024) 
   where 1000 would be enough.
   Again, we do not want interrupts (line 630) and we do want address stepping (line 640).
   
-  Line 650 loops `Y` over the 32 rows that are in the REU.
+  Line 650 loops `Y` over the 32 rows that are in the REU memory.
   Line 660 first computes the address `A` of row `Y` in the REU,
   and then splits `A` in high byte (`AH`) and low byte (`AL`).
   In 670 these are used to set the `c64base`.
@@ -1058,13 +1059,14 @@ Notes
   Line 680 is the actual fetch:
   128 (EXECUTE) + 32 (LOAD) + 16 (NOFF00) + 1 (FETCH).
   
-  Line 690 ensures that after copying the screen that starts with row 31,
-  we go back to the screen starting at row 0, this is achieved with the 
+  Line 690 ensures that after copying the "screen starting at row 31",
+  we go back to the "screen starting at row 0", this is achieved with the 
   `GOTO 650` at the end of the program.
   
 - Observe that the animation loop fetches one complete screen a row at a time.
-  As a result, there is never two empty rows, nor one empty row, not even 
-  an empty screen position at column 80 in row 25.
+  As a result, unlike the scrolling solution of the original 10 PRINT, there
+  are never two empty rows, nor one empty row, not even an empty screen position
+  at column 80 in row 25.
 
 - I added `T0=TI` before the `FOR` loop, and `T1=TI` after `NEXT` 
   (instead of the `GOTO`). Printing `T1-T0` reveals that fetching 32 rows 
@@ -1088,7 +1090,7 @@ REU specific
 General
 
 - [BASIC control characters](https://www.c64-wiki.com/wiki/control_character)
-- [Kung Fu Flash 2](https://codeberg.org/KimJorgensen/KungFuFlash2)
+- [Kung Fu Flash 2](https://codeberg.org/KimJorgensen/KungFuFlash2) and [REU details](https://codeberg.org/KimJorgensen/KungFuFlash2#reu-emulation)
 - [Commodore 64 Ultimate](https://commodore.net)
 
 10 PRINT
