@@ -907,7 +907,7 @@ We believe that is enough variation for our proof of concept example.
 Below is the listing of the BASIC program that mimics 10 PRINT using the REU.
 The program `10PRINT-WITH-REU` can be found on [reu-tests.d64](reu-tests.d64); 
 the listing below is obtained via `petcat` to make the "magic" characters 
-(like switch t0 light blue) readable (`{lblu}.
+(like switch to light blue) readable (`{lblu}`).
 
 ```basic
 100 r=57088:rem 10print-with-reu
@@ -1005,7 +1005,7 @@ the listing below is obtained via `petcat` to make the "magic" characters
 
 - **400-420 REU presence check**
 
-  The goal of lines 400-430 is to check if there is a REU active in the C64.
+  The goal of lines 400-420 is to check if there is a REU active in the C64.
   After the stashes (lines 300-380) the STATUS.ENDOFBLOCK flag should be set.
   This is checked in line 400. If it was not, line 410 prints an error and stops.
   If the flag was set, it should now be cleared, since STATUS.ENDOFBLOCK is 
@@ -1057,16 +1057,18 @@ the listing below is obtained via `petcat` to make the "magic" characters
 Some notes
 
 - Observe that the animation loop fetches one complete screen, a row at a time.
-  As a result, unlike the scrolling solution of the original 10 PRINT, there
+  This gives the impression of scrolling, without using the scroll function
+  of the kernel. As a result, unlike the original 10 PRINT, there
   are never two empty rows, nor one empty row, not even an empty screen position
   at column 80 in row 25.
 
-- I added `T0=TI` before the `FOR` loop, and `T1=TI` after `NEXT` 
-  (instead of the `GOTO`). Printing `T1-T0` reveals that fetching 32 rows 
+- I added `T0=TI` before the `FOR` loop at line 650, and `T1=TI` after `NEXT` 
+  (line 690). Printing `T1-T0` reveals that fetching 32 rows 
   takes 88 jiffies or 1.5 seconds. That is 45 ms per fetch/scroll.
   
 - I wanted to slow down the animation by inserting a `WAIT 53265,128` for 
-  the VIC-II raster beam. Did not work.
+  the VIC-II raster beam. Did not work. I now have a simple wait loop
+  `685 FOR T=0 TO 222:NEXT` when I want a slower scroll.
   
 
 ## Links
