@@ -1,6 +1,6 @@
 # Maartens Commodore Corner.
 
-Some of the C64 howto's have appeared as articles in 
+Some of the [C64 howto's](https://github.com/maarten-pennings/C64howto) have appeared as articles in 
 [Clubblad Info Bulletin](https://commodore.hcc.nl/downloads/publiek/clubblad-info-bulletin) 
 of the [HCC Commodore](https://commodore.hcc.nl/) chapter.
 
@@ -10,6 +10,7 @@ This is an overview of articles published in the series _Maartens Commodore Corn
 
 | MCC issue | Info bulletin issue                                                                                                        | GitHub Dutch                                                                                                          | GitHub English                                                                                       |
 |:----------|:---------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------|
+|     5     | 2027 mar (#2) planned                                                                                                      | not yet available                                                                                                     | Recursion in BASIC                                                                                   |
 |     4     | 2027 jan (#1) planned                                                                                                      | not yet available                                                                                                     | [Commodore 64 rows versus lines](https://github.com/maarten-pennings/C64howto/tree/main/rowsvslines) |
 |     3     | 2026 dec (#6) planned                                                                                                      | not yet available                                                                                                     | [REU](https://github.com/maarten-pennings/C64howto/tree/main/reu)                                    |
 |     2     | 2026 okt (#5) submitted                                                                                                    | [Blinky1541](https://github.com/maarten-pennings/C64howto/blob/main/blinky1541/blinky1541-nl.md)                      | [Blinky1541](https://github.com/maarten-pennings/C64howto/tree/main/blinky1541)                      |
