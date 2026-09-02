@@ -150,4 +150,10 @@ In Turbo Macro Pro, the `←` key is used extensively, so I wanted to remap that
 See [how to (old repo)](https://github.com/maarten-pennings/howto/tree/main/ViceKeyboardRemap/readme.md) do that yourself.
 
 
+## Maartens Commodore Corner
+
+Some of these "howto"s have appeared as articles in Clubblad Info Bulletin of 
+HCC Commodore. See the [overview](MCC).
+
+
 (end)
