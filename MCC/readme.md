@@ -1,14 +1,14 @@
-# Maartens Commodore Corner.
+# MCC - Maartens Commodore Corner
 
 Some of the [C64 howto's](https://github.com/maarten-pennings/C64howto) have appeared as articles in 
 [Clubblad Info Bulletin](https://commodore.hcc.nl/downloads/publiek/clubblad-info-bulletin) 
-of the [HCC Commodore](https://commodore.hcc.nl/) chapter.
+of the [HCC Commodore](https://commodore.hcc.nl/) chapter in the Netherlands.
 
 ## Overview
 
 This is an overview of articles published in the series _Maartens Commodore Corner_.
 
-| MCC issue | Info bulletin issue                                                                                                        | GitHub Dutch                                                                                                          | GitHub English                                                                                       |
+| MCC issue | Info Bulletin                                                                                                              | GitHub Dutch                                                                                                          | GitHub English                                                                                       |
 |:----------|:---------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------|
 |     5     | 2027 mar (#2) planned                                                                                                      | not yet available                                                                                                     | Recursion in BASIC                                                                                   |
 |     4     | 2027 jan (#1) planned                                                                                                      | not yet available                                                                                                     | [Commodore 64 rows versus lines](https://github.com/maarten-pennings/C64howto/tree/main/rowsvslines) |
@@ -18,12 +18,21 @@ This is an overview of articles published in the series _Maartens Commodore Corn
 |    1a     | [2025 dec (#6) part 1](https://commodore.hcc.nl/downloads/publiek/clubblad-info-bulletin/1219-infobulletin-2025-12-1/file) | [C64 geheugen verdelen.pdf](https://github.com/maarten-pennings/howto/blob/main/c64mempart/C64-geheugen-verdelen.pdf) | [C64 Memory partitioning](https://github.com/maarten-pennings/howto/tree/main/c64mempart)            |
 
 
-## Logo
+## MCC logo
 
-![960 x 640](mcc960x640.png)
+### 960 × 640
 
-![480 x 320](mcc480x320.png)
+![960 × 640](mcc960x640.png)
 
-![240 x 160](mcc240x160.png)
+
+### 480 × 320
+
+![480 × 320](mcc480x320.png)
+
+
+### 240 × 160
+
+![240 × 160](mcc240x160.png)
+
 
 (end)
