@@ -1,5 +1,9 @@
+[![MCC](https://github.com/maarten-pennings/C64howto/blob/main/MCC/mcc240x160.png)](https://github.com/maarten-pennings/C64howto/tree/main/MCC)
+
+Maarten Pennings MCC#02 
+
 # Blinky1541
-Maarten Pennings, Juli 2026
+
 
 _Blinky1541_ is een machinetaal programma dat runt op de 1541 disk drive;
 het laat de _activity LED_ van de 1541 vijf keer knipperen.
