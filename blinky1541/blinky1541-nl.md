@@ -2,13 +2,14 @@
 
 Maarten Pennings MCC#02 
 
+
 # Blinky1541
 
 
 _Blinky1541_ is een machinetaal programma dat runt op de 1541 disk drive;
 het laat de _activity LED_ van de 1541 vijf keer knipperen.
 
-Dit artikel is een verkorte Nederlandse versie van een engels artikel.
+Dit artikel is een verkorte Nederlandse versie van een Engels artikel.
 Dat bevat meer details en bijvoorbeeld ook source files.
 
 > [https://github.com/maarten-pennings/C64howto/blob/main/blinky1541/readme.md](https://github.com/maarten-pennings/C64howto/blob/main/blinky1541/readme.md). 
