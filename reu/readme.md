@@ -875,8 +875,9 @@ Each fetch takes only 1ms (keep in mind we also need a couple of BASIC statement
 There are two problems with the above sketched REU version of 10 PRINT. 
 
 The first problem is that every (back) slash we fetch 
-for the screen, must be in the REU first, so we must compute it. Gone is the gain in "slashes compute" time.
-To solve this, we cheat. We generate only 256 (back) slashes and sequentially stash them in the REU.
+for the screen, must be in the REU first, so we must compute it. Gone is the 
+gain in "slashes compute" time. To solve this, we cheat. We generate only 256 
+(back) slashes and sequentially stash multiple copies of them in the REU.
 Wouldn't we notice that? If we look carefully yes. However, 256 is 6 screen rows (of 40) 
 plus 16 characters. As a result the second series of 256 (back) slashes is displaced by 
 16 characters. This makes it harder to spot the repeating pattern. Good enough 
