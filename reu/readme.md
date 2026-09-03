@@ -22,6 +22,9 @@ both contain a REU. And even VICE emulates a REU.
 
 > Note to self: for enabling the REU in Kung Fu Flash 2 see [repo](https://codeberg.org/KimJorgensen/KungFuFlash2#reu-emulation).
 
+There is a summary in [Dutch](reu-nl.md).
+
+
 ## Introduction
 
 A REU contains several blocks of RAM, each 64k byte.
