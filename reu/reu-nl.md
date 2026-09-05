@@ -403,8 +403,13 @@ kolom 80 op rij 25.
 
 Ik heb `T0=TI` toegevoegd vóór de `FOR`-lus op regel 650, en `T1=TI` ná `NEXT` 
 (regel 690). Het afdrukken van `T1-T0` laat zien dat het ophalen van 32 
-rijen 88 _jiffies_ kost, ofwel dat het 1,5 seconde duurt. 
-Dat is 45 ms per fetch/scroll.
+rijen 86 _jiffies_ kost, ofwel dat het 1,5 seconde duurt. 
+Dat is 45 ms per fetch/scroll. In een tweede experiment zet ik ook nog 
+`R=49152` voor de lus. Dit zorgt ervoor dat alle BASIC code hetzelfde is,
+maar dat er geen REU commando's worden uitgevoerd. Nu kosten de 32 iteraties
+84 _jiffies_. Het verschil is 2 _jiffies_ ofwel 2/60*1000 = 33 ms voor 32
+kopieer acties. Kortom, 1 REU commando voor een 1000 byte _fetch_ kost 
+inderdaad 1 ms.
 
 De animatie is veel te snel. Ik wilde hem vertragen door een `WAIT 53265,128` 
 in te voegen voor de raster positie van de VIC-II. Dat werkte niet. 

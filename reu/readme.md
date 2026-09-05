@@ -1068,7 +1068,14 @@ Some notes
 
 - I added `T0=TI` before the `FOR` loop at line 650, and `T1=TI` after `NEXT` 
   (line 690). Printing `T1-T0` reveals that fetching 32 rows 
-  takes 88 jiffies or 1.5 seconds. That is 45 ms per fetch/scroll.
+  takes 86 jiffies or 1.5 seconds. That is 45 ms per fetch/scroll.
+
+- In a next experiment I added `R=49152` before the `T0=TI`. 
+  This ensures that all executed BASIC code is the same as before, but there 
+  is no longer a REU that executes copy commands. 
+  With this setup, the 32 iterations take 84 jiffies.
+  A difference of 2 jiffies or 2*60/1000 = 33 ms for 32 commands.
+  In other words, 1 REU command to copy 1000 bytes takes indeed 1 ms.
   
 - I wanted to slow down the animation by inserting a `WAIT 53265,128` for 
   the VIC-II raster beam. Did not work. I now have a simple wait loop
