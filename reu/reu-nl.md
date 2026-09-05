@@ -193,8 +193,7 @@ te scrollen. Wij denken dat dit genoeg variatie biedt voor onze demo.
 We bespreken nu het BASIC programma `10PRINT-WITH-REU`. We gebruiken de
 `petcat` conventie om speciale symbolen als "wissel naar light blauw" 
 af te drukken als `{lblu}`. Ook hakken we bij de bespreking het programma 
-op in blokken, maar alle blokken achter elkaar vormen het uitvoerbare 
-programma.
+op in blokken. Alle blokken achter elkaar vormen het uitvoerbare programma.
 
 
 ### Kleuren
@@ -205,21 +204,20 @@ programma.
 120 print "{clr}{lblu}";tab(54);"please wait"
 ```
 
-Het eerste blok regelt de kleur. 
+Het eerste blok regelt de kleuren. 
 Regel 100 is de uitzondering; deze definieert variabele `R` als het 
 basisadres van de REU en het bevat de naam van het programma.
 
 Zoals uitgelegd gebruiken we het _fetch_ commando van de REU om 1000 (schuine) 
-strepen te kopiëren uit het REU-geheugen naar het schermgeheugen van de C64 
-(op adres $0400 of 1024). Om de strepen zichtbaar te maken, moet ook het 
-_kleurengeheugen_ (op adres$D800 of 55296) worden ingesteld. 
+strepen te kopiëren uit het REU-geheugen naar het schermgeheugen van de C64. 
+Om de strepen zichtbaar te maken, moet ook het _kleurengeheugen_ worden ingesteld. 
 Welke kleur zullen we gebruiken? De ontwerpkeuze is dat we de C64 standaard 
 kleuren gebruiken.
 
 Regel 110 stelt de rand (53280) in op lichtblauw (kleur 14) en de 
 achtergrond van het scherm (53281) op donkerblauw (kleur 6).
 Tot slot stelt regel 120 de cursor of voorgrond kleur in op lichtblauw 
-({lblu} kleur 14) en drukt `PLEASE  WAIT` af.
+(`{lblu}` kleur 14) en drukt `PLEASE  WAIT` af.
 Hiermee zijn alle standaardkleuren ingesteld.
 
 
@@ -234,21 +232,19 @@ Hiermee zijn alle standaardkleuren ingesteld.
 250 print "{lblu}"
 ```
 
-het tweede blok drukt de 256 (schuine) strepen af op de bekende 10 PRINT
+Het tweede blok drukt de 256 (schuine) strepen af op de bekende 10 PRINT
 manier. We willen echter niet dat de gebruiker ze (nu al) ziet. 
-Daarom schakelt regel 200 de cursor kleur om naar donkerblauw (6, {blu})
+Daarom schakelt regel 200 de cursor kleur om naar donkerblauw (6, `{blu}`)
 dezelfde als de achtergrond. Regel 250 schakelt weer terug naar lichtblauw 
-(14, {lblu}).
+(14, `{lblu}`).
 
 Eén ding is bijzonder: het allereerste teken van de 256 wordt door regel 210 
 geforceerd ingesteld op 206 (`/`). Toevallig is 206 AND 15 gelijk aan 14. 
 We hergebruiken later het eerste teken van de pagina om de REU het 
 kleurengeheugen te laten vullen (via _fill_) met 1000 bytes met de waarde 206 
-(zie regels 500-550 verderop). 
-
-Omdat het kleurengeheugen alleen de onderste 4 bits van 206 opslaat, 
-krijgt het kleurengeheugen 1000 keer de waarde 14, wat lichtblauw is, 
-onze gekozen cursor kleur.
+(zie regels 500-550 verderop). Omdat het kleurengeheugen alleen de onderste 
+4 bits van 206 opslaat, krijgt het kleurengeheugen 1000 keer de waarde 14, 
+wat lichtblauw is, onze gekozen cursor kleur.
 
 
 ### Pagina's _stashen_
@@ -265,14 +261,14 @@ onze gekozen cursor kleur.
 380 next
 ```
 
-Dit blok slaat de pagina van 256 bytes aan schuine strepen) 9 keer 
+Dit blok slaat de pagina van 256 bytes aan schuine strepen negen keer 
 op in het REU-geheugen.
 
 We configureren de REU via de registers.
 
 - Regel 300 stelt de MSB van `c64base` in op 4 (het schermgeheugen begint op $0400). 
-  De LSB wordt ingesteld op 80 omdat vanwege de `PRINT TAB(54);"PLEASE WAIT"`, 
-  de (schuine) strepen beginnen op de derde rij, oftewel met een offset van 80.
+  De LSB wordt ingesteld op 80 omdat vanwege de `PRINT TAB(54);"PLEASE  WAIT"`, 
+  de (schuine) strepen beginnen op de derde rij, oftewel met een _offset_ van 80.
   
 - Regel 310 stelt `reubase` in op $000000.
   Maar in de `FOR-NEXT` lus (regel 360) wordt de middelste byte overschreven 
@@ -285,7 +281,7 @@ We configureren de REU via de registers.
 - We willen wél dat de adressen automatisch ophogen (regel 340) en 
   zetten `addrctrl` dus op 0.
 
-- De lus heeft 9 iteraties (regel 350), waarbij 9 keer een pagina wordt opgeslagen.
+- De lus heeft 9 iteraties (regel 350), waarbij steeds een pagina wordt gekopieerd.
   Regel 360 selecteert de bestemmingspagina in de REU, en regel 370 is de 
   daadwerkelijke _stash_ opdracht; we zetten deze bits
   128 (EXECUTE) + 32 (LOAD) + 16 (NOFF00) + 0 (STASH).
@@ -301,12 +297,12 @@ We configureren de REU via de registers.
 
 Het doel van dit blokje is om te controleren of er een REU actief is in de C64.
 
-Na de _stashes_ van het vorige blok moet de vlag `STATUS.ENDOFBLOCK` in 
-het `status` register hoog zijn. Dit wordt gecontroleerd in regel 400. 
+Na de _stashes_ van het vorige blok zou de vlag `STATUS.ENDOFBLOCK` in 
+het `status` register hoog moeten zijn. Dit wordt gecontroleerd in regel 400. 
 Als dat niet zo was, drukt regel 410 een foutmelding af en stopt het programma.
 
 Als de vlag wél ingesteld was, moet deze nu gewist zijn, aangezien 
-`STATUS.ENDOFBLOCK` gewist wordt bij het lezen (_clear on read_). 
+`STATUS.ENDOFBLOCK` gewist wordt bij lezen (_clear on read_). 
 Is dat niet het geval, dan volgt er een sprong terug naar regel 410 
 om een foutmelding af te drukken en te stoppen.
 
@@ -398,10 +394,12 @@ Alle REU-registers worden (nogmaals) beschreven.
 
 De animatielus haalt één compleet scherm op, rij voor rij. 
 Dit geeft de indruk van scrollen, zonder gebruik te maken van de 
-scrollfunctie van de kernel. Het resultaat is dat er, 
+_scroll_ functie van de kernel. Het resultaat is dat er, 
 in tegenstelling tot de originele 10 PRINT, nooit twee lege rijen zijn, 
 ook nooit één lege rij, en dat er zelfs geen lege schermpositie is in 
 kolom 80 op rij 25.
+
+![10 PRINT met REU](10print-with-reu.png)
 
 Ik heb `T0=TI` toegevoegd vóór de `FOR`-lus op regel 650, en `T1=TI` ná `NEXT` 
 (regel 690). Het afdrukken van `T1-T0` laat zien dat het ophalen van 32 
