@@ -107,7 +107,7 @@ Zie het Engelse artikel op GitHub voor meer details en BASIC voorbeelden
 voor alle registers.
 
 
-## 10 PRINT met REU 
+## 10 PRINT met REU - ontwerp
 
 Nu we weten hoe de REU werkt gaan we hem gebruiken in een BASIC programma.
 We gaan het klassieke 10 PRINT programma nabouwen. 10 PRINT omdat iedereen 
@@ -188,7 +188,7 @@ te scrollen. Wij denken dat dit genoeg variatie biedt voor onze demo.
 ![REU geheugen](memory-nl.png)
 
 
-### Het BASIC programma
+## 10 PRINT met REU - het BASIC programma
 
 We bespreken nu het BASIC programma `10PRINT-WITH-REU`. We gebruiken de
 `petcat` conventie om speciale symbolen als "wissel naar light blauw" 
