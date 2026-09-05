@@ -343,7 +343,7 @@ We bespreken weer hoe alle REU-registers (opnieuw) beschreven worden.
   Dit is een _fill_ configuratie. 
   
 - Regel 550 voert de daadwerkelijke _fetch_ uit met deze bits:
-  128 (EXECUTE) + 32 (LOAD) + 16 (NOFF00) + 1 (FETCH). De LOAD van vlag is eigenlijk niet nodig, maar kan ook geen kwaad.
+  128 (EXECUTE) + 32 (LOAD) + 16 (NOFF00) + 1 (FETCH). De LOAD vlag is niet nodig, maar kan ook geen kwaad.
 
 
 ### De animatie
@@ -383,7 +383,7 @@ Alle REU-registers worden (nogmaals) beschreven.
   In regel 670 worden deze gebruikt om de `reubase` in te stellen.
 
 - Regel 680 voert de daadwerkelijke _fetch_ uit met deze bits:
-  128 (EXECUTE) + 32 (LOAD) + 16 (NOFF00) + 1 (FETCH). De LOAD is nodig omdat elke _fetch_ naar hetzelfde _c64base_ adres moet.
+  128 (EXECUTE) + 32 (LOAD) + 16 (NOFF00) + 1 (FETCH). De LOAD is nodig omdat elke _fetch_ hetzelfde _c64base_ adres als bestemming heeft.
 
 - Regel 690 zorgt ervoor dat we, na het kopiëren van het 
   "scherm beginnend bij rij 31", weer teruggaan naar het 
@@ -391,14 +391,14 @@ Alle REU-registers worden (nogmaals) beschreven.
   Dit wordt bereikt door de GOTO 650 na de NEXT.
 
 
-### Details van het BASIC programma
+### Opmerkingen over het BASIC programma
 
-De animatielus haalt één compleet scherm op, rij voor rij. 
+De animatie haalt één compleet scherm op, rij voor rij. 
 Dit geeft de indruk van scrollen, zonder gebruik te maken van de 
-_scroll_ functie van de kernel. Het resultaat is dat er, 
-in tegenstelling tot de originele 10 PRINT, nooit twee lege rijen onderaan het scherm zijn, 
+scroll functie van de kernel. Het resultaat is dat er, 
+in tegenstelling tot de originele 10 PRINT, nooit twee lege rijen onderaan het scherm staan, 
 ook nooit één lege rij, en dat er zelfs geen lege schermpositie is in 
-kolom 80 op rij 25.
+kolom 40 op rij 25.
 
 ![10 PRINT met REU](10print-with-reu.png)
 
