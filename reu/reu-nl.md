@@ -415,8 +415,8 @@ tragere _scroll_ wil.
 ## Conclusie
 
 In eerste instantie leek de REU een ingewikkelde uitbreding.
-Na enige bestudering bleek hij eenvoudig meer slim in elkaar te zitten.
-Zelfs het gebruik in BASIC is redelijk eenvoudig.
+Na enige bestudering bleek hij eenvoudig maar slim in elkaar te zitten.
+Hij blijkt zelfs vanuit BASIC goed te gebruiken.
 En hij is snel.
 
 
