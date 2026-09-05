@@ -210,13 +210,13 @@ basisadres van de REU en het bevat de naam van het programma.
 
 Zoals uitgelegd gebruiken we het _fetch_ commando van de REU om 1000 (schuine) 
 strepen te kopiëren uit het REU-geheugen naar het schermgeheugen van de C64. 
-Om de strepen zichtbaar te maken, moet ook het _kleurengeheugen_ worden ingesteld. 
+Om de strepen zichtbaar te maken, moet ook het _kleurengeheugen_ worden gevuld. 
 Welke kleur zullen we gebruiken? De ontwerpkeuze is dat we de C64 standaard 
 kleuren gebruiken.
 
-Regel 110 stelt de rand (53280) in op lichtblauw (kleur 14) en de 
+Regel 110 zet de rand (53280) op lichtblauw (kleur 14) en de 
 achtergrond van het scherm (53281) op donkerblauw (kleur 6).
-Tot slot stelt regel 120 de cursor of voorgrond kleur in op lichtblauw 
+Tot slot zet regel 120 de cursor of voorgrond kleur op lichtblauw 
 (`{lblu}` kleur 14) en drukt `PLEASE  WAIT` af.
 Hiermee zijn alle standaardkleuren ingesteld.
 
@@ -295,7 +295,7 @@ We configureren de REU via de registers.
 420 if (peek(r) and 64) <> 0 then 410
 ```
 
-Het doel van dit blokje is om te controleren of er een REU actief is in de C64.
+Het doel van dit blokje is om te controleren of de _stashes_ gelukt zijn; is er een REU actief in de C64.
 
 Na de _stashes_ van het vorige blok zou de vlag `STATUS.ENDOFBLOCK` in 
 het `status` register hoog moeten zijn. Dit wordt gecontroleerd in regel 400. 
@@ -321,7 +321,7 @@ om een foutmelding af te drukken en te stoppen.
 
 De laatste voorbereidingsstap voordat de animatie begint, is het vullen van 
 het kleurengeheugen van de C64. Dit is een _fetch_ (geen _stash_), maar dan 
-zonder het ophogen van _reubase_, waardoor de _fetch_ als een _fill_ werkt.
+zonder het ophogen van `reubase`, waardoor de _fetch_ als een _fill_ werkt.
 
 We bespreken weer hoe alle REU-registers (opnieuw) beschreven worden. 
 
@@ -395,7 +395,7 @@ Alle REU-registers worden (nogmaals) beschreven.
 De animatielus haalt één compleet scherm op, rij voor rij. 
 Dit geeft de indruk van scrollen, zonder gebruik te maken van de 
 _scroll_ functie van de kernel. Het resultaat is dat er, 
-in tegenstelling tot de originele 10 PRINT, nooit twee lege rijen zijn, 
+in tegenstelling tot de originele 10 PRINT, nooit twee lege rijen onderaan het scherm zijn, 
 ook nooit één lege rij, en dat er zelfs geen lege schermpositie is in 
 kolom 80 op rij 25.
 
@@ -407,14 +407,14 @@ rijen 88 _jiffies_ kost, ofwel dat het 1,5 seconde duurt.
 Dat is 45 ms per fetch/scroll.
 
 De animatie is veel te snel. Ik wilde hem vertragen door een `WAIT 53265,128` 
-in te voegen voor de rasterstraal van de VIC-II. Dat werkte niet. 
+in te voegen voor de raster positie van de VIC-II. Dat werkte niet. 
 Ik gebruik nu een eenvoudige wachtlus `685 FOR T=0 TO 222:NEXT` als ik een 
 tragere _scroll_ wil.
 
 
 ## Conclusie
 
-In eerste instantie leek de REU een ingewikkelde uitbreding.
+In eerste instantie leek de REU een ingewikkelde uitbreiding.
 Na enige bestudering bleek hij eenvoudig maar slim in elkaar te zitten.
 Hij blijkt zelfs vanuit BASIC goed te gebruiken.
 En hij is snel.
