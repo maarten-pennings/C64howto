@@ -191,7 +191,7 @@ te scrollen. Wij denken dat dit genoeg variatie biedt voor onze demo.
 ## 10 PRINT met REU - BASIC programma
 
 We bespreken nu het BASIC programma `10PRINT-WITH-REU`. We gebruiken de
-`petcat` conventie om speciale symbolen als "wissel naar light blauw" 
+`petcat` conventie om speciale symbolen als "wissel naar licht blauw" 
 af te drukken als `{lblu}`. Ook hakken we bij de bespreking het programma 
 op in blokken. Alle blokken achter elkaar vormen het uitvoerbare programma.
 
@@ -206,7 +206,7 @@ op in blokken. Alle blokken achter elkaar vormen het uitvoerbare programma.
 
 Het eerste blok regelt de kleuren. 
 Regel 100 is de uitzondering; deze definieert variabele `R` als het 
-basisadres van de REU en het bevat de naam van het programma.
+basisadres van de REU en het documenteert de naam van het programma.
 
 Zoals uitgelegd gebruiken we het _fetch_ commando van de REU om 1000 (schuine) 
 strepen te kopiëren uit het REU-geheugen naar het schermgeheugen van de C64. 
@@ -238,7 +238,7 @@ Daarom schakelt regel 200 de cursor kleur om naar donkerblauw (6, `{blu}`)
 dezelfde als de achtergrond. Regel 250 schakelt weer terug naar lichtblauw 
 (14, `{lblu}`).
 
-Eén ding is bijzonder: het allereerste teken van de 256 wordt door regel 210 
+Eén aspect is bijzonder: het allereerste teken van de 256 wordt door regel 210 
 geforceerd ingesteld op 206 (`/`). Toevallig is 206 AND 15 gelijk aan 14. 
 We hergebruiken later het eerste teken van de pagina om de REU het 
 kleurengeheugen te laten vullen (via _fill_) met 1000 bytes met de waarde 206 
@@ -284,7 +284,7 @@ We configureren de REU via de registers.
 - De lus heeft 9 iteraties (regel 350), waarbij steeds een pagina wordt gekopieerd.
   Regel 360 selecteert de bestemmingspagina in de REU, en regel 370 is de 
   daadwerkelijke _stash_ opdracht; we zetten deze bits
-  128 (EXECUTE) + 32 (LOAD) + 16 (NOFF00) + 0 (STASH).
+  128 (EXECUTE) + 32 (LOAD) + 16 (NOFF00) + 0 (STASH). De LOAD is nodig omdat elke _stash_ met dezelfde _c64base_ moet beginnen.
 
 
 ### REU aanwezig?
@@ -295,13 +295,14 @@ We configureren de REU via de registers.
 420 if (peek(r) and 64) <> 0 then 410
 ```
 
-Het doel van dit blokje is om te controleren of de _stashes_ gelukt zijn; is er een REU actief in de C64.
+Het doel van dit blok code is om te controleren of de _stashes_ gelukt zijn; is er een REU actief in de C64.
 
 Na de _stashes_ van het vorige blok zou de vlag `STATUS.ENDOFBLOCK` in 
 het `status` register hoog moeten zijn. Dit wordt gecontroleerd in regel 400. 
 Als dat niet zo was, drukt regel 410 een foutmelding af en stopt het programma.
+Er is dan hoogstwaarschijnlijk geen REU.
 
-Als de vlag wél ingesteld was, moet deze nu gewist zijn, aangezien 
+Als de vlag wél hoog was, moet deze nu laag zijn, aangezien 
 `STATUS.ENDOFBLOCK` gewist wordt bij lezen (_clear on read_). 
 Is dat niet het geval, dan volgt er een sprong terug naar regel 410 
 om een foutmelding af te drukken en te stoppen.
@@ -342,7 +343,7 @@ We bespreken weer hoe alle REU-registers (opnieuw) beschreven worden.
   Dit is een _fill_ configuratie. 
   
 - Regel 550 voert de daadwerkelijke _fetch_ uit met deze bits:
-  128 (EXECUTE) + 32 (LOAD) + 16 (NOFF00) + 1 (FETCH).
+  128 (EXECUTE) + 32 (LOAD) + 16 (NOFF00) + 1 (FETCH). De LOAD van vlag is eigenlijk niet nodig, maar kan ook geen kwaad.
 
 
 ### De animatie
@@ -382,7 +383,7 @@ Alle REU-registers worden (nogmaals) beschreven.
   In regel 670 worden deze gebruikt om de `reubase` in te stellen.
 
 - Regel 680 voert de daadwerkelijke _fetch_ uit met deze bits:
-  128 (EXECUTE) + 32 (LOAD) + 16 (NOFF00) + 1 (FETCH).
+  128 (EXECUTE) + 32 (LOAD) + 16 (NOFF00) + 1 (FETCH). De LOAD is nodig omdat elke _fetch_ naar hetzelfde _c64base_ adres moet.
 
 - Regel 690 zorgt ervoor dat we, na het kopiëren van het 
   "scherm beginnend bij rij 31", weer teruggaan naar het 
