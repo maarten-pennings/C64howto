@@ -27,7 +27,7 @@ oplossing kiest de CPU, in ons geval de 6510, welke bank actief is, en
 daarna kan de CPU de bank lezen en schrijven.
 
 De REU werkt anders. Een REU is een memory mapped I/O device. Het wordt bediend
-met zeven registers. Via deze registers geeft de 6510 commando's (met `POKE`s) 
+met registers. Via deze registers geeft de 6510 commando's (met `POKE`s) 
 om data uit het C64 geheugen ergens in het REU geheugen te _stashen_, of om 
 data uit het REU geheugen te _fetchen_ en ergens in het C64 geheugen te plaatsen.
 Er zijn nog twee andere commando's: _swap_ en _compare_ maar die zullen we in 
@@ -35,11 +35,11 @@ dit artikel niet bekijken. We gebruiken de term kopiëren als overkoepelend
 begrip voor alle 4 de commando's.
 
 De 6510 kan dus _niet_ het geheugen van de REU lezen of schrijven. Het kan 
-alleen een kopieer opdracht aan de REU geven. De REU is dus een soort DMA device
+alleen een kopieer opdracht aan de REU geven. De REU is een soort DMA device
 (_direct memory access_) dat data kopieert tussen de REU en de C64. Dat klinkt 
 langzaam, en ten opzichte van _bank switching_ is het dat ook. _Bank switching_ 
-kost een of twee 6510 instructies. Maar in de praktijk is het snel. De REU 
-kopieert op volle C64 klok snelheid: elke tik van de ongeveer 1MHz klok wordt 
+kost een of twee 6510 instructies. Maar in de praktijk is de REU oplossing snel. De REU 
+kopieert op C64 klok snelheid: elke tik van de ongeveer 1MHz klok wordt 
 1 byte gekopieerd. Dat betekent dat 1 miljoen bytes in 1 seconde worden 
 gekopieerd, ofwel 1000 bytes in 1 ms. Het hele C64 geheugen kopiëren kost 
 dus 64 ms.
@@ -70,7 +70,7 @@ We slaan `command` even over en springen naar registers `c64base`, `reubase`,
 en `translen`. Het register `c64base` is het start adres van de kopieer actie 
 aan de C64 kant, het register `reubase` is het start adres van de kopieer actie 
 aan de REU kant, en `translen` is het aantal te kopiëren bytes. Merk op dat 
-`c64base` (en `translen`) beide 2 bytes zijn en dus de hele 64 kB van de 6510 
+`c64base` en `translen` beide 2 bytes zijn en dus de hele 64 kB van de 6510 
 omvat, terwijl `reubase` zelfs 3 bytes is, zodat het REU geheugen maximaal 
 256 × 64 kB kan zijn (16777216 bytes of 16 Mbytes).
 
@@ -91,7 +91,7 @@ aflagen. Als `LOAD` (bit 5: 32) hoog is zal de REU de startwaardes herstellen
 aan het einde van de kopie. De vlag `NOFF00` stelt je in staat de start nog 
 even uit te stellen; die begint pas na een schrijfactie naar $FF00. Dit is 
 nodig in één speciaal geval: als de REU het C64 geheugen moet lezen of schrijven,
-dat _onder_ het I/O 2 gebied ligt. 
+dat _onder_ het I/O 2 gebied ligt, dan is er na de _execute_ een geheugen bank wissel nodig, gevolgd door een schrijfactie naar $FF00. 
 
 Het `irqmask` register geeft de mogelijkheid een interrupt te genereren als 
 de kopieer actie klaar is. Zoals bij `status` vermeld _stallt_ de REU de 6510
@@ -188,7 +188,7 @@ te scrollen. Wij denken dat dit genoeg variatie biedt voor onze demo.
 ![REU geheugen](memory-nl.png)
 
 
-## 10 PRINT met REU - het BASIC programma
+## 10 PRINT met REU - BASIC programma
 
 We bespreken nu het BASIC programma `10PRINT-WITH-REU`. We gebruiken de
 `petcat` conventie om speciale symbolen als "wissel naar light blauw" 
@@ -401,15 +401,15 @@ kolom 80 op rij 25.
 
 ![10 PRINT met REU](10print-with-reu.png)
 
-Ik heb `T0=TI` toegevoegd vóór de `FOR`-lus op regel 650, en `T1=TI` ná `NEXT` 
-(regel 690). Het afdrukken van `T1-T0` laat zien dat het ophalen van 32 
+Ik heb `T0=TI` toegevoegd vóór de `FOR`-lus op regel 650, en `T1=TI` net ná `NEXT` 
+(regel 690). Het afdrukken van `T1-T0` laat zien dat het animeren van 32 
 rijen 86 _jiffies_ kost, ofwel dat het 1,5 seconde duurt. 
 Dat is 45 ms per fetch/scroll. In een tweede experiment zet ik ook nog 
 `R=49152` voor de lus. Dit zorgt ervoor dat alle BASIC code hetzelfde is,
-maar dat er geen REU commando's worden uitgevoerd. Nu kosten de 32 iteraties
+maar dat de REU geen commando's uitvoert. Nu kosten de 32 iteraties
 84 _jiffies_. Het verschil is 2 _jiffies_ ofwel 2/60*1000 = 33 ms voor 32
 kopieer acties. Kortom, 1 REU commando voor een 1000 byte _fetch_ kost 
-inderdaad 1 ms.
+inderdaad de 1 ms die we in de inleiding schatte.
 
 De animatie is veel te snel. Ik wilde hem vertragen door een `WAIT 53265,128` 
 in te voegen voor de raster positie van de VIC-II. Dat werkte niet. 
