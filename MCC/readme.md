@@ -28,17 +28,18 @@ This is an overview of articles published in the series _Maartens Commodore Corn
 
 ## MCC logo
 
-### 960 × 640
+
+### Size 960 × 640
 
 ![960 × 640](mcc960x640.png)
 
 
-### 480 × 320
+### Size 480 × 320
 
 ![480 × 320](mcc480x320.png)
 
 
-### 240 × 160
+### Size 240 × 160
 
 ![240 × 160](mcc240x160.png)
 
