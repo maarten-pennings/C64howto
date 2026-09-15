@@ -40,7 +40,7 @@ A REU does _not_ use a banking mechanism, in the sense that it
 replaces a part of the C64 RAM by a (selectable) part of the REU.
 The REU's memory is _not_ accessible by the 6510 processor of the C64.
 Instead the REU is a memory mapped device, 
-with 11 control and status registers mapped at 0xDF00.
+with 7 control and status registers mapped at 0xDF00.
 Via those registers, the 6510 gives the REU a _command_ 
 to _stash_ some of the C64's data into the REU,
 or to _fetch_ some data from the REU and store it in the C64 RAM.
@@ -68,7 +68,7 @@ Some registers are 1, some 2 and one is even 3 bytes wide.
   | `irqmask`  |   1  |  9     | DF09      | 57097       | [section](#irqmask-9-df09-57097)   |
   | `addrctrl` |   1  |  10    | DF0A      | 57098       | [section](#addrctrl-10-df0a-57098) |
 
-Each register is described in more detail in the sections below - or click in the last column above.
+Each register is described in more detail in the sections below - click in the last column above for a quick link.
 
 
 ### status @0 ($DF00, 57088)
