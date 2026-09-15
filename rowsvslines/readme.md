@@ -122,8 +122,7 @@ one row up. Now program line 410 tabs to position 46, which is right of 40.
 So the cursor moves to position 46 of the _two-row line_ and the `X` is printed.
 
 The third fragment is a similar test. Here, after printing 60 characters, two rows, 
-program line 510 moves _two rows_ up. So the cursor is in column 0 of the line.
-a `tab(46)` moves to column 46, which is column 6 on the second row.
+program line 510 moves _two rows_ up. So the cursor is in column 0 of the line. A `tab(46)` moves to column 46, which is column 6 on the second row.
 
 In other words **the terminal remembers which rows form one line.**
 
