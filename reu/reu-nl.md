@@ -181,7 +181,7 @@ volgende scherm niet op vanaf rij 32, maar springen we terug en halen we het
 scherm weer op vanaf rij 0. Dat is immers identiek aan dat op rij 32.
 
 Het laatste scherm dat we ophalen begint op rij 31 en is 1000 bytes groot.
-Zoals de het geheugen plaatje hieronder laat zien, hebben we dus 9 pagina's 
+Zoals het geheugen plaatje hieronder laat zien, hebben we dus 9 pagina's 
 in de REU nodig om genoeg schuine strepen te hebben om helemaal naar rij 31 
 te scrollen. Wij denken dat dit genoeg variatie biedt voor onze demo.
 
