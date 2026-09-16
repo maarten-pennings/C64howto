@@ -7,6 +7,9 @@ a feature of the environment; or should I say of the C64 "terminal".
 
 In this article we have a look at how C64 treats rows and lines.
 
+There is a summary in [Dutch](rowsvslines-nl.md).
+
+
 
 ## Hello program
 
@@ -83,31 +86,35 @@ The program `TAB` demonstrates `tab()`.
 140 :
 200 print a30$
 210 print up$;">";tab(6);"x"
-220 print
+220 print:print
 230 :
 300 print a60$
 310 print up$;">";tab(6);"x"
-320 print
+320 print:print
 330 :
 400 print a60$
 410 print up$;">";tab(46);"x"
-420 print
+420 print:print
 430 :
 500 print a60$
 510 print up$;up$;">";tab(46);"x"
-520 print
+520 print:print
+530 :
+600 print a60$;a30$
+610 print up$;">";tab(6);"x"
+620 print:print
 ```
 
 The program begins by defining a string `UP$` that moves the cursor one row up.
 Next it defines a string of 10, 30 and 60 dashes.
 
-This program runs four tests. Each test it prints a line (of 30 or 60 dashes), 
-see lines 200, 300, 400, and 500. Note that the print does not end with a 
+This program runs four tests. Each test it prints a line (of dashes), 
+see lines 200, 300, 400, 500, and 600. Note that the print does not end with a 
 semicolon so the cursor moves to the first position on the next line. Next, 
 the test moves the cursor back up to the just printed line, prints a `>` for 
 reference, jumps to a tab position and prints an `X`, see lines 210, 310, 410, 
-and 510. A empty line (lines 220, 320, 420, and 520) separates a test from the 
-next one.
+510, and 620. Two empty line (lines 220, 320, 420, 520, and 620) separate a test 
+from the next one.
 
 ![Output of the TAB program](tab1.png)
 
@@ -125,9 +132,15 @@ the cursor is moved one row up. Now program line 410 tabs to position 46, which
 is 6 positions right of 40. So the cursor moves to position 46 of the 
 _two-row line_ and the `X` is printed.
 
-The third fragment is a similar test. Here, after printing 60 dashes, two rows, 
+The fourth fragment is a similar test. Here, after printing 60 dashes, two rows, 
 program line 510 moves _two rows_ up. So the cursor is in column 0 of the line. 
 A `tab(46)` moves to column 46, which is column 6 on the second row.
+
+The fifth test shows that a line can not span three rows. After printing 80 
+(of the 90) dashes, the terminal starts a new line. The screen contains one line 
+consisting of two rows followed by one line consisting of one row. This 
+test moves one row up and runs a `TAB(6)`, not a `TAB(126)`, because the 
+terminal forces the third row to be a fresh line.
 
 In other words **the terminal remembers which rows form one line.**
 
@@ -305,7 +318,7 @@ Line 210 constructs a constant string `D$`, used for positioning the cursor
 on column 2 of any row. Line 250 uses `D$` to print `LH` and `LL` 
 (in reverse video) on row `I`.
 
-Line 250 waits for a key press, ending the 
+Line 270 waits for a key press, ending the 
 program, leading to `READY`, the `print"{home}"` on line 260 prevents a scroll.
 
 ![The output of LINELINKTABLE](linelinktable1.png)
