@@ -82,49 +82,60 @@ The program `TAB` demonstrates `tab()`.
 130 a60$=a30$+a30$
 140 :
 200 print a30$
-210 print up$;tab(6);"x"
+210 print up$;">";tab(6);"x"
 220 print
 230 :
 300 print a60$
-310 print up$;tab(6);"x"
+310 print up$;">";tab(6);"x"
 320 print
 330 :
 400 print a60$
-410 print up$;tab(46);"x"
+410 print up$;">";tab(46);"x"
 420 print
 430 :
 500 print a60$
-510 print up$;up$;tab(46);"x"
+510 print up$;up$;">";tab(46);"x"
 520 print
 ```
 
 The program begins by defining a string `UP$` that moves the cursor one row up.
 Next it defines a string of 10, 30 and 60 dashes.
 
-This program then runs four tests. Each test it prints a line (of 30 or 60 characters), 
-see lines 200, 300, 400, and 500. Note that the print does not end with a semicolon 
-so the cursor moves to the next line. Then the test moves the cursor back up to the just 
-printed line, jumps to a tab position and prints an `X` there, see lines 210, 310, 410, and 510.
-A empty line (lines 220, 320, 420, and 520) separate a test from the next test.
+This program runs four tests. Each test it prints a line (of 30 or 60 dashes), 
+see lines 200, 300, 400, and 500. Note that the print does not end with a 
+semicolon so the cursor moves to the first position on the next line. Next, 
+the test moves the cursor back up to the just printed line, prints a `>` for 
+reference, jumps to a tab position and prints an `X`, see lines 210, 310, 410, 
+and 510. A empty line (lines 220, 320, 420, and 520) separates a test from the 
+next one.
 
 ![Output of the TAB program](tab1.png)
 
-The first test is as expected. We print a line of 30 characters, go up to the printed line, `tab(6)` and the
-`X` is printed in column 6 (counting from 0).
+The first test is as expected. We print a line of 30 dashes, go up to the 
+printed line, `tab(6)` and the `X` is printed in column 6 (counting from 0).
 
-The second test might come as a surprise. After printing 60 characters (2 screen rows), 
-program line 310 moves the cursor up one _row_ up. This means the cursor is at position 40, and 
-`tab(6)` would move the cursor back, so it is ignored. The cursor doesn't move and the `X` is printed at the start 
-of the second row.
+The second test might come as a surprise. After printing 60 dashes (2 screen 
+rows), program line 310 moves the cursor up one _row_ (see the `>`). This means 
+the cursor is at position 40, and `tab(6)` would move the cursor back, so the 
+`TAB()` instruction is ignored. The cursor doesn't move and the `X` is printed 
+at the (unmoved) cursor position.
 
-The third fragment tests this. Again 60 characters are printed, the cursor is moved 
-one row up. Now program line 410 tabs to position 46, which is right of 40.
-So the cursor moves to position 46 of the _two-row line_ and the `X` is printed.
+The third fragment tests the being at position 40. Again 60 dashes are printed, 
+the cursor is moved one row up. Now program line 410 tabs to position 46, which 
+is 6 positions right of 40. So the cursor moves to position 46 of the 
+_two-row line_ and the `X` is printed.
 
-The third fragment is a similar test. Here, after printing 60 characters, two rows, 
-program line 510 moves _two rows_ up. So the cursor is in column 0 of the line. A `tab(46)` moves to column 46, which is column 6 on the second row.
+The third fragment is a similar test. Here, after printing 60 dashes, two rows, 
+program line 510 moves _two rows_ up. So the cursor is in column 0 of the line. 
+A `tab(46)` moves to column 46, which is column 6 on the second row.
 
 In other words **the terminal remembers which rows form one line.**
+
+As we saw, `TAB(T)` moves to position `T` in the current line, only if 
+`T` is greater or equal to the current cursor position. So there is a 
+_minimum_ for `T`. There is not really a _maximum_ for `T`. A `TAB(86)` moves 
+to the third row, and a `TAB(126)` to the fourth. The maximum is not imposed 
+by line length or row length, it is 255 (8 bits).
 
 
 ## Scrolling 
@@ -140,12 +151,14 @@ and one line that spans two rows (110).
 
 ```basic
 100 print "hello, world!"
-110 print "this is a line that spans two rows"
+110 print "this is a line that spans two sreen rows"
 120 print "short again"
 ```
 
 The double row span is hard to see from the listing above, but easy to 
-spot on the C64 screen (first screen shot). 
+spot on the C64 screen (first screen shot). We have annotated the screen
+contents with red bars (upper left) to show which lines are one row and which 
+is two rows.
 
 The series of screenshots starts with the cursor at the bottom of the screen.
 Each screenshot we press ENTER once to go to the next screenshot.
@@ -234,18 +247,18 @@ For details of the line link table, see e.g. the famous book
 We will simplify it here.
 
 The line link table has one byte per screen row.
-Bit 7 at offset _r_ in the line link table is the link _flag_ for row _r_.
+Bit 7 at offset _r_ in the line link table is the _first flag_ for row _r_.
 That flag is _set_ when that row contains the first half of a line (or an entire line).
 That flag is _clear_ when that row contains the second half of a line.
-The first row has its link flag at address $00D9 or 217, 
+The first row has its line link entry at address $00D9 or 217, 
 the second row at $00DA or 218, ..., the 25th at $00F1 or 241.
 The entry at $00F2 or 242 is needed to easily implement scrolling.
-Since the high nibble of a link like only contains the link flag 
+Since the high nibble of a link entry only contains the _first flag_ 
 and the other 3 bits are always 0, the high nibble is `8` for "first half or entire line"
 and `0` for "second half".
 
 The following program demonstrates the line link table.
-The first half of the program (program lines 100-190) prints a screen full of lines.
+The beginning of the program (program lines 100-190) prints a screen full of lines.
 Some output lines will be less than 40 characters (one row), some will be less 
 than 80 (two rows) and some are even longer (3 rows) - maximum is 40×3½ characters. 
 
@@ -277,14 +290,14 @@ the same output; delete it if you don't want that.
 220 for i=0 to 24
 230 :l=peek(217+i):rem line link row r
 240 :lh=int(l/16):ll=l and 15
-250 :print left$(d$,i+3);"{rvon}";lh;ll;"rvoff";
+250 :print left$(d$,i+3);"{rvon}";lh;ll;"{rvoff}";
 260 next i:print "{home}"
 270 get a$:if a$="" then 270
 ```
 
 The interesting part is the second half of the program (program lines 200-270)
 which runs once the screen is filled. It loops over all rows (`I` from 0 to 24)
-and retrieves the line link table entry for that row: `L=PEEK(217+I)`.
+and retrieves the line link entry for that row: `L=PEEK(217+I)`.
 Variable `LH` is the _high_ nibble of the line link, and 
 variable `LL` is the _low_ nibble of the line link (see 240).
 
@@ -322,15 +335,15 @@ It is also possible to _write_ to the line link table.
 We can _break_ long lines (two rows) into two unconnected parts.
 One advantage is smoother scrolling.
 
-Find below an improved version of the 10 PRINT program.
-Every 40 characters printed, it splits row 1 from row 0 by 
-setting the link flag of row 1. This results in smooth scrolling.
+Find below a version of the 10 PRINT program.
+It splits row 1 from row 0 by setting the _first flag_ of row 1. 
+This results in smooth scrolling.
 
 > This program is listed in lower case to make copy&paste to VICE easier.
 > It is available as `10PRINTSMOOTH` on the [disk](rowsvslines.d64).
 
 ```basic
-0 fori=1to40:printchr$(205.5+rnd(1));:next:poke218,128:goto
+0 printchr$(205.5+rnd(1));:poke218,128:goto
 ```
 
 Note that if `GOTO` has no line number it jumps to line 0, a small optimization.
@@ -341,6 +354,7 @@ Remove the POKE and it alternates between scrolling one and two rows.
 The line link table contains other bits. A safer variant would be
 `POKE 218,PEEK(218) OR 128` but this is slower, and the row is 
 scrolled out soon anyhow...
+
 
 ## Links
 
