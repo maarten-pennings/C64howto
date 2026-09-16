@@ -164,7 +164,7 @@ het scherm: de cursor is daar ook een regel omhoog geschoven.
 
 De conclusie: **scrollen is niet per rij maar per regel** (bovenaan het scherm).
 
-Dit effect is ook te zien bij het bekende 10 PRINT programma
+Dit effect is ook te zien bij het bekende 10 PRINT programma:
 
 ```basic
 10 PRINT CHR$(205.5+RND(1));:GOTO 10
@@ -175,27 +175,25 @@ Dit programma print schuine streep na schuine streep, alles op één regel
 langer dan 80 karakters. Als het 81 karakter geprint wordt begin the terminal
 een nieuwe regel. De terminal is dus gevuld met logische regels van 80 
 karakters, elke verdeeld over 2 rijen. Dit betekent dat elke keer als 
-de onderste regel vol is, het scherm _twee_ regels scrollt.
+de onderste regel vol is, het scherm _twee_ rijen scrollt.
 
 
 ## De _line link_ tabel
 
 Hoe weet de terminal welke rijen samen een regel vormen?
 Die informatie blijkt bijgehouden te worden in de _line link_ tabel.
-Die staat op adressen $00D9-$00F2.
 
-De _line link_ tabel heeft een byte per scherm rij.
-Bit 7 van dat byte is de _first flag_.
-Deze vlag is 1 als die rij het eerste deel is van een regel (of zelfs de hele regel bevat).
-Deze vlag is 0 als die rij het tweede deel is van een regel.
-
+Die tabel staat op adressen $00D9-$00F2.
+De _line link_ tabel heeft een byte per rij.
 De eerste rij heeft zijn byte op $00D9 (217) staan.
 De tweede staat op $00DA (218), ... en de 25ste staat op $00F1 (241).
 Het byte op $00F2 (242) is waarschijnlijk nodig om de scroll implementatie 
 te vergemakkelijken.
 
 De byte bevat twee _nibbles_.
-De bovenste _nibble_ bevat alleen de _first flasg_, de overige 3 bits zijn 0.
+De bovenste _nibble_ bevat alleen de _first flag_ (hoogste bit), de overige 3 bits zijn 0.
+De vlag is 1 als de rij het eerste deel is van een regel (of zelfs de hele regel bevat).
+De vlag is 0 als de rij het tweede deel is van een regel.
 De _nibble_ heeft dus waarde 8 voor "eerste deel of hele regel" en 
 waarde 0 voor "tweede deel van de regel".
 De onderste _nibble_ negeren we. Het bevat het pagina nummer van het screen 
@@ -228,9 +226,11 @@ hetzelfde is. Verwijder die regel als je dat niet wilt.
 180 next i
 190 :
 200 rem show line link info for rows
-210 d$="{home}{right}{right}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}{down}"
+210 d$="{home}{right}{right}{down}{down}{down}{down}{down}{down}
+ {down}{down}{down}{down}{down}{down}{down}{down}{down}{down}
+ {down}{down}{down}{down}{down}{down}{down}{down}{down}{down}"
 220 for i=0 to 24
-230 :l=peek(217+i):rem line link row r
+230 :l=peek(217+i):rem line link row i
 240 :lh=int(l/16):ll=l and 15
 250 :print left$(d$,i+3);"{rvon}";lh;ll;"{rvoff}";
 260 next i:print "{home}"
@@ -245,10 +245,10 @@ Regel 240 splitst de byte in bovenste _nibble_ (`LH`) en onderste nibble `LL`.
  
 Regel 210 construeert een constante string `D$` die gebruikt wordt om 
 de cursor op rij `I` te plaatsen. dat gebeurt op regel 250, waar de 
-bovenste and onderste _nbble_ in _reverse video_ worden geprint.
+bovenste and onderste _nibble_ in _reverse video_ worden geprint.
  
-Regel 270 wacht op een toets, die het programma beëindigd.
-De `print"{home}"` op regel260 voorkomt een scroll.
+Regel 270 wacht op een toets, die het programma beëindigt.
+De `print"{home}"` op regel 260 voorkomt een scroll.
 
 Dit is de uitvoer van het programma.
 
@@ -269,24 +269,24 @@ Het is dus de eerste (en enige deel) van een regel, dus bovenste _nibble_ is 8.
 
 Het is ook mogelijk om te _schrijven_ naar de _line link_ tabel.
 We kunnen een lange regel (van twee rijen) doormidden breken door voor de 
-tweede regel de bovenste _nibble_ op 8 te zetten. 
+tweede regel de bovenste _nibble_ op 8 te zetten. Dit geeft een regelmatigere 
+scroll. We gaan dat toepassen in het 10 PRINT programma.
 
-We voegen een `POKE` toe die dat doet. 
-Hij zet de _first flag_ aan voor de tweede rij, 
+We voegen een `POKE` toe om de rijen te breken. 
+De `POKE` zet de _first flag_ aan voor de tweede rij, 
 en knipt daarmee de tweede rij los van de eerste.
 
 ```basic
 10 PRINTCHR$(205.5+RND(1));:POKE218,128:GOTO 10
 ```
 
-Als je die programma runt krijg je een regelmatiger scroll van een rij.
-Zonder de `POKE` krijg je steeds een scroll van twee regels.
+Als je deze versie van 10 PRINT runt krijg je een regelmatiger scroll van 
+één rij per scroll. Zonder de `POKE` krijg je steeds een scroll van twee rijen.
 
-
-Merk op dat de `POKE` de onderste _nibble_ ook overschrijft.
+Merk op dat de `POKE` ook de onderste _nibble_ overschrijft.
 Veiliger zou zijn `POKE 218,PEEK(218) OR 128` maar dat is langzamer,
 en de huidige code lijkt geen zichtbaar effect te hebben.
-De rij scrollt snell uit het zicht.
+De rij scrollt snel uit het zicht.
 
 
 (end)
