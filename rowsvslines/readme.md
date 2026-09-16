@@ -1,4 +1,4 @@
-# Commodore 64 rows versus lines
+# C64 rows versus lines
 
 Program lines in a Commodore 64 BASIC program can be up to 80 characters. 
 Not more. A line longer than 40 characters is spread over two rows of the screen.
