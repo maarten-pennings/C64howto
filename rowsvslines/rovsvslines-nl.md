@@ -13,18 +13,19 @@ Dat bevat meer details en bijvoorbeeld ook source files.
 
 ## Introductie
 
-Regels in een Commodore 64 BASIC programma magen 80 karakters lang zijn. 
+Regels in een Commodore 64 BASIC programma mogen 80 karakters lang zijn. 
 Niet langer. Het scherm van de C64 bestaat uit 40 kolommen en 25 rijen.
 Een programma _regel_ die langer is dan 40 karakters is verdeeld over twee 
-scherm _rijen_. Dat twee rijen een regel vormen is niet een eigenschap van 
-BASIC; het is een eigenschap van de (programmeer) omgeving. Ik noem het 
+scherm _rijen_. Dat twee rijen een regel (kunnen) vormen is niet een eigenschap 
+van BASIC; het is een eigenschap van de (programmeer) omgeving. Ik noem het 
 in dit artikel een eigenschap van de _terminal_ (de code in de ROM die 
 het scherm beheert en bijvoorbeeld het scrollen implementeert).
 
 In dit artikel bekijken we hoe de terminal met rijen en regels omgaat.
 
-Ik ga in dit artikel proberen het wordt rij te gebruiken voor een scherm rij 
-en het woord regel voor een logische (programma of ge`PRINT`te) regel.
+Ik ga in dit artikel proberen het woord _rij_ te gebruiken voor een scherm rij 
+en het woord _regel_ voor een logische (programma of ge`PRINT`te) regel. Ik 
+hoop dat het gelukt is.
 
 
 ## Tab
@@ -37,7 +38,7 @@ in de context van een `PRINT` statement gebruikt worden. Het verplaatst
 de cursor dan naar kolom `X` van de huidige regel (tellend vanaf 0).
 De vergelijkbare functie `SPC(X)` is _relatief_; die verschuift de cursor `X` 
 posities vanaf de huidige. `TAB(X)` springt naar aan _absolute_ positie: 
-naar kolom `X`. Helaas (vind ik) weigert `TAB(X)` terug te springen. 
+naar kolom `X`. Helaas weigert `TAB(X)` _terug_ te springen (persoonlijke mening). 
 Als de cursor in kolom 30 staat, dan heeft een `TAB(25)` geen effect.
 
 
@@ -71,7 +72,7 @@ We proberen het volgende programma.
 ```
 
 Het programma begin met het definiëren van de string `UP$` die de cursor 
-een rij omhoog beweegt. Daarna definieert het strings met 10, 30 en 60 
+één rij omhoog beweegt. Daarna definieert het strings met 10, 30 en 60 
 karakters (streepjes).
 
 Het programma voert vijf tests uit, die alle vijf hetzelfde patroon volgen.
@@ -94,7 +95,7 @@ cursor omhoog naar de rij met 30 streepjes, en met een `TAB(6)` verschijnt er
 een `X` in kolom 6 (tellend vanaf 0).
 
 De tweede test was voor mij een verrassing. Hij print 60 streepjes; dat is 
-een regel bestaande uit 2 scherm rijen. regel 310 verschuift de cursor een 
+een regel bestaande uit 2 scherm rijen. Regel 310 verschuift de cursor een 
 rij omhoog (zie de `>`). Dit betekent (zo bleek) dat de cursor op kolom 40 
 van de _regel_ staat. Een `TAB(6)` zou terug springen, maar dat doet `TAB` 
 nooit; de `TAB` instructie wordt genegeerd. De cursor verplaatst niet; 
@@ -146,24 +147,24 @@ Het volgende programma heeft twee regels die op een scherm rij passen
 ```
 
 Dit programma runnen we niet, we `LIST`en het en drukken dan meerder malen 
-op RETURN. Het plaatje laat een serie screenshots; tussen twee screenshots
-drukken we steeds op RETURN. Met rode blokken (links boven in elke screenshot) 
-hebben we aangegeven of een regel uit een of twee rijen bestaat.
+op RETURN. Het plaatje hieronder laat een serie screenshots zien; tussen twee 
+screenshots drukken we steeds op RETURN. Met rode blokken (links boven in elk 
+screenshot) hebben we aangegeven of een regel uit een of twee rijen bestaat.
 De serie screenshots begin met de cursor op de onderste rij.
 
 ![Repeatedly pressing RETURN for the SCROLL program](scroll1-6.png)
 
-Wat we tussen screenshot 1 en 2 en tussen 2 en 3 is dat de RETURN het scherm 
-een rij omhoog scrollt.
+Wat we zien tussen screenshot 1 en 2 maar ook tussen 2 en 3 is dat de 
+RETURN het scherm een rij omhoog scrollt.
 
 Dat verandert bij de RETURN tussen screenshot 3 and 4. In screenshot 3 staat 
-een tweerijige regel bovenaan. De terminal scrollt nu twee rijen omhoog zodat 
-de hele regel verdwijnt. Merk ook een bijzonderheid op onderaan het scherm:
-de cursor is daar ook een regel omhoog geschoven.
+een tweerijige regel bovenaan. Na de RETURN scollt de terminal twee rijen 
+omhoog zodat de hele regel verdwijnt. Merk ook een bijzonderheid op onderaan 
+het scherm: de cursor is daar ook een regel omhoog geschoven.
 
 De conclusie: **scrollen is niet per rij maar per regel** (bovenaan het scherm).
 
-Dit effect is ook te zien bij het 10 PRINT programma
+Dit effect is ook te zien bij het bekende 10 PRINT programma
 
 ```basic
 10 PRINT CHR$(205.5+RND(1));:GOTO 10
