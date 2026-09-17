@@ -14,9 +14,9 @@ There is a summary in [Dutch](rowsvslines-nl.md).
 ## Hello program
 
 We enter the following program, with one special step.
-Lines 100 and 110 are terminated with an ENTER, 
+Lines 100 and 110 are terminated with an RETURN, 
 but line 200 is extended with 6 spaces and then we 
-continue entering line 210 which we terminate with an ENTER.
+continue entering line 210 which we terminate with an RETURN.
 
 > This program is listed in lower case to make copy&paste to VICE easier.
 > It is available as `HELLO` on the [disk](rowsvslines.d64).
@@ -51,14 +51,14 @@ line 200, but the careful placement of 6 spaces hides that. When we edit line
 
 You probably knew this.
 And you probably found out there is no way to "split" line 200 in two lines.
-In a modern editor an ENTER in the middle of a line splits at cursor.
-But for the C64 terminal, ENTER is "commit" (the line or the command).
+In a modern editor an RETURN in the middle of a line splits at cursor.
+But for the C64 terminal, RETURN is "commit" (the line or the command).
 
 The only way to split is to `LIST` the line to be split, delete the part you don't want, 
-prepend a fresh line number and pres ENTER. And then `LIST` the original line again and 
-delete the part you just copied to the fresh line and pres ENTER again.
+prepend a fresh line number and press RETURN. And then `LIST` the original line again and 
+delete the part you just copied to the fresh line and press RETURN again.
 
-In other words **BASIC lines are terminated by ENTER, they may span two rows.**
+In other words **BASIC lines are terminated by RETURN, they may span two rows.**
 
 
 ## Tab
@@ -174,15 +174,15 @@ contents with red bars (upper left) to show which lines are one row and which
 is two rows.
 
 The series of screenshots starts with the cursor at the bottom of the screen.
-Each screenshot we press ENTER once to go to the next screenshot.
+Each screenshot we press RETURN once to go to the next screenshot.
 
 ![Repeatedly pressing RETURN for the SCROLL program](scroll1-6.png)
 
-Observe that each ENTER at the bottom scrolls _one_ row up, 
+Observe that each RETURN at the bottom scrolls _one_ row up, 
 as long as the first row of the screen is a complete (one-row) line.
 
 In screenshot 3, the top of the screen has a line that spans two 
-screen rows, an ENTER now scrolls _two_ rows. Also notice that 
+screen rows, a RETURN now scrolls _two_ rows. Also notice that 
 not only the top two rows scroll off the screen, but there is 
 also an irregularity at the bottom: the cursor moved one row up!
 
