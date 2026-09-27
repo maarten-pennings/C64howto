@@ -74,13 +74,15 @@ aan de REU kant, en `translen` is het aantal te kopiëren bytes. Merk op dat
 omvat, terwijl `reubase` zelfs 3 bytes is, zodat het REU geheugen maximaal 
 256 × 64 kB kan zijn (16777216 bytes of 16 Mbytes).
 
+Terug naar `command`.
+
   | Bits | Function     | Details `command`                                                   |
   |:----:|:------------:|:--------------------------------------------------------------------|
   |   7  | EXECUTE      | 1 start een kopieer actie (van type TRANSFERTYPE)                   |
-  |   6  |              |                                                                     |
+  |   6  | reserved     |                                                                     |
   |   5  | LOAD         | 1 = `c64base`, `reubase`, `translen` zet start waardes terug        |
   |   4  | NOFF00       | 1 = start meteen, 0 = start na schrijven naar $FF00                 |
-  |  3:2 |              |                                                                     |
+  |  3:2 | reserved     |                                                                     |
   |  1:0 | TRANSFERTYPE | 00=_stash_ (C64→REU), 01=_fetch_ (REU→C64), 10=_swap_, 11=_compare_ |
 
 Het `command` register bestuurt de kopieer actie. De onderste twee bits 
@@ -91,7 +93,8 @@ aflagen. Als `LOAD` (bit 5: 32) hoog is zal de REU de startwaardes herstellen
 aan het einde van de kopie. De vlag `NOFF00` stelt je in staat de start nog 
 even uit te stellen; die begint pas na een schrijfactie naar $FF00. Dit is 
 nodig in één speciaal geval: als de REU het C64 geheugen moet lezen of schrijven,
-dat _onder_ het I/O 2 gebied ligt, dan is er na de _execute_ een geheugen bank wissel nodig, gevolgd door een schrijfactie naar $FF00. 
+dat _onder_ het I/O 2 gebied ligt, dan is er na de _execute_ een geheugen 
+bank wissel nodig, gevolgd door een schrijfactie naar $FF00. 
 
 Het `irqmask` register geeft de mogelijkheid een interrupt te genereren als 
 de kopieer actie klaar is. Zoals bij `status` vermeld _stallt_ de REU de 6510
@@ -119,7 +122,7 @@ het kent en omdat het goed past bij de mogelijkheden van de REU.
 Het klassieke 10 PRINT programma bestaat uit één regel:
 
 ```basic
-  10 PRINT CHR$(205.5+RND(1));:GOTO 10
+10 PRINT CHR$(205.5+RND(1));:GOTO 10
 ```
   
 Het gebruikt de `RND(1)` functie om een willekeurig getal tussen 0 en 1 te 
@@ -310,7 +313,6 @@ om een foutmelding af te drukken en te stoppen.
 
 ### Kleurgeheugen _fill_
 
-
 ```basic
 500 poke r+2,0:poke r+3,216
 510 poke r+4,0:poke r+5,0:poke r+6,0
@@ -383,7 +385,8 @@ Alle REU-registers worden (nogmaals) beschreven.
   In regel 670 worden deze gebruikt om de `reubase` in te stellen.
 
 - Regel 680 voert de daadwerkelijke _fetch_ uit met deze bits:
-  128 (EXECUTE) + 32 (LOAD) + 16 (NOFF00) + 1 (FETCH). De LOAD is nodig omdat elke _fetch_ hetzelfde _c64base_ adres als bestemming heeft.
+  128 (EXECUTE) + 32 (LOAD) + 16 (NOFF00) + 1 (FETCH).
+  De LOAD is nodig omdat elke _fetch_ hetzelfde _c64base_ adres als bestemming heeft.
 
 - Regel 690 zorgt ervoor dat we, na het kopiëren van het 
   "scherm beginnend bij rij 31", weer teruggaan naar het 
