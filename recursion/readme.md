@@ -140,9 +140,9 @@ ready.
 There is was intentional bug in the program, the main loop is infinite: 
 line 140 jumps back to 120. However, the program does terminate. When `N=23` 
 the recursion is so deep that the stack space is exhausted and we get and 
-`out of memory error`.
+`OUT OF MEMORY ERROR`.
 
-Can we call it a "bug" when it was intentional?
+Should we call it a "bug" when it was intentional?
 
 
 ### Factorial
@@ -245,7 +245,7 @@ ready.
 ```
 
 `FAC(N)` has the same intentional bug as `POW2(N)`: the main loop is infinite.
-Also this program terminates with an `out of memory error` due to a stack overflow.
+Also this program terminates with an `OUT OF MEMORY ERROR` due to a stack overflow.
 
 
 ### Fibonacci
@@ -380,7 +380,7 @@ ready.
 ```
 
 `FIB(N)` has the same intentional bug as `POW2(N)` and `FAC(N)`: the main loop is infinite.
-Also this program terminates with an `out of memory error` due to a stack overflow.
+Also this program terminates with an `OUT OF MEMORY ERROR` due to a stack overflow.
 
 > It is worth noting that computing Fibonacci numbers using a recursive 
 > algorithm is a bad idea. We can see that from the timing: `FIB(22)` takes 
@@ -415,6 +415,9 @@ for interrupts (e.g. the keyboard scan).
 
 The following program nests a couple of `FOR`-`NEXT` loops, and `GOSUB`s to 
 see how many bytes they consume from the 6510 CPU. 
+
+> This program is listed in lower case to make copy&paste to VICE easier.
+> It is available as `4-STACK` on the [disk](recursion.d64).
 
 ```basic 
 100 print "initial stack"
@@ -528,29 +531,31 @@ ready.
   
   If we look at `FIB(22)` we get the error `OUT OF MEMORY  ERROR IN 250` and 
   line 250 is _not_ a `GOSUB` but an assignment (`r=r+s(s)`). I suspect that 
-  evaluating an expression uses stack space on top of the `GOSUB`
+  evaluating an expression uses stack space on top of the space used by the 
+  `GOSUB`s.
   
 > **Conclusion** The C64 BASIC interpreter uses the 6510 stack for `GOSUB`s.
 > It can only handle about 22 nested `GOSUB`s, which is insufficient for 
-> the programs like the toy examples where the nesting depth is actually the 
-> argument of a function.
+> programs like the toy examples where the nesting depth is the 
+> argument of subroutine.
 
 
 ## Real applications
 
 The chapter [Theory](#theory) explains that for recursion in BASIC we need to 
 _restore_ the value of global variables, maybe with the help of an additional 
-stack (and array created by the programmer). The chapter also explains the 
+stack (and array created by the programmer). The chapter also explains that 
 BASIC uses the 6510 stack, which supports a maximum call depth of 22.
 
-In this chapter we will show that real problems can still solved with 
-recursion in BASIC.
+In this chapter we will show that real problems can still be solved with 
+recursion in BASIC. We look at three: The towers of Hanoi, 8 Queens and an 
+Expression parser.
 
 
 ### Towers of Hanoi
 
 
-### 8 queens
+### 8 Queens
 
 
 ### Expression parser
