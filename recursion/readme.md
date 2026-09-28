@@ -390,11 +390,11 @@ Also this program terminates with an `OUT OF MEMORY ERROR` due to a stack overfl
 > algorithm is a bad idea. We can see that from the timing: `FIB(22)` takes 
 > 1128 seconds which is nearly 20 minutes!
 > 
-> The reason for this long execution time is that computing `FIB(n)` recursively takes `2*FIB(N+1)-1` calls 
+> The reason for this long execution time is that computing `FIB(N)` recursively takes `2*FIB(N+1)-1` calls 
 > (see [paper](https://courses.grainger.illinois.edu/cs374al1/fa2025/notes/03-dynprog.pdf)).
 > Fibonacci numbers grow exponentially (see [wiki](https://en.wikipedia.org/wiki/Fibonacci_sequence#Computation_by_rounding)):
 > `FIB(N) ~ 1.618^N / 2.236`, so the _computation time grows exponentially_ too.
-> We see that back in the ratios printed by the BASIC programm, it matches 1.618.
+> We see that back in the ratios printed by the BASIC program, it matches 1.618.
 > 
 >   |  N    | 0 | 1 | 2 | 3 | 4 |  5 |  6 |  7 |  8 |   9 |  10 |  11 |  12 |  13 |   14 |   15 |   16 |   17 |   18 |    19 |    20 |    21 |    22 |
 >   |:------|--:|--:|--:|--:|--:|---:|---:|---:|---:|----:|----:|----:|----:|----:|-----:|-----:|-----:|-----:|-----:|------:|------:|------:|------:|
@@ -411,14 +411,14 @@ Also this program terminates with an `OUT OF MEMORY ERROR` due to a stack overfl
 The last toy example introduced a stack `S()`.
 That was used to store intermediate values (`R0` in the Fibonacci example).
 However all programs used a stack, the stack which is part of BASIC, 
-which relies on the stack offered by the 6510 CPU.
+which relies on the stack offered by hardware: the stack of the 6510 CPU.
 
-It is good to know that BASIC uses the stack not only for `GOSUB`, but also 
+It is good to know that BASIC uses the 6510 stack not only for `GOSUB`, but also 
 for, for example, `FOR`-`NEXT`, for expression evaluation `2*(3+4)`, and 
 for interrupts, e.g. the keyboard scan.
 
 The following program nests a couple of `FOR`-`NEXT` loops, and `GOSUB`s to 
-see how many bytes they consume from the 6510 CPU. We wrote a two instruction 
+see how many bytes they consume from the 6510 stack. We wrote a two-instruction 
 assembly routine to retrieve the 6510 stack pointer.
 
 > This program is listed in lower case to make copy&paste to VICE easier.
@@ -514,8 +514,8 @@ ready.
   TO value, and finally 2 bytes for the line number and 2 bytes for the address, 
   both linking to the first statement of the FOR loop.
   
-- A `NEXT` statement of an outer loop 
-  [cancels all inner loops](https://www.c64-wiki.com/wiki/FOR).
+- A `NEXT` statement of an outer FOR loop 
+  [cancels all inner FOR loops](https://www.c64-wiki.com/wiki/FOR).
   This is what happens on line 310, so line 320 prints 239 again.
   
 - The final test is on line 400: an infinite recursion of the routine 450.
@@ -532,10 +532,10 @@ ready.
   [Mapping the C64](https://archive.org/details/Compute_s_Mapping_the_Commodore_64/page/n59/mode/2up)
   suggest that BASIC uses $0100-$010A of the stack area for floating point 
   conversions, and the KERNEL uses $0100-$013E for tape handling.
-  This means the stack can grow down to $3F or 63. I'm guessing, BASIC needs
+  This means the stack can grow down to $3F or 63. I'm guessing, BASIC reserves
   78-63 = 15 bytes for other administrative purposes.
   
-  This is supported by `FIB(22)`. We get the error `OUT OF MEMORY  ERROR IN 250` and 
+  This guess is supported by `FIB(22)`. We get the error `OUT OF MEMORY  ERROR IN 250` and 
   line 250 is _not_ a `GOSUB` but an assignment (`r=r+s(s)`). I suspect that 
   evaluating an expression uses stack space on top of the space used by the 
   `GOSUB`s.
@@ -551,12 +551,12 @@ ready.
 
 The chapter [Theory](#theory) explains that for recursion in BASIC we need to 
 _restore_ the value of global variables, maybe with the help of an additional 
-stack (and array created by the programmer). The chapter also explains that 
+stack, i.e. an array created by the programmer. That chapter also explains that 
 BASIC uses the 6510 stack, which supports a maximum call depth of 22.
 
 In this chapter we will show that real problems can still be solved with 
-recursion in BASIC. We look at three: The towers of Hanoi, 8 Queens and an 
-Expression parser.
+recursion in BASIC. We look at three applications: the towers of Hanoi, 
+8 queens and an expression parser.
 
 
 ### Towers of Hanoi
