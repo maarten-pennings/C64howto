@@ -561,9 +561,96 @@ recursion in BASIC. We look at three applications: the towers of Hanoi,
 
 ### Towers of Hanoi
 
+"Towers of Hanoi" is a famous puzzle 
+(see [wiki](https://en.wikipedia.org/wiki/Tower_of_Hanoi)). 
+It consists of 3 pins (piles).
+There are disks on the pins. 
+Each disk has a different diameter.
+The games starts with `N` disks on pin 1.
+The goal is to move the tower of `N` disks to pin 3, following theses rules:
+
+- Only one disk can be moved at a time.
+- Only the top most disk of a pin can be moved.
+- A disk is moved to either an empty pin, or to the top of a pin whose 
+  top most disk is larger then the disk being moved.
+
+The diagram below shows the 7 steps needed to move a tower of 3 disks 
+from pin 1 to pin 3. The arrows are labeled with the action per step: 
+_f→t_ means a disk is moved from pin _f_ to pin _t_.
+
+![Hanoi example](hanoi.drawio.png)
+
+This puzzle is easily solved with recursion.
+We will develop a subroutine that prints the steps to move a tower 
+of `N` disks from pin `F` to pin `T`. Note that there is a spare pin.
+
+- If `N` is 0, the subroutine is done without printing any step.
+- If `N` is greater than 0, we split the work in three:
+  - Recursively ask to move a tower of `N-1` disk from `F` to the spare pin.
+  - move the `N`th disk from `F` to `T`.
+  - Recursively ask to move a tower of `N-1` disk from the spare pin to `T`.
+
+We convert this to a BASIC subroutine.
+We make sure to retain the values of the variables `N`, `F`, and `T` over 
+a subroutine call. There is one small trick: to compute the index of 
+the spare pin we use the expression `6-T-F`.
+
+> This program is listed in lower case to make copy&paste to VICE easier.
+> It is available as `5-HANOI` on the [disk](recursion.d64).
+
+```basic 
+100 print "hanoi"
+110 f=1:t=3:n=3:gosub 200
+120 end
+130 :
+200 rem inp :f=1,2,3 t=1,2,3 t<>f n>=0
+210 rem out :printed steps to move n
+220 rem      disks from pin f to pin t
+230 rem keep:f,t,n
+240 if n=0 then return
+250 t=6-f-t:n=n-1:gosub 200
+260 t=6-f-t:print f;">";t
+270 f=6-f-t:gosub 200
+280 f=6-f-t:n=n+1:return
+```
+
+This is the output.
+
+```
+hanoi
+ 1 > 3
+ 1 > 2
+ 3 > 2
+ 1 > 3
+ 2 > 1
+ 2 > 3
+ 1 > 3
+```
+
+There is a second version on the [disk](recursion.d64), 
+called `5-HANOIX`, it doesn't print the steps but the towers 
+between the steps. The letters denote disks of various sizes.
+
+```
+hanoi
+[abc [ [
+[ab [ [c
+[a [b [c
+[a [bc [
+[ [bc [a
+[c [b [a
+[c [ [ab
+[ [ [abc
+```
+
+As we see, it is straightforward to code this classical puzzle in BASIC.
+We must only adhere to the rule to retain the values of the variables 
+over a subroutine call.
+
 
 ### 8 Queens
 
+![8 Queens attack lines](8queens.drawio.png)
 
 ### Expression parser
 
