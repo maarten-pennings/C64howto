@@ -4,7 +4,7 @@ Can we use _recursion_ in Commodore 64 BASIC?
 
 As this article explains, the answer is yes.
 However, recursion is a bit harder than in more modern 
-programming languages,
+programming languages.
 
 
 ## Introduction
@@ -33,19 +33,19 @@ is at all possible on the C64. Not having subroutine arguments on a
 stack seems blocking.
 
 In this article we first look at three toy problems that we solve 
-recursively in C64 BASIC. They learn us the concepts we need for 
+recursively in C64 BASIC. They teach us the concepts we need for 
 real problems. Then we have a quick detour looking at the C64 stack.
-Finally we solve three bigger recursively.
+Finally we solve three real problems recursively.
 
 
 ## Theory
 
 In this chapter we use toy problems to understand how to apply recursion 
-in BASIC. None of the presented problems should be solved recursively.
+in BASIC. In real life, none of the presented problems should be solved recursively.
 The stack soon becomes a limiting factor, and execution speed is also 
 heavily impacted.
 
-But the presented problems are well known, and easy, so they don't 
+But the presented problems are well known, and easy to understand, so they don't 
 distract us when we learn the recursion concepts.
 
 
@@ -55,21 +55,23 @@ The first problem we are going to solve recursively is to compute
 powers of two. More specifically, we want a _subroutine_ that computes 
 the value `2^N` recursively.
 
-In BASIC we don't have functions with arguments and a return value, so 
-we need to use global variables. Our subroutine will have an input `N`.
-This means that the caller must assign `N` before the `GOSUB` to 
-the subroutine. The subroutine will (recursively) compute `2^N` and 
-assign that to the global variable `R` (from "result").
+In BASIC we don't have functions with arguments or a return value, so 
+we need to use global variables for both. Our subroutine will have an 
+input `N`. This means that the caller must assign a value to variable 
+`N` before the `GOSUB` to the subroutine. The subroutine will (recursively) 
+compute `2^N` and assign the result to a global variable, in our 
+case `R` (from "result"). After the return, the calles must inspect `R`.
 
 The above paragraph describes the "signature" of the subroutine:
 which values go in (in which variables) and which values go out 
 (in which variables). One thing is still missing in the "signature" 
 description: which global variables are used as scratch pad, i.e. 
 modified (overwritten) by the subroutine, but not having a meaningful 
-value after return. 
+value after return. This is needed because all variable are global, so 
+overwriting a variable that is used by the caller will cause havoc.
 
-In our case, `N` is modified. The signature of the subroutine is 
-specified on line 200.
+In our case, `N` is modified by the subroutine. 
+The complete signature is specified on line 200.
 
 > This program is listed in lower case to make copy&paste to VICE easier.
 > It is available as `1-POW2` on the [disk](recursion.d64).
@@ -98,12 +100,12 @@ pow2(0)= 1
 pow2(n)= pow2(n-1)*2, if n>0
 ```
 
-That was not too hard.
+Well, implementing the `POW2()` subroutine was not too hard.
 
 Lines 100-140 test the subroutine.
 Since `N` is modified by the subroutine, we can not use `N` in the 
 main loop, hence we use a fresh loop variable `I`.
-On line 120, the variable (argument) `N` is defined before the `GOSUB`, 
+On line 120, the variable (argument) `N` is assigned before the `GOSUB`, 
 afterwards the variable (result) `R` is used (to `PRINT`).
 
 ```
@@ -137,12 +139,12 @@ pow2
 ready.
 ```
 
-There is was intentional bug in the program, the main loop is infinite: 
+There is an intentional bug in the program: the main loop is infinite;
 line 140 jumps back to 120. However, the program does terminate. When `N=23` 
 the recursion is so deep that the stack space is exhausted and we get and 
 `OUT OF MEMORY ERROR`.
 
-Should we call it a "bug" when it was intentional?
+Should we call something a "bug" when it was intentional?
 
 
 ### Factorial
@@ -165,7 +167,8 @@ This differs very little from `POW2`, why is this harder?
 Our subroutine will have an input `N`.
 The subroutine will (recursively) compute `N!` and 
 assign that to the global variable `R`.
-Let us assume, as in `POW2`, that the signature includes _`N` is modified_.
+Let us assume, as in `POW2`, that the signature includes that `N` 
+is on the mods-list (is modified by the subroutine).
 And we recycle the `POW2` code as follows.
 
 ```basic 
@@ -178,7 +181,7 @@ And we recycle the `POW2` code as follows.
 ```
 
 This does _not_ work. The problem is in line 240.
-After the `GOSUB` on line 230, global variable `N` was modified (to an 
+After the `GOSUB` on line 230, global variable `N` is modified (to an 
 unspecified value), so the assignment `r=r*n` does not compute what we want.
 
 We need to change the signature of `FAC(N)` to no longer use `N` as 
@@ -207,10 +210,10 @@ of our subroutine, see line 200 below (`KEEP:N`).
 
 Fortunately, it is easy to implement the changed spec. 
 For the case `N=0` (line 210), global variable `N` is not overwritten, so 
-no need to update the code in that line.
+no need to update that line.
 For the case `N>0` (line 220-260), `N` is decremented on line 220.
 Line 230 has the recursive call, _which now guarantees that the value 
-of `N` is retained_. So we only need to add line 240, which increments `N` 
+of `N` is retained_ and that `R=(N-1)!`. So we only need to add line 240, which increments `N` 
 to restore its original value. This makes the assignment on line 250 
 correct, and allows us to `RETURN` on line 260, because `N` and `R` now 
 both adhere to the signature.
@@ -251,11 +254,11 @@ Also this program terminates with an `OUT OF MEMORY ERROR` due to a stack overfl
 ### Fibonacci
 
 In `FAC(N)` we learned that we sometimes need to retain values by restoring them.
-Unfortunately it is not always possible to do so, easily, e.g. with a simple 
+Unfortunately it is not always possible to do so easily, e.g. with a simple 
 "repair expression" like `N=N+1`.
 
-We will see this in our next toy example, Fibonacci, defined as follows.
-See [wikipedia](https://en.wikipedia.org/wiki/Fibonacci_sequence) for details.
+We will see this in our next toy example, Fibonacci, defined as follows
+(see [wikipedia](https://en.wikipedia.org/wiki/Fibonacci_sequence) for details).
 
 ```
 fib(0)= 0
@@ -263,11 +266,11 @@ fib(1)= 1
 fib(n)= fib(n-1) + fib(n-2), if n>1
 ```
 
-Our subroutine will have an input `N`.
-The subroutine will (recursively) compute `FIB(N)` and 
+Our subroutine has an input `N`.
+The subroutine (recursively) computes `FIB(N)` and 
 assign that to the global variable `R`.
 As before, we make sure that the value of `N` is retained.
-We have two scratch variables `R0` and `R1`.
+The subroutine has two scratch variables `R0` and `R1`.
 
 ```basic 
 200 rem inp:n; out:r=fib(n); keep:n; mods:r0,r1
@@ -281,7 +284,7 @@ We have two scratch variables `R0` and `R1`.
 
 The program above is a first attempt. Retaining the value of `N` is easy.
 But the crux of this example is in `R0` and `R1`. Both are overwritten by the 
-subroutine, so both are part of the mods-list. And when `R0` is 
+subroutine, both are part of the mods-list. And when `R0` is 
 on the mods-list, the second `GOSUB 200` (line 240) modifies `R0`, so line 
 250 is incorrect. 
 
@@ -299,7 +302,7 @@ out first attempt:
 270 return
 ```
 
-How do we solve that global variable `R0` is restored after the second 
+How do we restore global variable `R0` after the second 
 subroutine call  (`GOSUB 200` on line 240)? That is not easy. `R0` is 
 _computed_ so it is not a simple matter of restoring a decrement. 
 
@@ -337,14 +340,15 @@ Line 220 computes `FIB(n-1)` whose result `R` is _pushed_ on the stack (line 230
 Line 240 computes `FIB(n-2)` whose result `R` is incremented with the value popped from the stack (line 250).
 This also restores the stack pointer `S`.
 Line 260 restores `N`.
+This completes the subroutine.
 
 We have a main loop similar to the ones before, except that it is augmented 
-with timing code. Line 130 calls the subroutine, but takes a timestamp before 
+with _time_ recording code. Line 130 calls the subroutine, but takes a timestamp before 
 (`T0`) and after (`T1`) the call, to compute the execution time (`T`) in 
 seconds (the `/60` converts jiffies to seconds).
 
 Line 140 prints the function call and result.
-Line 160 prints the execution time (`INT(T)`).
+Line 160 prints the execution time `INT(T)`.
 One extra feature is that line 150 computes a factor:
 the ratio of the current execution time and the previous execution time.
 The factor is also printed on line 160.
@@ -382,39 +386,40 @@ ready.
 `FIB(N)` has the same intentional bug as `POW2(N)` and `FAC(N)`: the main loop is infinite.
 Also this program terminates with an `OUT OF MEMORY ERROR` due to a stack overflow.
 
-> It is worth noting that computing Fibonacci numbers using a recursive 
+> Computing Fibonacci numbers using a recursive 
 > algorithm is a bad idea. We can see that from the timing: `FIB(22)` takes 
 > 1128 seconds which is nearly 20 minutes!
 > 
 > The reason for this long execution time is that computing `FIB(n)` recursively takes `2*FIB(N+1)-1` calls 
-> (See [paper](https://courses.grainger.illinois.edu/cs374al1/fa2025/notes/03-dynprog.pdf)).
+> (see [paper](https://courses.grainger.illinois.edu/cs374al1/fa2025/notes/03-dynprog.pdf)).
 > Fibonacci numbers grow exponentially (see [wiki](https://en.wikipedia.org/wiki/Fibonacci_sequence#Computation_by_rounding)):
 > `FIB(N) ~ 1.618^N / 2.236`, so the _computation time grows exponentially_ too.
-> We see that back in the ratio printed by the BASIC programm, it matches 1.618.
+> We see that back in the ratios printed by the BASIC programm, it matches 1.618.
 > 
 >   |  N    | 0 | 1 | 2 | 3 | 4 |  5 |  6 |  7 |  8 |   9 |  10 |  11 |  12 |  13 |   14 |   15 |   16 |   17 |   18 |    19 |    20 |    21 |    22 |
 >   |:------|--:|--:|--:|--:|--:|---:|---:|---:|---:|----:|----:|----:|----:|----:|-----:|-----:|-----:|-----:|-----:|------:|------:|------:|------:|
 >   | FIB   | 0 | 1 | 1 | 2 | 3 |  5 |  8 | 13 | 21 |  34 |  55 |  89 | 144 | 233 |  377 |  610 |  987 | 1597 | 2584 |  4181 |  6765 | 10946 | 17711 |
 >   | calls | 1 | 1 | 3 | 5 | 9 | 15 | 25 | 41 | 67 | 109 | 177 | 287 | 465 | 753 | 1219 | 1973 | 3193 | 5167 | 8361 | 13529 | 21891 | 35421 | 57313 |
 > 
-> 
-> It is much faster to use an iterative algorithm. Computation becomes linear in `N`. 
-> It is even possible to compute `FIB(N)` in [logarithmic](https://en.wikipedia.org/wiki/Fibonacci_sequence#Matrix_form) time.
+> The recursive alorithm is _exponential_. 
+> A simple iterative algorithm is _linear_ in `N`. 
+> It is even possible to compute `FIB(N)` using a _logarithmic_ [algorithm](https://en.wikipedia.org/wiki/Fibonacci_sequence#Matrix_form).
 
 
 ## Stack
 
 The last toy example introduced a stack `S()`.
 That was used to store intermediate values (`R0` in the Fibonacci example).
-However all programs used a stack, the stack which is part of BASIC 
-(which relies on the stack offered by the 6510 CPU).
+However all programs used a stack, the stack which is part of BASIC, 
+which relies on the stack offered by the 6510 CPU.
 
 It is good to know that BASIC uses the stack not only for `GOSUB`, but also 
-for, for example, `FOR`-`NEXT`, for expression evaluation (`2*(3+4)`, and 
-for interrupts (e.g. the keyboard scan).
+for, for example, `FOR`-`NEXT`, for expression evaluation `2*(3+4)`, and 
+for interrupts, e.g. the keyboard scan.
 
 The following program nests a couple of `FOR`-`NEXT` loops, and `GOSUB`s to 
-see how many bytes they consume from the 6510 CPU. 
+see how many bytes they consume from the 6510 CPU. We wrote a two instruction 
+assembly routine to retrieve the 6510 stack pointer.
 
 > This program is listed in lower case to make copy&paste to VICE easier.
 > It is available as `4-STACK` on the [disk](recursion.d64).
@@ -449,21 +454,21 @@ see how many bytes they consume from the 6510 CPU.
 ```
 
 - It should be noted that the 6510 stack is hardwired 
-  to be in page 1 of the memory, that if from $0100 to $01FF.
-  The high byte is fixed ($01), the low byte is determined by the CPU 
-  register S. This register grows from $FF downwards.
+  to be in page 1 of the memory: from $0100 to $01FF.
+  The high byte (page) is fixed ($01), the low byte is determined by the CPU 
+  register S (the stack pointer). This S register grows from $FF downwards.
   
 - The subroutine starting at line 900 uses a small assembly program to 
   retrieve the 6510 stack pointer S and print it, together with the delta 
   to the previous value.
   
 - Line 110 contains the first `GOSUB 900` printing the initial stack pointer 
-  value (and a delta that does not make sense because there was no previous 
-  stack pointer yet.
+  value. It also prints the delta but that does not make sense here 
+  because there was no previous stack pointer yet.
 
-- The initial value appears to be 239; not exactly 255 ($FF) but close.
-  Our BASIC program and the BASIC interpreter are running, so that 
-  there are some values on the stack is not strange - but I don't know which.
+- The initial value appears to be 239; not exactly 255 ($FF) but close (16 btes off).
+  Our BASIC program and the BASIC interpreter are running, so there 
+  might be some values on the stack - but I don't know which.
   
 ```
 initial stack
@@ -502,26 +507,27 @@ stack use 'gosub'
 ready.
 ```
 
-- Next (lines 210, 220, and 230) come three (nested) `FOR`-`NEXT` loops.
+- Next come three nested `FOR`-`NEXT` loops (lines 210, 220, and 230).
   Each take a whopping 18 bytes of the stack. As [Mapping the C64](https://archive.org/details/Compute_s_Mapping_the_Commodore_64/page/n61/mode/2up)
   explains there is 1 byte for a tag (129), 2 bytes for a pointer to the loop variable, 
   5 bytes for the STEP value, 1 byte for the STEP sign, 5 bytes for the 
   TO value, and finally 2 bytes for the line number and 2 bytes for the address, 
-  both the start statement of the FOR loop.
+  both linking to the first statement of the FOR loop.
   
-- A `NEXT` statement [cancels all inner loops](https://www.c64-wiki.com/wiki/FOR).
+- A `NEXT` statement of an outer loop 
+  [cancels all inner loops](https://www.c64-wiki.com/wiki/FOR).
   This is what happens on line 310, so line 320 prints 239 again.
   
-- The final test is on line 400, infinite recursion of the routine 450.
+- The final test is on line 400: an infinite recursion of the routine 450.
   A GOSUB uses 7 bytes ([C64-wiki](https://www.c64-wiki.com/wiki/Subroutine?utm_source=gemini)). 
   Again 1 for a tag (141), 2 bytes for the line number and 2 bytes for the 
-  address, both the statement after the GOSUB, and finally 2 bytes for a JSR 
+  address, both linking to the statement after the GOSUB, and finally 2 bytes for a JSR 
   overhead.
   
-- Note that call 23 reduces raises the `OUT OF MEMORY ERROR`.
+- Note that the 23rd call raises the `OUT OF MEMORY ERROR`.
   This is the exact same value we found for the three toy examples.
-  I do not fully understand why BASIC indicates the stak is empty 
-  with a pointer at 78.
+  I do not fully understand why BASIC indicates the stack is empty 
+  with a pointer well above 0, namely at 78.
   
   [Mapping the C64](https://archive.org/details/Compute_s_Mapping_the_Commodore_64/page/n59/mode/2up)
   suggest that BASIC uses $0100-$010A of the stack area for floating point 
@@ -529,14 +535,15 @@ ready.
   This means the stack can grow down to $3F or 63. I'm guessing, BASIC needs
   78-63 = 15 bytes for other administrative purposes.
   
-  If we look at `FIB(22)` we get the error `OUT OF MEMORY  ERROR IN 250` and 
+  This is supported by `FIB(22)`. We get the error `OUT OF MEMORY  ERROR IN 250` and 
   line 250 is _not_ a `GOSUB` but an assignment (`r=r+s(s)`). I suspect that 
   evaluating an expression uses stack space on top of the space used by the 
   `GOSUB`s.
   
-> **Conclusion** The C64 BASIC interpreter uses the 6510 stack for `GOSUB`s.
+> **Conclusion** The C64 BASIC interpreter uses the 6510 stack for tracking 
+> returns of `GOSUB`s.
 > It can only handle about 22 nested `GOSUB`s, which is insufficient for 
-> programs like the toy examples where the nesting depth is the 
+> programs like the toy examples where the nesting depth is determined by the 
 > argument of subroutine.
 
 
