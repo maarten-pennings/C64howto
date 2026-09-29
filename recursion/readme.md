@@ -582,18 +582,21 @@ _f→t_ means a disk is moved from pin _f_ to pin _t_.
 
 This puzzle is easily solved with recursion.
 We will develop a subroutine that prints the steps to move a tower 
-of `N` disks from pin `F` to pin `T`. Note that there is a spare pin.
+of `N` disks from pin `F` (_from pin_) to pin `T` (_to_ pin). 
+Note that there is a third pin, the _spare_ pin.
 
 - If `N` is 0, the subroutine is done without printing any step.
-- If `N` is greater than 0, we split the work in three:
-  - Recursively ask to move a tower of `N-1` disk from `F` to the spare pin.
-  - move the `N`th disk from `F` to `T`.
-  - Recursively ask to move a tower of `N-1` disk from the spare pin to `T`.
+- If `N` is greater than 0, we split the work in three phases:
+  - Recursively ask to move a tower of `N-1` disk from `F` to the _spare_ pin.
+  - Move the `N`th disk from `F` to `T`.
+  - Recursively ask to move a tower of `N-1` disk from the _spare_ pin to `T`.
 
 We convert this to a BASIC subroutine.
 We make sure to retain the values of the variables `N`, `F`, and `T` over 
 a subroutine call. There is one small trick: to compute the index of 
-the spare pin we use the expression `6-T-F`.
+the spare pin we use the expression `6-T-F`. Observe that an assignment 
+like `T=6-T-F` swaps the _to_ and the _spare_ pin, another `T=6-T-F` swaps 
+them back.
 
 > This program is listed in lower case to make copy&paste to VICE easier.
 > It is available as `5-HANOI` on the [disk](recursion.d64).
