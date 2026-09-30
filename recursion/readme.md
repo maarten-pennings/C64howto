@@ -519,7 +519,7 @@ ready.
   This is what happens on line 310, so line 320 prints 239 again.
   
 - The final test is on line 400: an infinite recursion of the routine 450.
-  A GOSUB uses 7 bytes ([C64-wiki](https://www.c64-wiki.com/wiki/Subroutine?utm_source=gemini)). 
+  A GOSUB uses 7 bytes ([C64-wiki](https://www.c64-wiki.com/wiki/Subroutine)). 
   Again 1 for a tag (141), 2 bytes for the line number and 2 bytes for the 
   address, both linking to the statement after the GOSUB, and finally 2 bytes for a JSR 
   overhead.
@@ -770,7 +770,7 @@ mentioned on the [wiki](https://en.wikipedia.org/wiki/Eight_queens_puzzle).
 It took my C64 545 seconds or 9 minutes.
 
 There is a second version on the [disk](recursion.d64), 
-called `6B-8QUEENSX`, it prints 2D boards instead of row numbers`.
+called `6-8QUEENSX`, it prints 2D boards instead of row numbers`.
 
 ```
 	8 queensx
@@ -818,14 +818,22 @@ called `6B-8QUEENSX`, it prints 2D boards instead of row numbers`.
 	 574.65
 ```
 
-This proves that BASIC allows us to implement the recursive backtracking.
-
+This proves that BASIC allows us to implement recursive backtracking.
 
 
 ### Expression parser
 
 
+### Links
+
+- [Fibonnaci on wikipedia](https://en.wikipedia.org/wiki/Fibonacci_sequence).
+- [Towers of hanoi on wikipedia](https://en.wikipedia.org/wiki/Tower_of_Hanoi). 
+- [8 Queens on wikipedia ](https://en.wikipedia.org/wiki/Eight_queens_puzzle). 
+- [FOR loops on C64-wiki](https://www.c64-wiki.com/wiki/FOR).
+- [GOSUB on C64-wiki](https://www.c64-wiki.com/wiki/Subroutine). 
+- [Stack usage in Mapping the C64](https://archive.org/details/Compute_s_Mapping_the_Commodore_64/page/n61/mode/2up).
+- The [disk](recursion.d64) contains `1-POW2`, `2-FAC`, `3-FIB`, `4-STACK`, `5-HANOI`, `5-HANOIX`, `6-8QUEENS`, `6-8QUEENSX`, 
+
+
 (end)
-
-
 
