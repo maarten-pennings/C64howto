@@ -564,7 +564,7 @@ recursion in BASIC. We look at three applications: the towers of Hanoi,
 "Towers of Hanoi" is a famous puzzle 
 (see [wiki](https://en.wikipedia.org/wiki/Tower_of_Hanoi)). 
 It consists of 3 pins (piles).
-There are disks on the pins. 
+There are towers (stacks) of disks on the pins. 
 Each disk has a different diameter.
 The games starts with `N` disks on pin 1.
 The goal is to move the tower of `N` disks to pin 3, following theses rules:
@@ -653,7 +653,40 @@ over a subroutine call.
 
 ### 8 Queens
 
+The "8 queens" puzzle is also famous 
+(see [wiki](https://en.wikipedia.org/wiki/Eight_queens_puzzle)). 
+The goal is to place eight chess queens on an 8×8 chessboard so that no queen attacks another.
+Problems like these are often solved using recursive backtracking.
+We want to try to do this in BASIC.
+
+We can reformulate the problem:
+the rows, columns and (up and down) diagonals each have at most one queen.
+
+We will develop a subroutine that has as input a board `B()` 
+whose first `N` columns hold a queen 
+(for a column `C`, with `C<N`, `B(C)` is the row where the queen is placed).
+The subroutine will complete the partial board (putting one queen in each of 
+the remaining columns `C`, `N≤C<8`) in all possible ways 
+and print those completed boards where no queen attacks another.
+
+To be able to quickly decide if a queen can be added in column `N` 
+we maintain three arrays: `U()` for the "up diagonals", 
+`D()` for the "down diagonals", and `H()` for the "horizontals".
+There is no need to maintain an array for the verticals, because by construction of 
+the algorithm, there is one queen per column (per vertical).
+For up diagonal with index `I`, `U(I)` will be 0, if and only if up diagonal `I` is free,
+i.e. no queen on the partially filled board lies on that diagonal.
+The same holds for `D()` and `H()`.
+
+Given a queen position, it is easy to compute the indexes of the up diagonal and the down diagonal.
+The down diagonal index is the _sum_ of the row and column
+and the up diagonal index is the _difference_ of the row and column 
+(with an offset 7 to stay positive).
+See the diagram for the example where the queen is placed in column 1 and row 5,
+occupying up diagonal 11 (blue), down diagonal 4 (green), and horizontal 5 (orange).
+
 ![8 Queens attack lines](8queens.drawio.png)
+
 
 ### Expression parser
 
