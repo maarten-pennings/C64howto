@@ -635,7 +635,7 @@ called `5-HANOIX`, it doesn't print the steps but the towers
 between the steps. The letters denote disks of various sizes.
 
 ```
-hanoi
+hanoix
 [abc [ [
 [ab [ [c
 [a [b [c
@@ -662,14 +662,14 @@ We want to try to do this in BASIC.
 We can reformulate the problem:
 the rows, columns and (up and down) diagonals each have at most one queen.
 
-We will develop a subroutine that has as input a board `B()` 
-whose first `N` columns hold a queen 
-(for a column `C`, with `C<N`, `B(C)` is the row where the queen is placed).
+We will develop a subroutine that has as input a partial board `B()`: 
+its first `C` columns hold a queen 
+(for a _column_ `X`, with `X<C`, `B(X)` is the _row_ where the queen is placed).
 The subroutine will complete the partial board (putting one queen in each of 
-the remaining columns `C`, `N≤C<8`) in all possible ways 
+the remaining columns `X`, `C≤X<8`) in all possible ways 
 and print those completed boards where no queen attacks another.
 
-To be able to quickly decide if a queen can be added in column `N` 
+To be able to quickly decide if a queen can be added in column `C` 
 we maintain three arrays: `U()` for the "up diagonals", 
 `D()` for the "down diagonals", and `H()` for the "horizontals".
 There is no need to maintain an array for the verticals, because by construction of 
@@ -687,9 +687,145 @@ occupying up diagonal 11 (blue), down diagonal 6 (green), and horizontal 5 (oran
 
 ![8 Queens attack lines](8queens.drawio.png)
 
+> This program is listed in lower case to make copy&paste to VICE easier.
+> It is available as `6-8QUEENS` on the [disk](recursion.d64).
+
+```basic 
+10 print "8 queens"
+12 dim b(7),h(7),u(14),d(14)
+14 t0=ti:c=0:gosub 28:t1=ti
+16 print (t1-t0)/60:end
+18 :
+20 rem inp :0<=c<=8 b(0..c-1)
+22 rem out :printed completions of b
+24 rem      where no queen attack other
+26 rem keep:c,b,h,u,d
+28 if c=8 then gosub 50:return
+30 b(c)=0
+32 :if h(b(c)) then 44
+34 :if d(b(c)+c) then 44
+36 :if u(7+b(c)-c) then 44
+38 :h(b(c))=1:d(b(c)+c)=1:u(7+b(c)-c)=1
+40 :c=c+1:gosub 28:c=c-1
+42 :h(b(c))=0:d(b(c)+c)=0:u(7+b(c)-c)=0
+44 b(c)=b(c)+1:if b(c)<8 then 32
+46 return
+48 :
+50 for x=0 to 7:print b(x);:next
+52 n=n+1:print "#";n:return
+```
+
+- The program creates the arreas for the board (`B()`), 
+  the horizontals (`H()`), up diagonals (`U()`) and down 
+  diagonals (`D()`) on line 12.
+
+- The initial recursive call is on line 14.
+  Argument `C` is 0, meaning that the partial board `B()` is empty (0 columns filled).
+  `T0` and `T1` record the start and end time of the subroutine call.
+  Line 16 prints the total execution time in seconds.
+
+- The recursive backtracking subroutine is on lines 20-46.
+  When the board is complete (when `C` is 8) we found a solution.
+  The subroutine ar 50 is called which prints the solution 
+  (stepping the solution number `N`).
+  
+- If the board is not yet complete (`C<8`) the subroutine tries 
+  to place a queen in column `C`.
+  It loops over all rows from 0 (line 30) upto 8 (line 44).
+  In lines 32-42 we have a candidate location for the queen at coordiantes (`C`,`B(C)`).
+  We compute the three indices: `B(C)` for the horizontals,
+  `B(C)+C` for the down diagonals and `7+B(C)-C` for the updiagonals.
+
+- Lines 32, 34 and 36, checks if the queen would be on a line that is under attack.
+  If so, the next row is tried for the queen (`THEN 44`).
+
+- If the queen is not under attack, the three arrays are updated for the 
+  new queen location (line 38) and the subroutine is called recursively (line 40).
+  After the call the tree arrays are reveresed again (line 42).  
+
+This is the abridged output.
+
+```
+8 queens
+ 0  4  7  5  2  6  1  3 # 1
+ 0  5  7  2  6  3  1  4 # 2
+ 0  6  3  5  7  1  4  2 # 3
+ 0  6  4  7  1  3  5  2 # 4
+ 1  3  5  7  2  0  6  4 # 5
+ 1  4  6  0  2  7  5  3 # 6
+ 1  4  6  3  0  7  5  2 # 7
+...
+ 6  3  1  4  7  0  2  5 # 86
+ 6  3  1  7  5  0  2  4 # 87
+ 6  4  2  0  5  7  1  3 # 88
+ 7  1  3  0  6  4  2  5 # 89
+ 7  1  4  2  0  6  3  5 # 90
+ 7  2  0  5  1  4  6  3 # 91
+ 7  3  0  2  5  1  6  4 # 92
+ 544.75
+```
+
+Our BASIC program finds 92 solutions, the same amount as 
+mentioned on the [wiki](https://en.wikipedia.org/wiki/Eight_queens_puzzle).
+It took my C64 545 seconds or 9 minutes.
+
+There is a second version on the [disk](recursion.d64), 
+called `6B-8QUEENSX`, it prints 2D boards instead of row numbers`.
+
+```
+	8 queensx
+	q.......
+	....q...
+	.......q
+	.....q..
+	..q.....
+	......q.
+	.q......
+	...q....
+	# 1
+
+	q.......
+	.....q..
+	.......q
+	..q.....
+	......q.
+	...q....
+	.q......
+	....q...
+	# 2
+
+...
+
+	.......q
+	..q.....
+	q.......
+	.....q..
+	.q......
+	....q...
+	......q.
+	...q....
+	# 91
+
+	.......q
+	...q....
+	q.......
+	..q.....
+	.....q..
+	.q......
+	......q.
+	....q...
+	# 92
+	 574.65
+```
+
+This proves that BASIC allows us to implement the recursive backtracking.
+
+
 
 ### Expression parser
 
 
 (end)
+
+
 
