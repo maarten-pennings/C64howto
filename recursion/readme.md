@@ -683,7 +683,7 @@ The down diagonal index is the _sum_ of the row and column
 and the up diagonal index is the _difference_ of the row and column 
 (with an offset 7 to stay positive).
 See the diagram for the example where the queen is placed in column 1 and row 5,
-occupying up diagonal 11 (blue), down diagonal 4 (green), and horizontal 5 (orange).
+occupying up diagonal 11 (blue), down diagonal 6 (green), and horizontal 5 (orange).
 
 ![8 Queens attack lines](8queens.drawio.png)
 
