@@ -3,7 +3,7 @@
 Various "How to xxx" questions and answers for the C64 (Commodore 64) that I want to remember. Some are linking to my old [howto repo](https://github.com/maarten-pennings/howto).
 
 
-# Recursion in BASIC
+## Recursion in BASIC
 
 Can we use _recursion_ in Commodore 64 BASIC?
 
