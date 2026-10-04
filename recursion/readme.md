@@ -803,11 +803,11 @@ This is quite a mouth full. What it boils down to is that you can enter a string
 supports parenthesis `(`..`)` to overrule that.
 
 To keep the example manageable, the evaluator only supports `+`, `*`, `(`..`)`
-and integer numbers like `123`. No subtraction of division, no negative numbers 
+and integer numbers like `123`. No subtraction or division, no negative numbers 
 or functions. But it does have rather clear error reporting.
 
 We will write a _Parse_ subroutine (line 300) that takes as argument a 
-string `E$`, evaluate that, and return the value in `E`. 
+string `E$`, evaluates that, and returns the value in `E`. 
 Unless there is an error, then _Parse_ prints the error and stops.
 
 Recursion lends itself quite well for expression evaluation.
@@ -818,17 +818,17 @@ However, the second `GOSUB` for `E$="4*5"` does overwrite the global
 variable `E`, so we would loose the `E=6` from the first `GOSUB`. 
 We solve this by introducing an explicit stack `E()` with stack pointer `S`.
 
-An LL(1) parser decides what to do looking at the next 1 tokens.
-In our simple parser a token is character. The parser _Parse_  
-will "eat" the tokens one by one from (the head of) string `E$`. 
+An LL(1) parser decides what to do by looking at the next 1 tokens.
+In our simple parser a token is a character. The parser _Parse_  
+will "eat" the tokens one by one from (the left of) string `E$`. 
 The code maintains `H$=LEFT$(E$,1)`, so decisions can be made by 
-inspecting `H$`.
+inspecting `H$`, `H$` being the _head_ of `E$`.
 
 An LL(1) parser must always have a 1 character look ahead. Therefore
 there is a wrapper _Eval_ (line 200) that appends a sentinel (terminator) 
 token to `E$`; we have chosen `"$"` as sentinel.
 
-The structure of an recursive descend parser is to have a subroutine per 
+The structure of a recursive descend parser is to have a subroutine per 
 precedence level. We have three levels: addition (`+`, we could add `-`) 
 at line 300, multiplication (`*`, we could add `/`) at line 400, and 
 atoms at line 500. We have two kind of atoms: parenthesized expressions 
@@ -841,8 +841,8 @@ parsed and what is still to parse but failed (in reverse video).
 Then it aborts.
 
 The routine at line 800 is _SkipToken_. It checks if `E$` starts 
-with token `S$` (argument). If not it reports an error. If so, it 
-"eats" (removes) token `S$` from `E$`, and updates `H$` to be the next 
+with the token in `S$` (argument). If not it reports an error. If so, it 
+"eats" (removes) `S$` from `E$`, and updates `H$` to be the next 
 token to parse.
 
 > This program is listed in lower case to make copy&paste to VICE easier.
@@ -898,9 +898,9 @@ Some additional notes
 
 - Line 110 assigns an expression to evaluate, line 120 prints it, calls 
   _Eval_ (line 200), and prints the result. Lines 130 and 140 are 
-  similar, but here `I$` has a syntax error: using operator `^`.
+  similar, but here `I$` has a syntax error: using the non supported operator `^`.
   
-- Line 200 appends the sentinel to the string `E$`, which will be 
+- Line 200 is where _Eval_ starts. It appends the sentinel to the string `E$`, which will be 
   processed by _Parse_ (line 300). The `GOSUB 830` is a "hack" to 
   initialize the head token `H$`. 
   
