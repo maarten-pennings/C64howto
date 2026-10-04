@@ -3,6 +3,14 @@
 Various "How to xxx" questions and answers for the C64 (Commodore 64) that I want to remember. Some are linking to my old [howto repo](https://github.com/maarten-pennings/howto).
 
 
+# Recursion in BASIC
+
+Can we use _recursion_ in Commodore 64 BASIC?
+
+As this [article explains](recursion), the answer is yes.
+However, recursion is a bit harder than in more modern 
+programming languages.
+
 
 ## Commodore 64 rows versus lines
 

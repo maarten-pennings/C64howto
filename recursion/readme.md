@@ -656,7 +656,7 @@ over a subroutine call.
 The "8 queens" puzzle is also famous 
 (see [wiki](https://en.wikipedia.org/wiki/Eight_queens_puzzle)). 
 The goal is to place eight chess queens on an 8×8 chessboard so that no queen attacks another.
-Problems like these are often solved using recursive backtracking.
+Problems like these are often solved using _recursive backtracking_.
 We want to try to do this in BASIC.
 
 We can reformulate the problem:
@@ -715,7 +715,7 @@ occupying up diagonal 11 (blue), down diagonal 6 (green), and horizontal 5 (oran
 52 n=n+1:print "#";n:return
 ```
 
-- The program creates the arreas for the board (`B()`), 
+- The program creates the arrays for the board (`B()`), 
   the horizontals (`H()`), up diagonals (`U()`) and down 
   diagonals (`D()`) on line 12.
 
@@ -726,35 +726,26 @@ occupying up diagonal 11 (blue), down diagonal 6 (green), and horizontal 5 (oran
 
 - The recursive backtracking subroutine is on lines 20-46.
   When the board is complete (when `C` is 8) we found a solution.
-  The subroutine ar 50 is called which prints the solution 
+  The subroutine at line 50 is called which prints the solution 
   (stepping the solution number `N`).
   
 - If the board is not yet complete (`C<8`) the subroutine tries 
   to place a queen in column `C`.
   It loops over all rows from 0 (line 30) upto 8 (line 44).
-  In lines 32-42 we have a candidate location for the queen at coordiantes (`C`,`B(C)`).
+  In lines 32-42 we have a candidate location for the queen at coordinates (`C`,`B(C)`).
   We compute the three indices: `B(C)` for the horizontals,
-  `B(C)+C` for the down diagonals and `7+B(C)-C` for the updiagonals.
+  `B(C)+C` for the down diagonals and `7+B(C)-C` for the up diagonals.
 
 - Lines 32, 34 and 36, checks if the queen would be on a line that is under attack.
   If so, the next row is tried for the queen (`THEN 44`).
 
 - If the queen is not under attack, the three arrays are updated for the 
   new queen location (line 38) and the subroutine is called recursively (line 40).
-  After the call the tree arrays are reveresed again (line 42).  
+  After the call the three arrays are reversed (cleared) again (line 42).  
 
-This is the abridged output.
+This is the tail of the printed output.
 
 ```
-8 queens
- 0  4  7  5  2  6  1  3 # 1
- 0  5  7  2  6  3  1  4 # 2
- 0  6  3  5  7  1  4  2 # 3
- 0  6  4  7  1  3  5  2 # 4
- 1  3  5  7  2  0  6  4 # 5
- 1  4  6  0  2  7  5  3 # 6
- 1  4  6  3  0  7  5  2 # 7
-...
  6  3  1  4  7  0  2  5 # 86
  6  3  1  7  5  0  2  4 # 87
  6  4  2  0  5  7  1  3 # 88
@@ -770,32 +761,11 @@ mentioned on the [wiki](https://en.wikipedia.org/wiki/Eight_queens_puzzle).
 It took my C64 545 seconds or 9 minutes.
 
 There is a second version on the [disk](recursion.d64), 
-called `6-8QUEENSX`, it prints 2D boards instead of row numbers`.
+called `6-8QUEENSX`, it prints 2D boards instead of a list of row numbers.
+This is the tail of the printed output;
+the boards are printed sideways: column 0 is the first printed row.
 
 ```
-	8 queensx
-	q.......
-	....q...
-	.......q
-	.....q..
-	..q.....
-	......q.
-	.q......
-	...q....
-	# 1
-
-	q.......
-	.....q..
-	.......q
-	..q.....
-	......q.
-	...q....
-	.q......
-	....q...
-	# 2
-
-...
-
 	.......q
 	..q.....
 	q.......
@@ -818,13 +788,173 @@ called `6-8QUEENSX`, it prints 2D boards instead of row numbers`.
 	 574.65
 ```
 
-This proves that BASIC allows us to implement recursive backtracking.
+8 Queens proves that BASIC allows us to implement recursive backtracking.
 
 
 ### Expression parser
 
+The final real application is a so-called [LL(1)](https://en.wikipedia.org/wiki/LL_parser) 
+parser implemented using _recursive descent_ algorithm. 
 
-### Links
+This is quite a mouth full. What it boils down to is that you can enter a string 
+`I$="10+4*5+5*(1+1)"`, call the evaluator (`GOSUB 200`), and `PRINT E` will print 
+`40`. The evaluator knows about precedence: `*` goes before `+`, but also 
+supports parenthesis `(`..`)` to overrule that.
+
+To keep the example manageable, the evaluator only supports `+`, `*`, `(`..`)`
+and integer numbers like `123`. No subtraction of division, no negative numbers 
+or functions. But it does have rather clear error reporting.
+
+We will write a _Parse_ subroutine (line 300) that takes as argument a 
+string `E$`, evaluate that, and return the value in `E`. 
+Unless there is an error, then _Parse_ prints the error and stops.
+
+Recursion lends itself quite well for expression evaluation.
+For example, to evaluate `E$="2*3+4*5"`, we might recursively evaluate 
+`E$="2*3"` (returning to `E=6`) and `E$="4*5"` (returning to `E=20`). 
+Next we need to add `6` and `20`, assign that to `E` and return. 
+However, the second `GOSUB` for `E$="4*5"` does overwrite the global 
+variable `E`, so we would loose the `E=6` from the first `GOSUB`. 
+We solve this by introducing an explicit stack `E()` with stack pointer `S`.
+
+An LL(1) parser decides what to do looking at the next 1 tokens.
+In our simple parser a token is character. The parser _Parse_  
+will "eat" the tokens one by one from (the head of) string `E$`. 
+The code maintains `H$=LEFT$(E$,1)`, so decisions can be made by 
+inspecting `H$`.
+
+An LL(1) parser must always have a 1 character look ahead. Therefore
+there is a wrapper _Eval_ (line 200) that appends a sentinel (terminator) 
+token to `E$`; we have chosen `"$"` as sentinel.
+
+The structure of an recursive descend parser is to have a subroutine per 
+precedence level. We have three levels: addition (`+`, we could add `-`) 
+at line 300, multiplication (`*`, we could add `/`) at line 400, and 
+atoms at line 500. We have two kind of atoms: parenthesized expressions 
+(line 500-520) and literal numbers (530-570). We could add variables or 
+functions as atoms.
+
+The routine at line 900 is _PrintError_. It prints the error string 
+passed in argument `M$`, shows what the parser already successfully 
+parsed and what is still to parse but failed (in reverse video).
+Then it aborts.
+
+The routine at line 800 is _SkipToken_. It checks if `E$` starts 
+with token `S$` (argument). If not it reports an error. If so, it 
+"eats" (removes) token `S$` from `E$`, and updates `H$` to be the next 
+token to parse.
+
+> This program is listed in lower case to make copy&paste to VICE easier.
+> It is available as `7-EXPR` on the [disk](recursion.d64).
+
+```
+100 dim e(20):s=0:rem expression eval
+110 i$="10+4*5+5*(1+1)"
+120 print i$:gosub 200:print e:print
+130 i$="10+4^5+5*(1+1)"
+140 print i$:gosub 200:print e:print
+150 end
+190 :
+200 e$=i$+"$":gosub 830:gosub 300
+210 if h$="$" then return
+220 m$="expected '+','*'":goto 900
+290 :
+300 gosub 400
+310 if h$<>"+" then return
+320 e(s)=e:s$="+":gosub 800
+330 s=s+1:gosub 400:s=s-1
+340 e=e(s)+e:goto 310
+390 :
+400 gosub 500
+410 if h$<>"*" then return
+420 e(s)=e:s$="*":gosub 800
+430 s=s+1:gosub 500:s=s-1
+440 e=e(s)*e:goto 410
+490 :
+500 if h$<>"(" then 530
+510 s$="(":gosub 800:gosub 300
+520 s$=")":gosub 800:return
+530 if h$<"0" or h$>"9" then 580
+540 n$=""
+550 n$=n$+h$:s$=h$:gosub 800
+560 if h$>="0" and h$<="9" then 550
+570 e=val(n$):return
+580 m$="expect '(','0'..'9'":goto 900
+590 :
+800 if left$(e$,len(s$))=s$ then 820
+810 m$="missing '"+s$+"'":goto 900
+820 e$=mid$(e$,len(s$)+1)
+830 h$=left$(e$,1):return
+890 :
+900 print " error ";m$:l=len(e$)-1
+910 print " ";left$(i$,len(i$)-l);
+920 print chr$(18);left$(e$,l)chr$(154)
+```
+
+Some additional notes 
+
+- Line 100 defines the stack `E()` and initializes stack pointer `S`.
+
+- Line 110 assigns an expression to evaluate, line 120 prints it, calls 
+  _Eval_ (line 200), and prints the result. Lines 130 and 140 are 
+  similar, but here `I$` has a syntax error: using operator `^`.
+  
+- Line 200 appends the sentinel to the string `E$`, which will be 
+  processed by _Parse_ (line 300). The `GOSUB 830` is a "hack" to 
+  initialize the head token `H$`. 
+  
+  At the end of parsing, `E$` should be empty - be just the sentinel.
+  That is handled in 210 and 220.
+
+- Line 300 starts the _Parse_ subroutine; 300-390 is for addition ("terms"), 
+  400-490 for multiplications ("factors") and 500-590 for atoms.
+  
+- Line 300 parses the left-hand side of a `+` sign (`GOSUB 400`), 
+  and line 330 the right-hand side (another `GOSUB 400`).
+  Line 320 pushes the left-hand `E` on the stack `E(S)=E` and it 
+  eats the `"+"` from `E$` using `S$="+":GOSUB 800`.
+  Line 330 contains the recursive call for the right-hand side 
+  keeping the  stack pointer in sync.
+  Line 340 implements the actual addition `e=e(s)+e`.
+  Since an addition might have more than two terms (`1+2+3`), 
+  the addition parser loops back `GOTO 310`.
+  
+- The 400 multiplication part is similar to the 300 addition part.
+
+- The atoms are dealt with in 500. Parenthesized expressions on line 500-520.
+  Numbers on line 530-570.
+
+Here is a table of the variables that are used.
+
+  |variable| contents/usage                                                  |
+  |:------:|:----------------------------------------------------------------|
+  |  `E()` | stack                                                           |
+  |   `S`  | stack pointer                                                   |
+  |        |                                                                 |
+  |  `I$`  | expression input by user - never modified, arg for _Eval_ (200) |
+  |  `E$`  | copy of `I$`, parser eats leading chars, arg for _Parse_ (300)  |
+  |  `H$`  | convenience variable: the head char of `E$`                     |
+  |  `E`   | result returned by _parse_ (300) - value of `E$`                |
+  |        |                                                                 |
+  |  `S$`  | argument for _SkipToken_ (800), what to skip                    |
+  |  `M$`  | argument for _PrintError_ (900), the error message              |
+  |        |                                                                 |
+  |  `N$`  | helper only used to parse an integer number                     |
+  |  `L`   | helper only used to print error (parser position)               |
+
+Here is the output of `7-EXPR`.
+
+![Expression output](7-expr.png)
+
+
+## Conclusion
+
+It takes a bit more effort in BASIC than it would in more modern languages, 
+but _recursive backtracking_ and a _recursive descent parser_ are possible 
+in C64 BASIC.
+
+
+## Links
 
 - [Fibonnaci on wikipedia](https://en.wikipedia.org/wiki/Fibonacci_sequence).
 - [Towers of hanoi on wikipedia](https://en.wikipedia.org/wiki/Tower_of_Hanoi). 
@@ -832,7 +962,9 @@ This proves that BASIC allows us to implement recursive backtracking.
 - [FOR loops on C64-wiki](https://www.c64-wiki.com/wiki/FOR).
 - [GOSUB on C64-wiki](https://www.c64-wiki.com/wiki/Subroutine). 
 - [Stack usage in Mapping the C64](https://archive.org/details/Compute_s_Mapping_the_Commodore_64/page/n61/mode/2up).
-- The [disk](recursion.d64) contains `1-POW2`, `2-FAC`, `3-FIB`, `4-STACK`, `5-HANOI`, `5-HANOIX`, `6-8QUEENS`, `6-8QUEENSX`, 
+- [LL(1) parser](https://en.wikipedia.org/wiki/LL_parser).
+- The [disk](recursion.d64) contains `1-POW2`, `2-FAC`, `3-FIB`, `4-STACK`, `5-HANOI`, `5-HANOIX`, `6-8QUEENS`, `6-8QUEENSX`, `7-EXPR`.
+
 
 
 (end)
