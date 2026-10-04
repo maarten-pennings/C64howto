@@ -848,7 +848,7 @@ token to parse.
 > This program is listed in lower case to make copy&paste to VICE easier.
 > It is available as `7-EXPR` on the [disk](recursion.d64).
 
-```
+```basic
 100 dim e(20):s=0:rem expression eval
 110 i$="10+4*5+5*(1+1)"
 120 print i$:gosub 200:print e:print
