@@ -1,4 +1,4 @@
-# Recursion in BASIC
+out of# Recursion in BASIC
 
 Can we use _recursion_ in Commodore 64 BASIC?
 
@@ -134,7 +134,6 @@ pow2
 2^ 20 = 1048576
 2^ 21 = 2097152
 2^ 22 = 4194304
-2^ 23 =
 ?out of memory  error in 210
 ready.
 ```
@@ -325,6 +324,7 @@ The stack is created on line 110 in the program below.
 160 :print int(t);chr$(157);"s(*";f;")"
 170 :n=n+1:l=t
 180 goto 130
+190 :
 200 rem inp:n; out:r=fib(n); keep:n,s
 210 if n<2 then r=n:return
 220 n=n-1:gosub 200
@@ -785,8 +785,9 @@ q.......
 ......q.
 ....q...
 # 92
- 574.65
-``
+
+ 578
+```
 
 8 Queens proves that BASIC allows us to implement recursive backtracking.
 
@@ -939,8 +940,8 @@ Here is a table of the variables that are used.
   |  `S$`  | argument for _SkipToken_ (800), what to skip                    |
   |  `M$`  | argument for _PrintError_ (900), the error message              |
   |        |                                                                 |
-  |  `N$`  | helper only used to parse an integer number                     |
-  |  `L`   | helper only used to print error (parser position)               |
+  |  `N$`  | helper only used to parse an integer number (540-570)           |
+  |  `L`   | helper only used to print an error (parser position) 900-920    |
 
 Here is the output of `7-EXPR`.
 
