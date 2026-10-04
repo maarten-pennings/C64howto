@@ -106,7 +106,7 @@ The [BMC64 KBD (old repo)](https://github.com/maarten-pennings/howto/tree/main/c
 Writing a UI to control the SID registers, and using the VICE tools
 to extract the BASIC program to PC, see [c64sid (old repo)](https://github.com/maarten-pennings/howto/tree/main/c64sid).
 
-I also discovered [petcat](https://github.com/maarten-pennings/howto/tree/main/c64sid#files) in the process.
+I also discovered [petcat and c1541](https://github.com/maarten-pennings/howto/tree/main/c64sid#files) in the process.
 
 
 ## How to use the compare instruction of the 6502?

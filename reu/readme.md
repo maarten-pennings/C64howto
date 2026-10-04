@@ -16,7 +16,8 @@ using the REU. It will be much longer than one line, but also faster.
 If you don't have a kung Fu Flash 2, do not despair. 
 The [Commodore 64 Ultimate](https://commodore.net/computer/#:~:text=16%20MB%20system%2C-,16%20MB%20REU,-%2C%2016%20MB%20GeoRAM)
 and [TheC64](https://c64os.com/c64os/usersguide/viceconfiguration_thec64#:~:text=Enables%20an%20REU%20with%20the%20maximum%20of%2016MB)
-both contain a REU. And even VICE emulates a REU.
+and [BMC64](https://github.com/randyrossi/bmc64)
+all contain a REU. And even VICE emulates a REU.
 
 > Note to self: enabling REU in VICE together with KCS power cartridge does _not_ work.
 

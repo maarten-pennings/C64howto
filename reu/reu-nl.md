@@ -13,12 +13,13 @@ Dat bevat meer details en bijvoorbeeld ook source files.
 
 ## Introductie
 
-In 1985 heeft Commodore de eerste REU (**R**AM **E**xpansion **U**nit) op de markt 
-gebracht. Een REU breidt het geheugen van de Commodore 64 behoorlijk uit, met 
-128 kB (REU 1700), 256 kB (REU 1764), of zelfs 512 kB (REU 1750).
-Ook moderne systemen zoals VICE, de Commodore Ultimate, The C64, en Kung Fu Flash 2
-hebben ondersteuning voor een REU. In dit artikel bekijken we hoe een REU werkt,
-en we schrijven een BASIC programma ("10 PRINT") dat de REU gebruikt.
+In 1985 heeft Commodore de eerste REU (**R**AM **E**xpansion **U**nit) op de 
+markt gebracht. Een REU breidt het geheugen van de Commodore 64 behoorlijk uit, 
+met 128 kB (REU 1700), 256 kB (REU 1764), of zelfs 512 kB (REU 1750).
+Ook moderne systemen zoals VICE, de Commodore Ultimate, The C64, BMC64, 
+en Kung Fu Flash 2 hebben ondersteuning voor een REU. In dit artikel bekijken 
+we hoe een REU werkt, en we schrijven een BASIC programma ("10 PRINT") dat de 
+REU gebruikt.
 
 Een REU gebruikt geen _banking_ mechanisme. We spreken van banking wanneer er 
 meerdere RAM chips op hetzelfde adres gebied zitten, en er een mechanisme is 
