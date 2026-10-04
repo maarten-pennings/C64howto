@@ -1,4 +1,4 @@
-out of# Recursion in BASIC
+# Recursion in BASIC
 
 Can we use _recursion_ in Commodore 64 BASIC?
 
