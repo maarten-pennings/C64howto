@@ -955,6 +955,216 @@ but _recursive backtracking_ and a _recursive descent parser_ are possible
 in C64 BASIC.
 
 
+## Appendix 1567.21
+
+After this article was written, I wanted to try one more recursive 
+backtrack algorithm. Again, a puzzle.
+
+> Form an expression that results in `21`, using only the numbers 
+> `1`, `5`, `6`, and `7`; operators `+`, `-`, `*`, `/`; and `(`..`)`.
+
+It is easy to come close: `(5*6)-(1+7)` gives `22`.
+Is it possible to reach `21`?
+Yes, it is. I dare you to try it yourself.
+There are no tricks, just fractions.
+
+The program shown below retains the value of `N` as before, and also 
+has a stack. However the stack is split in four parts `L()`, `R()`, `O()`, 
+and `U()`, and `N` doubles as stack pointer.
+
+The subroutine takes as input a list of numbers `V(0..N-1)`, a goal `G`
+and a closeness `C`. The subroutine will print all expressions that 
+can be formed with `V(0..N-1)`, but only if the expression evaluates 
+to a value `E` that is close enough to `G`: `ABS(G-E)<=C`.
+
+For example expression 1+5+6+7, evaluates to 19, resulting 
+in a distance 2 to the goal 21. If `C` is at least 2, the 
+expression will be printed.
+
+I have added one reporting feature: when the subroutine prints a 
+solution with value `E`, it reduces `C` to `ABS(G-E)`.
+As a result the subroutine will print expressions with values closer 
+and closer to the goal `G`. This has advantages: the program quickly 
+starts with printing, it does print approximations even for puzzles 
+where the goal can not be reached, and the amount of output is small.
+We decided to print solutions with distance less than **or equal** to `C`
+because we want to see all expressions that compute to 21. not just the first.
+
+The subroutine operates by building subexpressions recursively.
+For example, it starts with a list of values 1,5,6,7. 
+It will pick and remove a pair of values form the list, say 6 and 5, 
+combine them, say with `*`, and add the combination back to the list. 
+The new list would be 1,7,30.  All combinations would be tried. 
+Not only `6*5`, but also `6+5`, `6-5`, and `6/5`. 
+I will also try `5-6` and `5/6`, swapping the operands for the 
+two non-symmetrical operators `-` and `/`. And it will pick not 
+only 6 and 5, but all available pairs. Initially there would be 6 pairs
+1 with 5 or 6 or 7; 5 with 6 or 7; and 6 with 7.
+
+We could delete 6 and 5 from list `V()` and add 30. But `V()` is a global 
+variable, not on the stack, so we would no be able to undo the delete of 
+6 and 5. We go for a different approach: we append 30 at the end of `V()` 
+(easy to undo: remove last) and we _mark_ the entries in `V()` that did 
+held the constituents (5 and 6) as being used (also easy to undo: erase mark).
+The purpose of array `U()` is to mark values in `V()` as being _used_:
+`U(I)` is false (0) when `V(I)` is free, and `U(I)` is true (1) when 
+`V(I)` is used.
+
+When we undo the add of `6*5` to `V()`, we need to mark 6 and 5 as free again. 
+The arrays `L()`, `R()` and `O()` record the subexpression being formed: 
+`L()` is the index into `V()` of the left operand, `R()` is the index into 
+`V()` of the right operand, and `O()` is the (tag of the) operand. 
+Using indices `L()` and `R()` we can mark `U()` free again. 
+With `L()`, `R()` and `O()` we can reconstruct the expression when we 
+want to print it. This is the meaning of the tag in `O()`:
+
+  | tag           |   0   |  1  |    2   |  3  |  4  |  5  |    6   |  7  |  8  |
+  |:--------------|:-----:|:---:|:------:|:---:|:---:|:---:|:------:|:---:|:---:|
+  | operator      |  `#`  | `+` |   `+`  | `-` | `-` | `*` |   `*`  | `/` | `/` |
+  | operand order |  n.a. | L;R |   R;L  | L;R | R;L | L;R |   R;L  | L;R | R;L |
+  | value         |literal|`L+R`|not used|`L-R`|`R-L`|`L*R`|not used|`L/R`|`R/L`|
+
+We have now discussed enough to present the program.
+
+> This program is listed in lower case to make copy&paste to VICE easier.
+> It is available as `8-1567.21` on the [disk](recursion.d64).
+
+```basic
+10 dim v(9),l(9),r(9),o(9),u(9),v$(9)
+12 v(0)=1:v(1)=5:v(2)=6:v(3)=7:n=4:g=21
+14 f=2*n-1:c=3e33
+16 t=ti:gosub 20:print(ti-t)/60:end
+18 :
+20 d=abs(g-v(n-1)):if d<=c then c=d:gosub 60
+22 if n=f then return
+24 l(n)=0
+26 :if u(l(n)) then 54
+28 :u(l(n))=1
+30 :r(n)=l(n)+1
+32 ::if u(r(n)) then 50
+34 ::u(r(n))=1
+36 ::v(n)=v(l(n))+v(r(n)):o(n)=1:n=n+1:gosub 20:n=n-1
+38 ::v(n)=v(l(n))-v(r(n)):o(n)=3:n=n+1:gosub 20:n=n-1
+40 ::v(n)=v(r(n))-v(l(n)):o(n)=4:n=n+1:gosub 20:n=n-1
+42 ::v(n)=v(l(n))*v(r(n)):o(n)=5:n=n+1:gosub 20:n=n-1
+44 ::if v(r(n))<>0 then v(n)=v(l(n))/v(r(n)):o(n)=7:n=n+1:gosub 20:n=n-1
+46 ::if v(l(n))<>0 then v(n)=v(r(n))/v(l(n)):o(n)=8:n=n+1:gosub 20:n=n-1
+48 ::u(r(n))=0
+50 :r(n)=r(n)+1:if r(n)<n then 32
+52 :u(l(n))=0
+54 l(n)=l(n)+1:if l(n)<n-1 then 26
+56 return
+58 :
+60 for i=0 to n-1:o$=mid$("#++--**//",o(i)+1,1)
+62 :if o(i)=0 then e$(i)=mid$(str$(v(i)),2):goto 68
+64 :if o(i) and 1 then e$(i)="("+e$(l(i))+o$+e$(r(i))+")":goto 68
+66 :e$(i)="("+e$(r(i))+o$+e$(l(i))+")"
+68 next:print v(n-1);"= ";e$(n-1):return
+70 :
+98 rem expr with 1,5,6,7 equals 21
+99 rem mc pennings 2026 oct 11
+```
+
+- Line 10 dimensions the list of values `V()`, the stacks `L()`, `R()`, `O()`
+  that form the subexpressions, and the stack `U()` for marking "used".
+  The array `V$()` is only part of expression printing (lines 60-68); 
+  it is not part of the recursive subroutine.
+
+- Line 12 sets up the puzzle: we put the given numbers in array `V()`, 
+  `N` records the length 4 of the list `V()`, and `G` is the goal `21`.
+
+- Line 14 sets the closeness `C` to a big number so that the subroutine will 
+  start quickly with printing expressions.
+  
+- Variable `F` on line 14 is not really needed, but together with 
+  line 22 it speeds up the program with a factor of 2½. 
+  
+  Every recursive call, two subexpressions are combined and added to `V()`.
+  In other words every call list `V()` is one element longer.
+  
+  But also, every call, two expressions in `V()` are marked "used" 
+  and the newly added one is "free". In other words, every call the number 
+  of free expression is one less.
+
+  After `N-1` calls, the length of `V()` is `N+N-1` and the number of 
+  "free" expressions is 1. This means that when the length of `V()` is `2*N-1`,
+  there is no need to try to find a pair of expressions because 
+  there is only one left. When only one is left we can not form a 
+  new subexpression and do a recursive call.
+  Line 22 checks for this and aborts if so.
+  
+- Line 16 calls the recursive subroutine, and prints execution time.
+
+- Line 20 is the first line of the subroutine.
+  The routine starts by checking if the last element of the list `V(0..N-1)` 
+  is worth printing. More precisely, it checks if the last element 
+  has a distance `D` which is close `C` to goal `G`. If so it calls 
+  the expression print subroutine at line 60 and updates `C`.
+
+  We feel a "hack alert" is needed here. 
+  The line checks only if the last element of the list `V(0..N-1)` 
+  is worth printing. We should check _all_ elements. But that takes times.
+  Besides only the last element has been freshly added. This is true for 
+  every recursive call, but not for the very first call. As result, 
+  if the initial numbers would be close to `G` they would not be printed.
+  We feel this is an acceptable compromise for the gain in speed-up.
+
+- As mentioned before, line 22 could be removed. It is implied by the two 
+  nested loops. But adding the line skips the nested loops gaining a lot 
+  of time.
+  
+- Next come the nested loops. They select all pairs of (still free) expressions.
+  In BASIC it is not allowed for a `FOR` loop to use an array element 
+  as iterator. Therefore, the `FOR` loop is explicitly coded, making it 
+  harder to read. We hope the `:` used for indentation helps.
+  
+  This is what the nested loops would have looked like if BASIC did allow
+  array elements as iterator.
+  
+  ```basic
+  24  FOR L(N)=0 TO N-1            
+  26    IF U(L(N)) THEN 54
+  28    U(L(N))= TRUE              
+  30    FOR R(N)=L(N)+1 TO N       
+  32      IF U(R(N)) THEN 50
+  34      U(R(N))= TRUE            
+  ...
+  48      U(R(N))= FALSE           
+  50    NEXT R(N)                  
+  52    U(L(N))= FALSE             
+  54  NEXT L(N)                    
+  ```
+
+- Lines 36-46 is the inner part of the nested loop.
+  Two operands are selected, they were free but are now marked used.
+  With the two operands we form six expression.
+  Each time the subexpression is added to `V()`, with `N=N+1` and the 
+  subroutine calls itself recursively. The `/` is a bit special, 
+  there is a check if the denominator is not 0.
+
+- Lines 60-68 form the expression printing routine.
+  For each value in `V()` it checks the top-level operator in `O()`
+  and forms the appropriate string in `E$()`
+
+This is the output of the program - spoiler alert: don't look at the 
+last line before you solved the puzzle yourself.
+
+```text
+ 7 = 7
+ 13 = (6+7)
+ 19 = ((1+5)+(6+7))
+ 19 = (7+(6+(1+5)))
+ 19 = (6+(7+(1+5)))
+ 22 = ((7*(5-1))-6)
+ 22 = ((5*6)-(1+7))
+ 22 = ((5*6)-(1+7))
+ 22 = (((5*6)-1)-7)
+ 22 = (((5*6)-7)-1)
+ 21 = (6/(1-(5/7)))
+ 347.466667
+```
+  
+  
 ## Links
 
 - [Fibonnaci on wikipedia](https://en.wikipedia.org/wiki/Fibonacci_sequence).
@@ -967,7 +1177,7 @@ in C64 BASIC.
 
 - [Stack usage in Mapping the C64](https://archive.org/details/Compute_s_Mapping_the_Commodore_64/page/n61/mode/2up).
 
-- The [disk](recursion.d64) contains `1-POW2`, `2-FAC`, `3-FIB`, `4-STACK`, `5-HANOI`, `5-HANOIX`, `6-8QUEENS`, `6-8QUEENSX`, `7-EXPR`.
+- The [disk](recursion.d64) contains `1-POW2`, `2-FAC`, `3-FIB`, `4-STACK`, `5-HANOI`, `5-HANOIX`, `6-8QUEENS`, `6-8QUEENSX`, `7-EXPR`, `8-1567.21`.
 
 
 (end)
