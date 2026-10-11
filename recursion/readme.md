@@ -6,6 +6,8 @@ As this article explains, the answer is yes.
 However, recursion is a bit harder than in more modern 
 programming languages.
 
+There is a summary in [Dutch](recursie-nl.md).
+
 
 ## Introduction
 
