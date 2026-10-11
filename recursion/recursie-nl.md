@@ -8,7 +8,7 @@ Maarten Pennings MCC#05
 Dit artikel is een verkorte Nederlandse versie van een Engels artikel.
 Dat bevat meer details en bijvoorbeeld ook source files.
 
-> [https://github.com/maarten-pennings/C64howto/blob/main/reu/readme.md](https://github.com/maarten-pennings/C64howto/blob/main/recursion/readme.md). 
+> [https://github.com/maarten-pennings/C64howto/blob/main/recursion/readme.md](https://github.com/maarten-pennings/C64howto/blob/main/recursion/readme.md). 
 
 
 ## Introductie
