@@ -1165,8 +1165,18 @@ last line before you solved the puzzle yourself.
  21 = (6/(1-(5/7)))
  347.466667
 ```
-  
-  
+
+The expression was found.
+
+![21 = 6/(1-(5/7))](1567.21.png)
+
+You might be surprised to see one expression `((5*6)-(1+7))` twice.
+If you add something like `e$(i)=e$(i)+chr$(65+i)` before `68 next`, you will see what happened:
+either the subexpression `5*6` or the subexpression `1+7` is formed _first_; in both cases the final expression `((5*6)-(1+7))`  is found.
+
+Anyhow, C64 BASIC found it in under 6 minutes.
+
+
 ## Links
 
 - [Fibonnaci on wikipedia](https://en.wikipedia.org/wiki/Fibonacci_sequence).
