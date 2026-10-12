@@ -963,7 +963,7 @@ After this article was written, I wanted to try one more recursive
 backtrack algorithm. Again, a puzzle.
 
 > Form an expression that results in `21`, using only the numbers 
-> `1`, `5`, `6`, and `7`; operators `+`, `-`, `*`, `/`; and `(`..`)`.
+> `1`, `5`, `6`, and `7`; operators `+`, `-`, `*`, `/`; and parenthesis `(`..`)`.
 
 It is easy to come close: `(5*6)-(1+7)` gives `22`.
 Is it possible to reach `21`?
@@ -990,18 +990,19 @@ and closer to the goal `G`. This has advantages: the program quickly
 starts with printing, it does print approximations even for puzzles 
 where the goal can not be reached, and the amount of output is small.
 We decided to print solutions with distance less than **or equal** to `C`
-because we want to see all expressions that compute to 21. not just the first.
+because we want to see _all_ expressions that compute to 21, not 
+just the first.
 
 The subroutine operates by building subexpressions recursively.
 For example, it starts with a list of values 1,5,6,7. 
 It will pick and remove a pair of values form the list, say 6 and 5, 
 combine them, say with `*`, and add the combination back to the list. 
-The new list would be 1,7,30.  All combinations would be tried. 
+The new list would be 1,7,30.  All combinations with the pair would be tried. 
 Not only `6*5`, but also `6+5`, `6-5`, and `6/5`. 
-I will also try `5-6` and `5/6`, swapping the operands for the 
-two non-symmetrical operators `-` and `/`. And it will pick not 
-only 6 and 5, but all available pairs. Initially there would be 6 pairs
-1 with 5 or 6 or 7; 5 with 6 or 7; and 6 with 7.
+It will also try `5-6` and `5/6`, swapping the operands for the 
+two non-symmetrical operators `-` and `/`. And it will pick not only 
+the pair 6 and 5, but all available pairs. For example, initially there 
+would be 6 pairs: 1 with 5 or 6 or 7; 5 with 6 or 7; and 6 with 7.
 
 We could delete 6 and 5 from list `V()` and add 30. But `V()` is a global 
 variable, not on the stack, so we would no be able to undo the delete of 
@@ -1010,15 +1011,18 @@ variable, not on the stack, so we would no be able to undo the delete of
 held the constituents (5 and 6) as being used (also easy to undo: erase mark).
 The purpose of array `U()` is to mark values in `V()` as being _used_:
 `U(I)` is false (0) when `V(I)` is free, and `U(I)` is true (1) when 
-`V(I)` is used.
+`V(I)` is used. When we undo the add of `6*5` to `V()`, we need to mark 
+6 and 5 as free again. 
 
-When we undo the add of `6*5` to `V()`, we need to mark 6 and 5 as free again. 
 The arrays `L()`, `R()` and `O()` record the subexpression being formed: 
 `L()` is the index into `V()` of the left operand, `R()` is the index into 
 `V()` of the right operand, and `O()` is the (tag of the) operand. 
-Using indices `L()` and `R()` we can mark `U()` free again. 
-With `L()`, `R()` and `O()` we can reconstruct the expression when we 
-want to print it. This is the meaning of the tag in `O()`:
+Using indices `L()` and `R()` we know which `U()`s to set to false when 
+undoing the append. With `L()`, `R()` and `O()` we can reconstruct the 
+expression when we want to print it. 
+
+This is the meaning of the tag value in `O()` - note that for even values 
+L and R are swapped.
 
   | tag           |   0   |  1  |    2   |  3  |  4  |  5  |    6   |  7  |  8  |
   |:--------------|:-----:|:---:|:------:|:---:|:---:|:---:|:------:|:---:|:---:|
@@ -1117,11 +1121,12 @@ We have now discussed enough to present the program.
   
 - Next come the nested loops. They select all pairs of (still free) expressions.
   In BASIC it is not allowed for a `FOR` loop to use an array element 
-  as iterator. Therefore, the `FOR` loop is explicitly coded, making it 
+  as loop-variable. Therefore, the `FOR` loop is explicitly coded, making it 
   harder to read. We hope the `:` used for indentation helps.
   
   This is what the nested loops would have looked like if BASIC did allow
-  array elements as iterator.
+  array elements as loop-variable: L(N) runs from `0` to `N-1` and `R(N)` 
+  runs from `L(N)+1` to `N`.
   
   ```basic
   24  FOR L(N)=0 TO N-1            
@@ -1138,7 +1143,8 @@ We have now discussed enough to present the program.
   ```
 
 - Lines 36-46 is the inner part of the nested loop.
-  Two operands are selected, they were free but are now marked used.
+  Two operands are selected, they were free (line 26, 32) 
+  but are now marked used (line 28, 34).
   With the two operands we form six expression.
   Each time the subexpression is added to `V()`, with `N=N+1` and the 
   subroutine calls itself recursively. The `/` is a bit special, 
@@ -1166,11 +1172,11 @@ last line before you solved the puzzle yourself.
  347.466667
 ```
 
-The expression was found.
+Only one expression was found that yields 21.
 
 ![21 = 6/(1-(5/7))](1567.21.png)
 
-You might be surprised to see one expression `((5*6)-(1+7))` twice.
+You might be surprised to see one expression `((5*6)-(1+7))` being listed twice.
 If you add something like `e$(i)=e$(i)+chr$(65+i)` before `68 next`, you will see what happened:
 either the subexpression `5*6` or the subexpression `1+7` is formed _first_; in both cases the final expression `((5*6)-(1+7))`  is found.
 
