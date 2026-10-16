@@ -27,15 +27,15 @@ Ik had geen idee dat subroutines een naam kunnen hebben (_function_), of dat ze
 argumenten of lokale variabelen kunnen hebben (op de _stack_). Laat staan 
 dat ik enig benul had van zoiets als recursie.
 
-Veel later, hoorde ik van recursie. Terugkijken vroeg ik mij af of recursie 
-mogelijk is op de Commodore 64 (of andere BASIC dialecten). Het gebrek aan 
+Veel later, hoorde ik van recursie. Terugkijkend vroeg ik mij af of recursie 
+mogelijk is op de Commodore 64 (of in andere BASIC dialecten). Het gebrek aan 
 een _stack_ en argumenten lijkt roet in het eten te gooien.
 
 In dit artikel bekijken we eerst drie mini problemen die we met recursie 
 oplossen. Geen van de mini problemen zou je in de echte wereld met recursie 
-oplossen. Maar ze zijn bekend en eenvoudig en zo leren we de valkuilen 
-en oplossingen bij recursie in BASIC. Als we die kennen dan pakken we wat 
-serieuzere problemen aan. 
+oplossen, maar ze zijn bekend en eenvoudig en zo leren we de valkuilen 
+en oplossingen bij recursie in BASIC. Als we die eenmaal kennen dan pakken we 
+wat serieuzere problemen aan. 
 
 
 ## 1e mini probleem: machten van 2
@@ -52,7 +52,7 @@ berekenen en het antwoord toekennen aan de globale variabele `R` ("resultaat").
 Na de `RETURN` moet de aanroeper `R` inspecteren.
 
 De vorige paragraaf beschrijft de _signatuur_ van de subroutine:
-welke waardes erin gaan (en in welke variabelen) en welke waardes erut gaan 
+welke waardes erin gaan (en in welke variabelen) en welke waardes eruit gaan 
 (en in welke variabelen). Eén ding ontbreekt nog: welke (globale) variabelen 
 worden door de subroutine gebruikt als "kladblok". Ze worden overschreven 
 door de subroutine maar krijgen geen bekende of betekenisvolle waarde.
@@ -61,7 +61,8 @@ zijn. Als de aanroeper van een subroutine een variabele in gebruik heeft die
 door de subroutine als kladblok wordt gebruikt, dan ontstaan er problemen.
 
 In onze subroutine wordt `N` gewijzigd - een kladblok.
-De complete signatuur staat op regel 200 (met `MODS:N`).
+De volledige signatuur van de te ontwikkelen subroutine 
+staat op regel 200 (met `MODS:N`).
 
 ```BASIC
 100 PRINT "POW2"
@@ -88,8 +89,8 @@ pow2(n)= pow2(n-1)*2, if n>0
 ```
 
 Dat is alles. Dat viel best mee. Dit programma print de machten van 2 tot
-`2↑23`, die geeft een `OUT OF MEMORY ERROR` om dat er een _stack overflow_
-plaats vindt.
+`2↑23`, daarna krijgen we een `OUT OF MEMORY ERROR` om dat er een _stack overflow_
+plaatsvindt.
 
 
 ## 2e mini probleem: faculteit
@@ -108,7 +109,7 @@ Onze subroutine voor faculteit heeft als input `N`.
 De subroutine zal `N!` met recursie berekenen en het antwoord 
 toekennen aan de globale variabele `R`.
 Laten we aannemen dat net als in het vorige probleem `N` 
-een "kladblok" is. En laten we dan ook de subroutine hergebruiken.
+een "kladblok" is. En laten we dan ook de subroutine structuur hergebruiken.
 
 ```BASIC 
 200 REM INP:N; OUT:R=N!; MODS:N
@@ -123,8 +124,8 @@ Dit werkt _niet_. Het probleem zit in regel 240.
 Na de `GOSUB 200` is globale variabele `N` gewijzigd,
 dus de toekenning `240 R=R*N` is incorrect.
 
-We moeten de signatuur van de subroutine wijzigen dat `N` niet langer een 
-kladblok is, maar dat hij zijn waarde behoudt. Dat is de nieuwe specificatie,
+We moeten de signatuur van de subroutine wijzigen: `N` is niet langer een 
+kladblok, maar hij behoudt zijn waarde. Dat is de nieuwe specificatie,
 zie regel 200 (`KEEP:N`). 
 
 ```BASIC 
@@ -144,7 +145,7 @@ zie regel 200 (`KEEP:N`).
 260 RETURN
 ```
 
-De strengere eis voor `N` is makkelijk te realiseren.
+De strengere eis voor `N` is gelukkig makkelijk te realiseren.
 Voor de basis `N=0` (regel 210) is er geen toekenning aan `N`, 
 dus is er geen wijziging nodig.
 Voor de stap als `N>0`, is er wel een toekenning aan `N`, namelijk 
@@ -173,7 +174,7 @@ fib(1)= 1
 fib(n)= fib(n-1) + fib(n-2), if n>1
 ```
 
-Dat kunnen we nu wel.
+Dat lijkt ook weer op de vorige problemen, dus herhalen we de aanpak.
 
 Onze subroutine heeft als input `N`.
 Hij berekent (recursief) `FIB(N)` en kent dat toe aan `R`.
@@ -190,9 +191,9 @@ De subroutine heeft twee kladblok variabelen `R0` and `R1`.
 270 RETURN
 ```
 
-Deze poging is mislukt. Het was makkelijk om `N`s waarde te behouden, 
+Deze poging is mislukt. Het was makkelijk om de waarde van `N` te behouden, 
 maar zowel `R0` als `R1` staat op de kladblok lijst. De `GOSUB 200` op regel 
-240 wijzigt dus `R0` en dus is regel 2050 `R=R0+R1` incorrect. Er is geen 
+240 wijzigt dus `R0` en dus is regel 250 `R=R0+R1` incorrect. Er is geen 
 probleem met `R1`, dat is snel te zien.
 
 ```
@@ -232,9 +233,9 @@ wordt aangemaakt op regel 110.
 - Regel 210 berekent beide basis gevallen (`N=0` and `N=1`); 
   de basis gevallen veranderen `N` en `S` niet.
   
-- Regel 220 berekent `FIB(n-1)` en het resultaat `R` wordt _gepushed_ op de stack (regel 230).
+- Regel 220 berekent `FIB(N-1)` en het resultaat `R` wordt _gepushed_ op de stack (regel 230).
 
-- Regel 240 berekent `FIB(n-2)` en het resultaat `R` wordt verhoogs met de waarde die _gepopped_ wordt van de stack (line 250).
+- Regel 240 berekent `FIB(N-2)` en het resultaat `R` wordt verhoogd met de waarde die _gepopped_ wordt van de stack (regel 250).
   Deze regel hersteld ook de stackpointer `S`.
   
 - Regel 260 herstelt  `N` en beëindigt de subroutine.
@@ -256,14 +257,15 @@ Een recursieve subroutine is een erg slechte aanpak voor Fibonacci.
 Dit artikel is een verkorte Nederlandse versie van een Engels artikel.
 Dat bevat meer details en bijvoorbeeld ook source files.
 
-> [https://github.com/maarten-pennings/C64howto/blob/main/recursion/readme.md](https://github.com/maarten-pennings/C64howto/blob/main/recursion/readme.md). 
+> [https://github.com/maarten-pennings/C64howto/blob/main/recursion](https://github.com/maarten-pennings/C64howto/blob/main/recursion). 
 
 Daar staan ook nog twee extra voorbeelden. de eerste is een expressie evaluator die 
 de string `"10+4*5+5*(1+1)"` uitrekent tot `40`. De tweede lost een puzzel op:
 maak het getal 21 met 1, 5, 6, en 7 en alleen de operatoren `+`, `-`, `*`, `/` en 
 `(`..`)`. Het kan!
 
-We zien dat recursie best kan in BASIC, maar omdat er alleen maar globale 
-variabelen zijn is het net wat moeilijker dan in modernere programmeertalen.
+We zien dat recursie ondersteund wordt in BASIC, maar omdat er alleen maar 
+globale variabelen zijn is het net wat moeilijker dan in modernere 
+programmeertalen.
 
 (end)
