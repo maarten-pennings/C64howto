@@ -88,8 +88,11 @@ pow2(0)= 1
 pow2(n)= pow2(n-1)*2, if n>0
 ```
 
-Dat is alles. Dat viel best mee. Dit programma print de machten van 2 tot
-`2↑23`, daarna krijgen we een `OUT OF MEMORY ERROR` om dat er een _stack overflow_
+Dat is alles. Dat viel best mee. 
+We zouden een `FOR`-`NEXT` hebben kunnen gebruiken op regels 110-140,
+maar we willen zien hoe die de recursie kan.
+Het blijkt dat dit programma de machten van 2 print tot `2↑23`, 
+daarna krijgen we een `OUT OF MEMORY ERROR` om dat er een _stack overflow_
 plaatsvindt.
 
 
@@ -196,7 +199,7 @@ maar zowel `R0` als `R1` staat op de kladblok lijst. De `GOSUB 200` op regel
 240 wijzigt dus `R0` en dus is regel 250 `R=R0+R1` incorrect. Er is geen 
 probleem met `R1`, dat is snel te zien.
 
-```
+```basic
 220 N=N-1:GOSUB 200:R0=R
 240 N=N-1:GOSUB 200:R=R0+R
 ```
@@ -244,6 +247,10 @@ We hebben eenzelfde hoofdprogramma als eerst, behalve dat we nu tijdmetingen doe
 Ook dit programma stopt bij 23 met een `OUT OF MEMORY ERROR`.
 Het stopt overigens na 1128 secondes ofwel 20 minuten.
 Een recursieve subroutine is een erg slechte aanpak voor Fibonacci.
+
+Een `GOSUB` _stack frame_ is 7 bytes groot, en de C64 BASIC stack is een kleine 
+200 bytes groot, en er is nog stack ruimte (~32 bytes) nodig voor andere BASIC 
+zaken. Dan is er ruimte voor 22 frames.
 
 
 ## Puzzel: torens van Hanoi
