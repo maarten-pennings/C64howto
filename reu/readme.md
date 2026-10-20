@@ -276,7 +276,7 @@ I have combined all tests in one program.
 
 > This program is listed in lower case to make copy&paste to VICE easier.
 > However `petcat` "magic" characters like `{lblu}` (to switch to light blue) makes that harder.
-> It is available as `01-PRESENCE` on the [disk](REU.D64).
+> It is available as `01-PRESENCE` on the [disk](reu.d64).
 
 ```basic
 100 rem reu presence tester
@@ -414,7 +414,7 @@ Notes on the program:
   we expect to read `B`.
 
 > This program is listed in lower case to make copy&paste to VICE easier.
-> It is available as `02-SIZE` on the [disk](REU.D64).
+> It is available as `02-SIZE` on the [disk](reu.d64).
 
 ```basic
 100 rem reu size tester
@@ -461,7 +461,7 @@ Notes on the program:
 Let's now have the **main example**, using the REU for stash, fetch and swap.
 
 > This program is listed in lower case to make copy&paste to VICE easier.
-> It is available as `03-STASH-FETCH` on the [disk](REU.D64).
+> It is available as `03-STASH-FETCH` on the [disk](reu.d64).
 
 ```basic
 100 rem reu stash fetch swap
@@ -534,7 +534,7 @@ The previous example skipped one transfer, the "compare".
 That is the topic of this section.
 
 > This program is listed in lower case to make copy&paste to VICE easier.
-> It is available as `04-COMPARE` on the [disk](REU.D64).
+> It is available as `04-COMPARE` on the [disk](reu.d64).
 
 ```basic
 100 rem reu compare
@@ -601,7 +601,7 @@ needed in consecutive transfers. This was actually used in the [Size example](#s
 This program tests the LOAD bit exclusively.
 
 > This program is listed in lower case to make copy&paste to VICE easier.
-> It is available as `05-LOADBIT` on the [disk](REU.D64).
+> It is available as `05-LOADBIT` on the [disk](reu.d64).
 
 ```basic
 100 rem reu load bit
@@ -686,7 +686,7 @@ When cleared, execute waits till there is a write to address $FF00.
 This is tested by the following program.
 
 > This program is listed in lower case to make copy&paste to VICE easier.
-> It is available as `06-NOFF00` on the [disk](REU.D64).
+> It is available as `06-NOFF00` on the [disk](reu.d64).
 
 ```basic
 100 rem reu noff00 bit
@@ -746,7 +746,7 @@ However, the REU has a _continuous_ memory from 0x00 0000 to 0xFF FFFF (assuming
 This example from the disk shows that.
 
 > This program is listed in lower case to make copy&paste to VICE easier.
-> It is available as `07-CONTMEM` on the [disk](REU.D64).
+> It is available as `07-CONTMEM` on the [disk](reu.d64).
 
 ```basic
 100 rem reu contmem
@@ -800,7 +800,7 @@ In other words, when these bits are set, the REU transfer acts as a _memory fill
 This example fills the C64 memory.
 
 > This program is listed in lower case to make copy&paste to VICE easier.
-> It is available as `08-FILL` on the [disk](REU.D64).
+> It is available as `08-FILL` on the [disk](reu.d64).
 
 
 ```basic
@@ -938,7 +938,7 @@ Below is the listing of the BASIC program that mimics 10 PRINT using the REU.
 
 > This program is listed in lower case to make copy&paste to VICE easier.
 > However `petcat` "magic" characters like `{lblu}` (to switch to light blue) makes that harder.
-> It is available as `10PRINT-WITH-REU` on the [disk](REU.D64).
+> It is available as `10PRINT-WITH-REU` on the [disk](reu.d64).
 
 ```basic
 100 r=57088:rem 10print-with-reu
