@@ -275,7 +275,7 @@ I wrote several tests to check if the REU is present (active).
 I have combined all tests in one program.
 
 > This program is listed in lower case to make copy&paste to VICE easier.
-> However `petcat` to make the "magic" characters like `{lblu}` to switch to light blue make that harder.
+> However `petcat` "magic" characters like `{lblu}` (to switch to light blue) makes that harder.
 > It is available as `01-PRESENCE` on the [disk](REU.D64).
 
 ```basic
@@ -937,7 +937,7 @@ We believe that is enough variation for our proof of concept example.
 Below is the listing of the BASIC program that mimics 10 PRINT using the REU.
 
 > This program is listed in lower case to make copy&paste to VICE easier.
-> However `petcat` to make the "magic" characters like `{lblu}` to switch to light blue make that harder. 
+> However `petcat` "magic" characters like `{lblu}` (to switch to light blue) makes that harder.
 > It is available as `10PRINT-WITH-REU` on the [disk](REU.D64).
 
 ```basic
