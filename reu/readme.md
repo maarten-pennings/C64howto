@@ -272,7 +272,11 @@ See [KimJorgensen repo](https://codeberg.org/KimJorgensen/KungFuFlash2#reu-emula
 
 I struggled with enabling my REU on the Kung Fu Flash 2.
 I wrote several tests to check if the REU is present (active).
-I have combined all tests in one program: `01-presence`.
+I have combined all tests in one program.
+
+> This program is listed in lower case to make copy&paste to VICE easier.
+> However `petcat` to make the "magic" characters like `{lblu}` to switch to light blue make that harder.
+> It is available as `01-PRESENCE` on the [disk](REU.D64).
 
 ```basic
 100 rem reu presence tester
@@ -409,6 +413,9 @@ Notes on the program:
 - On line 430 we "clear" the C64base location with `255-B`;
   we expect to read `B`.
 
+> This program is listed in lower case to make copy&paste to VICE easier.
+> It is available as `02-SIZE` on the [disk](REU.D64).
+
 ```basic
 100 rem reu size tester
 110 rem mc pennings 2026 may 3
@@ -452,7 +459,9 @@ Notes on the program:
 ### Stash, fetch, swap
 
 Let's now have the **main example**, using the REU for stash, fetch and swap.
-This is program `03-stash-fetch-swap` on the virtual disk.
+
+> This program is listed in lower case to make copy&paste to VICE easier.
+> It is available as `03-STASH-FETCH` on the [disk](REU.D64).
 
 ```basic
 100 rem reu stash fetch swap
@@ -522,7 +531,10 @@ It goes through these phases
 ### Compare
 
 The previous example skipped one transfer, the "compare".
-Program `04-compare` is the topic of this section.
+That is the topic of this section.
+
+> This program is listed in lower case to make copy&paste to VICE easier.
+> It is available as `04-COMPARE` on the [disk](REU.D64).
 
 ```basic
 100 rem reu compare
@@ -586,7 +598,10 @@ in the `command` register is set the registered are restored to their initial va
 once the transfer is complete. This is useful if the similar addresses and sizes are 
 needed in consecutive transfers. This was actually used in the [Size example](#size).
 
-Program `05-loadbit` tests the LOAD bit exclusively.
+This program tests the LOAD bit exclusively.
+
+> This program is listed in lower case to make copy&paste to VICE easier.
+> It is available as `05-LOADBIT` on the [disk](REU.D64).
 
 ```basic
 100 rem reu load bit
@@ -668,7 +683,10 @@ Then I ran the BASIC program.
 The `command` register has a second flag next to LOAD, the flag with the funny name NOFF00.
 When cleared, execute waits till there is a write to address $FF00.
 
-This is tested by program `06-noff00bit`.
+This is tested by the following program.
+
+> This program is listed in lower case to make copy&paste to VICE easier.
+> It is available as `06-NOFF00` on the [disk](REU.D64).
 
 ```basic
 100 rem reu noff00 bit
@@ -725,7 +743,10 @@ As stated previously, some documents call the byte at offset 6 a "bank",
 with offset 4 and 5 denoting the offset within that 64 kbyte bank.
 However, the REU has a _continuous_ memory from 0x00 0000 to 0xFF FFFF (assuming a 1M byte REU).
 
-Example `07-contmem` on the disk shows that.
+This example from the disk shows that.
+
+> This program is listed in lower case to make copy&paste to VICE easier.
+> It is available as `07-CONTMEM` on the [disk](REU.D64).
 
 ```basic
 100 rem reu contmem
@@ -776,10 +797,14 @@ When `C64BASEFIX` is set, the `c64base` address is not incremented every byte of
 When `REUBASEFIX` is set, the `reubase` address is not incremented every byte of the transfer.
 In other words, when these bits are set, the REU transfer acts as a _memory fill_.
 
-Example `08-fill` tests this feature; it fills the C64 memory.
+This example fills the C64 memory.
+
+> This program is listed in lower case to make copy&paste to VICE easier.
+> It is available as `08-FILL` on the [disk](REU.D64).
+
 
 ```basic
-100 rem reu contmem
+100 rem reu fill
 110 rem mc pennings 2026 may 4
 120 print "reu fill"
 130 r=57088:a=49152:rem r=reu,a=c64base
@@ -910,9 +935,10 @@ We believe that is enough variation for our proof of concept example.
 ### The BASIC program
 
 Below is the listing of the BASIC program that mimics 10 PRINT using the REU.
-The program `10PRINT-WITH-REU` can be found on [reu-tests.d64](reu-tests.d64); 
-the listing below is obtained via `petcat` to make the "magic" characters 
-(like switch to light blue) readable (`{lblu}`).
+
+> This program is listed in lower case to make copy&paste to VICE easier.
+> However `petcat` to make the "magic" characters like `{lblu}` to switch to light blue make that harder. 
+> It is available as `10PRINT-WITH-REU` on the [disk](REU.D64).
 
 ```basic
 100 r=57088:rem 10print-with-reu
