@@ -3,6 +3,12 @@
 Various "How to xxx" questions and answers for the C64 (Commodore 64) that I want to remember. Some are linking to my old [howto repo](https://github.com/maarten-pennings/howto).
 
 
+## Meatloaf
+
+There is an IEC to IP bridge, called [Meatloaf](meatloaf).
+It allows commands like `LOAD "HTTPS://LOADRUN64.COM/D64/SNOW.PRG",8` to load programs from wesites.
+
+
 ## Recursion in BASIC
 
 Can we use _recursion_ in Commodore 64 BASIC?
