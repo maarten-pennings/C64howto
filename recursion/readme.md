@@ -584,10 +584,10 @@ _f→t_ means a disk is moved from pin _f_ to pin _t_.
 
 This puzzle is easily solved with recursion.
 We will develop a subroutine that prints the steps to move a tower 
-of `N` disks from pin `F` (_from pin_) to pin `T` (_to_ pin). 
+of `N` disks from pin `F` (_from_ pin) to pin `T` (_to_ pin). 
 Note that there is a third pin, the _spare_ pin.
 
-- If `N` is 0, the subroutine is done without printing any step.
+- If `N` is 0, the subroutine is done without making any step.
 - If `N` is greater than 0, we split the work in three phases:
   - Recursively ask to move a tower of `N-1` disk from `F` to the _spare_ pin.
   - Move the `N`th disk from `F` to `T`.
