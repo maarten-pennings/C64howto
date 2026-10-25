@@ -918,7 +918,7 @@ Some additional notes
   eats the `"+"` from `E$` using `S$="+":GOSUB 800`.
   Line 330 contains the recursive call for the right-hand side 
   keeping the  stack pointer in sync.
-  Line 340 implements the actual addition `e=e(s)+e`.
+  Line 340 implements the actual addition `E=E(S)+E`.
   Since an addition might have more than two terms (`1+2+3`), 
   the addition parser loops back `GOTO 310`.
   

@@ -236,10 +236,12 @@ wordt aangemaakt op regel 110.
 - Regel 210 berekent beide basis gevallen (`N=0` and `N=1`); 
   de basis gevallen veranderen `N` en `S` niet.
   
-- Regel 220 berekent `FIB(N-1)` en het resultaat `R` wordt _gepushed_ op de stack (regel 230).
+- Regel 220 berekent `FIB(N-1)` en het resultaat `R` wordt _gepushed_ op 
+  de stack (regel 230).
 
-- Regel 240 berekent `FIB(N-2)` en het resultaat `R` wordt verhoogd met de waarde die _gepopped_ wordt van de stack (regel 250).
-  Deze regel hersteld ook de stackpointer `S`.
+- Regel 240 berekent `FIB(N-2)` en het resultaat `R` wordt verhoogd met 
+  de waarde die _gepopped_ wordt van de stack (regel 250).
+  Deze regel hersteld ook de stack pointer `S`.
   
 - Regel 260 herstelt  `N` en beëindigt de subroutine.
 
@@ -256,7 +258,7 @@ waarheen terug gesprongen moet worden. Er staan geen argumenten of lokale
 variabelen op. Er zijn alleen maar globale variabelen in BASIC. Voor 
 succesvolle recursie moeten we de waardes in globale variabelen beheren: 
 hetzij herstellen zoals we bij de faculteit routine zagen, hetzij in een array 
-bewaren zoals we bij de fibonacci routine zagen.
+bewaren zoals we bij de Fibonacci routine zagen.
 
 Een `GOSUB` _stack frame_ is beslaat 7 bytes, de C64 BASIC stack is een kleine 
 200 bytes groot, en BASIC eist ten alle tijden een ~32 byte marge op de stack
@@ -268,27 +270,31 @@ een `FOR`-`NEXT` plaatst een 18 byte stack frame.
 ## Toepassing 1: Torens van Hanoi
 
 "Torens van Hanoi" is een beroemde puzzel. Er zijn drie pinnen.
-Op elke pin liggen schijven. Alle schijven hebben een andere 
-diameter. Het spel start met een stapel `N` schijven op pin 1. 
-Het is de bedoeling the hele stapel naar pin 3 te verhuizen, 
-daarbij deze regels volgend.
+Op elke pin ligt een stapel schijven. Alle schijven hebben een andere 
+diameter. Het spel start met een stapel `N` schijven op pin 1, 
+pin 2 en 3 zijn leeg. 
+Het is de bedoeling de hele stapel van pin 1 naar pin 3 te verhuizen, 
+daarbij de spelregels volgend:
 
 - Er mag maar 1 schijf per keer verplaatst worden.
 - Alleen de bovenste schijf van een pin mag verplaatst worden.
 - Een schijf mag alleen verplaatst worden naar een lege pin, óf 
-  bovenop een bestaande stapel gelegd worden, mits de nieuwe schijf
+  bovenop een stapel gelegd worden, mits de nieuwe schijf
   een kleinere diameter heeft dan de top van de bestaande stapel.
 
-In het plaatje zien we dat er 7 beurten nodig zijn om de stapel
-van pin 1 naar pin 3 te verhuizen. De dikke gebogen pijlen 
-zijn gelabeld met de verplaatsing: _f→t_ betekent dat de schijf 
-van pin _f_ naar pin _t_ verplaatst wordt.
+In het plaatje zien we dat we in 7 beurten de stapel
+van pin 1 naar pin 3 kunnen verhuizen. De dikke gebogen pijlen 
+zijn gelabeld met de verplaatsingen verplaatsing: _f→t_ betekent dat 
+de schijf van pin _f_ naar pin _t_ verplaatst wordt.
 
-![Hanoi example](hanoi.drawio.png)
+![Hanoi voorbeeld](hanoi.drawio.png)
 
-Deze puzzel is eenvoudig op te lossen met recursie. We ontwikkelen een subroutine die de stappen afdrukt om een stapel van `N` schijven te verplaatsen van pin `F` (_from_ pin) naar pin `T` (_to_ pin). Merk op dat er een derde pin is, de _reserve_ pin.
+Deze puzzel is eenvoudig op te lossen met recursie. 
+We ontwikkelen een subroutine die de stappen afdrukt om een stapel van `N` 
+schijven te verplaatsen van pin `F` (_from_ pin) naar pin `T` (_to_ pin). 
+Merk op dat er een derde pin is, de _reserve_ pin.
 
-- Als `N` gelijk is aan 0, is de subroutine klaar zonder 
+- Als `N` gelijk is aan 0, dan is de subroutine klaar zonder 
   enige stap te hoeven maken.
 - Als `N` groter is dan 0, splitsen we het werk in drie fasen:
   - Vraag recursief om een stapel van `N-1` schijven te verplaatsen
@@ -301,7 +307,8 @@ We zetten dit om naar een BASIC-subroutine. We zorgen ervoor dat
 de waarden van de variabelen `N`, `F` en `T` behouden blijven tijdens 
 een subroutine-aanroep. Er is één klein trucje: om de index van 
 de _reserve_ pin te berekenen, gebruiken we de expressie `6-T-F`. 
-Merk op dat een toewijzing zoals `T=6-T-F` de _to_-pin en de _reserve_-pin omwisselt, en een volgende `T=6-T-F` wisselt ze weer terug.
+Merk op dat een toewijzing zoals `T=6-T-F` de _to_-pin en de _reserve_-pin 
+omwisselt, en een volgende `T=6-T-F` wisselt ze weer terug.
 
 Dit is het hele programma.
 
@@ -321,7 +328,7 @@ Dit is het hele programma.
 280 F=6-F-T:N=N+1:RETURN
 ```
 
-En dit is de uitvoer.
+En dit is de uitvoer, vergelijk die met het plaatje.
 
 ```
 hanoi
@@ -337,10 +344,9 @@ hanoi
 
 ## Toepassing 2: 8 Koninginnen 
 
-Het 8 koninginnen probleem is ook een klassieker.
+Het 8-koninginnen probleem is ook een klassieker.
 Het doel is om 8 koninginnen op een schaakbord te plaatsen 
-zo dat geen koningin een andere aanvalt.
-
+zo dat geen koningin een andere aanvalt. 
 Dit soort problemen wordt vaak opgelost met behulp van 
 _recursieve backtracking_. We gaan dit in BASIC doen.
 
@@ -350,32 +356,34 @@ elke (stijgende of dalende) diagonaal heeft elk maximaal één koningin.
 We ontwikkelen een subroutine die als invoer een gedeeltelijk gevuld 
 bord `B()` heeft: de eerste `C` kolommen bevatten een koningin (voor 
 elke _kolom_ `X`, met `X<C`, is `B(X)` de _rij_ waar de koningin staat).
+Het gedeeltelijke bord is "veilig": geen koningin valt een andere aan.
 De subroutine zal het gedeeltelijke bord afvullen (een koningin in 
-plaatsen in alle resterenede kolomen) in alle mogelijke manieren, en 
+plaatsen in alle resterende kolommen) op alle mogelijke manieren, en 
 die manieren printen waarbij geen koningin een andere aanvalt.
 
-Om snel te kunnen beslissen waar we een koningin kunnen plaatsen in 
-kolom `C` houden we drie arrays bij: `U()` voor de "stijgende diagonalen" 
+Om snel te kunnen beslissen waar we een koningin kunnen plaatsen
+houden we drie arrays bij: `U()` voor de "stijgende diagonalen" 
 (up), `D()` voor de "dalende diagonalen", en `H()` voor de 
 "horizontale rijen". Het is niet nodig om een array bij te houden voor de 
 "verticale kolommen", omdat er door de structuur van de subroutine 
 precies één koningin per kolom (per verticale lijn) staat.
-
-Voor de stijgende diagonaal met index `I`, is `U(I)` 0, dan en 
-slechts dan als stijgende diagonaal `I` vrij is; er staat geen 
+Voor de stijgende diagonaal met index `I`, heeft `U(I)` de waarde 0, 
+dan en slechts dan als stijgende diagonaal `I` _vrij_ is; er staat geen 
 koningin (op het gedeeltelijk gevulde bord) op die diagonaal. 
 Hetzelfde geldt voor `D()` en `H()`.
 
-De positie van een koningin is eenvoudig om te zetten in de indexen 
-van de stijgende diagonaal en de dalende diagonaal. 
-De index van de dalende diagonaal is de _som_ van de rij en de 
-kolom, en de index van de stijgende diagonaal is het _verschil_ 
+De _positie_ van een koningin is eenvoudig om te zetten in de indexen 
+van de stijgende diagonaal en de dalende diagonaal. De index van de 
+dalende diagonaal is de _som_ van de rij en de kolom waar de koningin 
+staat, en de index van de stijgende diagonaal is het _verschil_ 
 tussen de rij en de kolom (met een offset van 7 om positief te blijven). 
-De diagram geeft een voorbeeld: een koningin is geplaatst in kolom 1 
-en rij 5. Daarmee valt ze de stijgende (blauwe) diagonaal 11 aan, 
-de dalende (groene) diagonaal 6, en de horizontale (oranje) rij 5.
+De diagram geeft een voorbeeld: een koningin in rij 5 en kolom 1
+valt de dalende (groene) diagonaal 5+1 = 6;
+ze valt de stijgende (blauwe) diagonaal 7+5-1= 11 aan, 
+en de horizontale (oranje) rij 5. Dat ze ook nog kolom 1 aanvalt 
+is niet getekend.
 
-![8 Queens attack lines](8queens.drawio.png)
+![8 koninginnen aanvalslijnen](8queens.drawio.png)
 
 ```BASIC 
 10 PRINT "8 QUEENS"
@@ -402,10 +410,10 @@ de dalende (groene) diagonaal 6, en de horizontale (oranje) rij 5.
 52 N=N+1:PRINT "#";N:RETURN
 ```
 
-- Het programma maakt de arrays aan voor het bord (`B()`), 
-  de horizontale rijen (`H()`), 
-  de stijgende diagonalen (`U()`) en 
-  de dalende diagonalen (`D()`) op regel 12.
+- Het programma maakt, op regel 12, de arrays aan voor het bord `B()`, 
+  de horizontale rijen `H()`, 
+  de stijgende diagonalen `U()` en 
+  de dalende diagonalen `D()`.
 
 - De initiële recursieve aanroep staat op regel 14.
   Argument `C` is 0, wat betekent dat het gedeeltelijke bord 
@@ -413,8 +421,8 @@ de dalende (groene) diagonaal 6, en de horizontale (oranje) rij 5.
   `T0` en `T1` leggen de start- en eindtijd van de subroutine-aanroep vast.
   Regel 16 drukt de totale uitvoeringstijd in seconden af.
 
-- De recursieve backtracking-subroutine bevindt zich op regels 20-46.
-  Wanneer het bord compleet is (wanneer `C` gelijk is aan 8) hebben we 
+- De recursieve _backtracking_-subroutine bevindt zich op regels 20-46.
+  Wanneer het bord compleet is (wanneer `C` gelijk is aan 8, regel 28) hebben we 
   een oplossing gevonden. De subroutine op regel 50 wordt aangeroepen, 
   die de oplossing afdrukt (waarbij het oplossingsnummer `N` wordt verhoogd).
 
@@ -424,23 +432,22 @@ de dalende (groene) diagonaal 6, en de horizontale (oranje) rij 5.
 
 - In regels 32-42 hebben we een kandidaat-locatie voor de koningin 
   op coördinaten (`C`,`B(C)`). We berekenen de drie indexen: 
-  `B(C)` voor de horizontale rijen, 
-  `B(C)+C` voor de dalende diagonalen en 
-  `7+B(C)-C` voor de stijgende diagonalen.
+  `B(C)` voor de horizontale rij, 
+  `B(C)+C` voor de dalende diagonaal en 
+  `7+B(C)-C` voor de stijgende diagonaal.
 
 - Regels 32, 34 en 36 controleren of de nieuwe koningin op een 
   lijn zou komen te staan die al wordt aangevallen door een eerder 
-  geplaatste koniging. Zo ja, dan wordt de volgende rij geprobeerd (`THEN 44`).
+  geplaatste koningin. Zo ja, dan wordt de volgende rij geprobeerd (`THEN 44`).
 
 - Als de nieuwe koningin niet wordt aangevallen, dan worden de drie 
-  arrays bijgewerkt voor de nieuwe locatie van de koningin (regel 38) 
+  arrays afgevinkt als bezet voor de nieuwe locatie van de koningin (regel 38) 
   en wordt de subroutine recursief aangeroepen (regel 40).
-  Na de aanroep worden de drie arrays weer teruggedraaid/gewist (regel 42).
+  Na de aanroep worden de drie arrays weer vrij gevinkt (regel 42).
 
 Dit zijn de laatste regels van de output.
 
 ```
- 6  3  1  4  7  0  2  5 # 86
  6  3  1  7  5  0  2  4 # 87
  6  4  2  0  5  7  1  3 # 88
  7  1  3  0  6  4  2  5 # 89
@@ -450,10 +457,10 @@ Dit zijn de laatste regels van de output.
  544.75
 ```
 
-Ons BASIX programma vindt in totaal 92 oplossing in 545 seconde (9 minuten).
-In het engelse artikel printen we een oplossing niet met 8 getallen, maar met een 
-plaatje van het bord. Dit is de laatst oplossing (het bord is gedraaid, kolom 0
-is de eerste geprinte regel)
+Ons BASIC programma vindt in totaal 92 oplossing in 545 seconde (9 minuten).
+In het Engelse artikel printen we een oplossing niet met 8 getallen, maar met een 
+plaatje van het bord. Hieronder staat de laatst oplossing 
+(het bord is gedraaid, kolom 0 is de eerste geprinte regel).
 
 ```
 .......Q
@@ -469,31 +476,33 @@ Q.......
 
 ## Toepassing 3: Expressie evaluator
 
-De laatste toepassing is een zogenaamde _LL(1) parser_, 
+De laatste toepassing in dit artikel is een zogenaamde _LL(1) parser_, 
 geïmplementeerd met behulp van een _recursive descent_-algoritme.
 
 Dat is een hele mond vol. Waar het op neerkomt, is dat je een string 
 `I$="10+4*5+5*(1+1)"` kunt invoeren, de evaluator kunt aanroepen (`GOSUB 200`), 
-waarna `PRINT E` het getal `40` afdrukt. De evaluator kent de prioriteitsregels: 
+waarna `PRINT E` het getal `40` afdrukt (immers `10+4*5+5*(1+1)` = 
+`10+20+5*2` = `10+20+10` = `40`). De evaluator kent de prioriteitsregels: 
 `*` gaat vóór `+`, maar ondersteunt ook haakjes `(`..`)`.
 
-Om het voorbeeld behapbaar te houden, ondersteunt de evaluator 
+Om de subroutine behapbaar te houden voor dit artikel, ondersteunt de evaluator 
 alleen `+`, `*`, `(`..`)` en gehele getallen zoals `123`. 
 Geen aftrekking of deling, geen negatieve getallen of functies. 
 Wel beschikt het over een vrij volledige foutafhandeling.
 
 We schrijven een _Parse_-subroutine (regel 300) die als argument een 
-tekenreeks `E$` meekrijgt, deze evalueert en de waarde teruggeeft in `E`. 
+string `E$` meekrijgt, deze evalueert en de waarde teruggeeft in `E`. 
 Tenzij er een fout optreedt; in dat geval drukt _Parse_ de fout af 
 en stopt het programma.
 
 Recursie leent zich uitstekend voor het evalueren van expressies. 
-Om bijvoorbeeld `E$="2*3+4*5"` te evalueren, zouden we recursief `E$="2*3"` 
-kunnen evalueren (wat `E=6` oplevert) en `E$="4*5"` (wat `E=20` oplevert). 
+Om bijvoorbeeld `E$="2*3+4*5"` te evalueren, zouden we recursief 
+de linkerkant `E$="2*3"` kunnen evalueren (wat `E=6` oplevert) en 
+de rechterkant `E$="4*5"` (wat `E=20` oplevert). 
 Vervolgens moeten we `6` en `20` bij elkaar optellen, dit toewijzen aan `E` 
 en terugkeren. Een probleem: de tweede `GOSUB` voor `E$="4*5"` overschrijft 
 de globale variabele `E`, waardoor we de `E=6` van de eerste `GOSUB` kwijtraken. 
-We lossen dit op door een expliciete stack `E()` met stackpointer `S` te 
+We lossen dit op door een expliciete stack `E()` met stack pointer `S` te 
 introduceren.
 
 Een LL(1)-parser beslist wat te doen door naar het eerstvolgende token te kijken. 
@@ -502,22 +511,23 @@ tokens één voor één "opeten" vanaf (de linkerkant van) de string `E$`.
 De code houdt `H$=LEFT$(E$,1)` bij, zodat beslissingen kunnen worden genomen 
 door `H$` te inspecteren, waarbij `H$` de kop (_head_) van `E$` is.
 
-Een LL(1)-parser moet altijd een look-ahead van 1 teken hebben. 
-Daarom is er een wrapper _Eval_ (regel 200) die een sentinel-token 
-(eindteken) toevoegt aan `E$`; we hebben `"$"` als sentinel gekozen.
+Een LL(1)-parser moet altijd een _look-ahead_ van 1 token hebben. 
+Daarom is er een hulp functie _Eval_ (regel 200) die een sentinel-token 
+(stopteken) toevoegt aan `E$`; we hebben `"$"` als sentinel gekozen.
 
-De structuur van een recursive descent-parser is om één subroutine 
+De structuur van een _recursive descent_-parser is om één subroutine 
 per prioriteitsniveau te hebben. We hebben drie niveaus: 
 optelling (`+`, we zouden `-` kunnen toevoegen) op regel 300, 
 vermenigvuldiging (`*`, we zouden `/` kunnen toevoegen) op regel 400, en 
-atomen op regel 500. We ondersteuen twee soorten atomen: 
+atomen op regel 500. We ondersteunen twee soorten atomen: 
 expressies tussen haakjes (regel 500-520) en getallen (530-570). 
 We zouden variabelen of functies als atomen kunnen toevoegen.
 
 De routine op regel 900 is _PrintError_. Deze drukt de foutmelding 
 af die is meegegeven in argument `M$`, toont wat de parser al met 
-succes heeft geparsed en wat er nog geparsed moet worden maar is 
-mislukt (geprint in _reverse video_). 
+succes heeft geparsed en wat er nog geparsed moet worden, maar 
+niet gelukt is door een fout. 
+Het tweede deel wordt geprint in _reverse video_. 
 Vervolgens wordt het programma afgebroken.
 
 De routine op regel 800 is _SkipToken_. 
@@ -572,44 +582,45 @@ zodat dit het volgende te parsen token wordt.
 
 Enkele aanvullende opmerkingen
 
-- Regel 100 definieert de stack `E()` en initialiseert de stackpointer `S`.
+- Regel 100 definieert de stack `E()` en initialiseert de stack pointer `S`.
 
 - Regel 110 kent een te evalueren expressie toe, regel 120 drukt deze af, 
   roept _Eval_ (regel 200) aan en drukt het resultaat af. 
   Regels 130 en 140 zijn vergelijkbaar, maar hier bevat `I$` een syntax fout: 
-  het gebruik van de niet-ondersteunde operator `^`.
+  het gebruikt de niet-ondersteunde operator `^`.
 
 - Regel 200 is waar _Eval_ begint. 
-  Deze routine voegt het eindteken (sentinel) toe aan de tekenreeks `E$`.
+  Deze routine voegt het stopteken (sentinel) toe aan de string `E$`.
   Deze `E$` zal worden verwerkt door _Parse_ (regel 300). 
   De `GOSUB 830` is een "hack" om het head-token `H$` te initialiseren.
 
-  Aan het einde van het parsen moet `E$` leeg zijn - oftewel alleen uit 
-  het eindteken bestaan. Dit wordt afgehandeld in 210 en 220.
+  Aan het einde van het parsen moet `E$` leeg zijn; alleen uit 
+  het stopteken bestaan. Dit wordt afgehandeld in 210 en 220.
 
 - Regel 300 start de _Parse_-subroutine; 300-390 is voor optellingen ("termen"), 
   400-490 voor vermenigvuldigingen ("factoren") en 500-590 voor atomen.
 
-- Regel 300 parset de linkerant van een `+`-teken (`GOSUB 400`), 
+- Regel 300 parset de linkerkant van een `+`-teken (`GOSUB 400`), 
   en regel 330 de rechterkant (nog een `GOSUB 400`).
   Regel 320 pusht de linker `E` op de stack `E(S)=E` en "eet" de `+` 
   van `E$` met behulp van `S$="+":GOSUB 800`.
 
 - Regel 330 bevat de recursieve aanroep voor de rechterkant waarbij de 
-  stackpointer synchroon wordt gehouden. 
+  stack pointer synchroon wordt gehouden. 
   Regel 340 implementeert de daadwerkelijke optelling `E=E(S)+E`.
   Aangezien een optelling meer dan twee termen kan hebben (`1+2+3`), 
   springt de optellingsparser terug via `GOTO 310`.
 
-- Vermenigvuldiging op regel 400 is vergelijkbaar met het optelling op regel 300.
+- De vermenigvuldigings-subroutine op regel 400 is vergelijkbaar 
+  met de optellings-subroutine op regel 300.
 
 - De atomen worden afgehandeld in 500. 
   Expressies tussen haakjes staan op regel 500-520. 
   Afhandelen van getallen staat op regel 530-570.
 
-Here is de output.
+Hier is de uitvoer.
 
-![Expression output](7-expr.png)
+![Expressie evaluatie](7-expr.png)
 
 
 ## Ten slotte 
