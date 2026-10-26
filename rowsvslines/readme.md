@@ -164,7 +164,7 @@ and one line that spans two rows (110).
 
 ```basic
 100 print "hello, world!"
-110 print "this is a line that spans two sreen rows"
+110 print "this is a line that spans two screen rows"
 120 print "short again"
 ```
 

@@ -16,7 +16,7 @@ Dat bevat meer details en bijvoorbeeld ook source files.
 Regels in een Commodore 64 BASIC programma mogen 80 karakters lang zijn. 
 Niet langer. Het scherm van de C64 bestaat uit 40 kolommen en 25 rijen.
 Een programma _regel_ die langer is dan 40 karakters is verdeeld over twee 
-scherm _rijen_. Dat twee rijen een regel (kunnen) vormen is niet een eigenschap 
+scherm _rijen_. Dat twee rijen één regel (kunnen) vormen is niet een eigenschap 
 van BASIC; het is een eigenschap van de (programmeer) omgeving. Ik noem het 
 in dit artikel een eigenschap van de _terminal_ (de code in de ROM die 
 het scherm beheert en bijvoorbeeld het scrollen implementeert).
@@ -108,7 +108,7 @@ regel. De `TAB(46)` wordt uitgevoerd (46 is immers groter dan 40), die
 verschuift de cursor 6 kolommen; daar komt de `X`.
 
 De vierde test is vrijwel hetzelfde als de derde. Het verschil is dat na het 
-printen van de 60 streepjes, de cursor _twee_ in plaats van _een_ rij omhoog 
+printen van de 60 streepjes, de cursor _twee_ in plaats van _één_ rij omhoog 
 wordt geschoven (zie de `>`). De cursor is dan in kolom 0 van de regel. 
 De `TAB(46)` schuift de cursor naar kolom 46, dat wil zeggen naar kolom 6 op 
 de tweede regel. Daar wordt de `X` geprint.
@@ -142,7 +142,7 @@ Het volgende programma heeft twee regels die op een scherm rij passen
 
 ```basic
 100 PRINT "HELLO, WORLD!"
-110 PRINT "THIS IS A LINE THAT SPANS TWO SREEN ROWS"
+110 PRINT "THIS IS A LINE THAT SPANS TWO SCREEN ROWS"
 120 PRINT "SHORT AGAIN"
 ```
 
@@ -172,7 +172,7 @@ Dit effect is ook te zien bij het bekende 10 PRINT programma:
 
 Dit programma print schuine streep na schuine streep, alles op één regel 
 (de `PRINT` heeft immers een `;`). De terminal ondersteunt echter geen regels 
-langer dan 80 karakters. Als het 81 karakter geprint wordt begin the terminal
+langer dan 80 karakters. Als het 81ste karakter geprint wordt begin the terminal
 een nieuwe regel. De terminal is dus gevuld met logische regels van 80 
 karakters, elke verdeeld over 2 rijen. Dit betekent dat elke keer als 
 de onderste regel vol is, het scherm _twee_ rijen scrollt.
@@ -198,7 +198,7 @@ De _nibble_ heeft dus waarde 8 voor "eerste deel of hele regel" en
 waarde 0 voor "tweede deel van de regel".
 De onderste _nibble_ negeren we. Het bevat het pagina nummer van het screen 
 memory waar die rij is opgeslagen. Bijvoorbeeld, de eerste rij staat op $0400,
-dus het onderste nibble van de eerste rij is 4.
+dus de onderste nibble van de eerste rij is 4.
 
 Het volgende programma laat de _line link_ tabel zien.
 
@@ -254,7 +254,7 @@ Dit is de uitvoer van het programma.
 
 ![The output of LINELINKTABLE](linelinktable1.png)
 
-We zien dat regel A kort is, hij past op een regel.
+We zien dat regel A kort is, hij past op één regel.
 De bovenste _nibble_ is inderdaad 8.
 
 Regel B is ongeveer 90 karakters lang. Hij beslaat 3 rijen.
