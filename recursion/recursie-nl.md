@@ -295,15 +295,15 @@ ook exponentieel.
 
 De Commodore 64 gebruikt een 6510 processor, en die hebben de stack 
 op pagina 1 staan, van $0100 tot en met $01FF. De C64 
-KERNEL gebruikt $0100-$013E voor de datasette. De stack loopt dus 
-van $01FF naar $013F. Ik vermoed dat een BASIC programma begint met
+KERNAL gebruikt $0100-$013E voor de datasette. De stack loopt dus 
+van $013F naar $01FF. Ik vermoed dat een BASIC programma begint met
 zo'n 16 PUSHes, en dat er altijd een marge van 16 bytes 
 voor bijvoorbeeld interrupts wordt gereserveerd. 
-Kortom, er zijn $01FF-$013F-16-16 = 160 bytes te PUSHen.
+Kortom, er is ruimte om $01FF-$013F-16-16 = 160 bytes te PUSHen.
 
-Een `GOSUB` _stack frame_ beslaat 7 bytes. Dan is er ruimte voor 22 GOSUB frames.
-Dat zagen we in alle mini problemen. Wat ook nog goed is om te weten:
-een `FOR`-`NEXT` plaatst een 18-byte stack frame.
+Een `GOSUB` _stack frame_ beslaat 7 bytes. Dan is er ruimte voor 160/7=22 
+GOSUB frames. Dat zagen we in alle mini problemen. 
+Wat ook nog goed is om te weten: een `FOR`-`NEXT` plaatst een 18-byte stack frame.
 
 
 ## Mini problemen: Conclusies
@@ -323,7 +323,16 @@ Dat bevat meer details en bijvoorbeeld ook source files.
 
 > [https://github.com/maarten-pennings/C64howto/blob/main/recursion](https://github.com/maarten-pennings/C64howto/blob/main/recursion). 
 
+  
+  
 ---
+  
+  
+  
+  
+---
+  
+  
 
 
 [![MCC](https://github.com/maarten-pennings/C64howto/blob/main/MCC/mcc240x160.png)](https://github.com/maarten-pennings/C64howto/tree/main/MCC#overview)
@@ -338,7 +347,7 @@ Het korte antwoord is ja, maar het is wel wat lastiger dan in moderne talen.
 
 In het eerste deel van dit artikel bekeken we drie "_mini problemen_".
 Die leerde de valkuilen en oplossingen bij recursie in BASIC.
-In dit tweede deel gaan we die lessen toepassen de praktijk, op
+In dit tweede deel gaan we die lessen toepassen in de praktijk, op
 _echte_ problemen.
 
 
@@ -716,6 +725,6 @@ Dat bevat meer details en bijvoorbeeld ook source files.
 
 Daar staat ook nog een extra toepassing, een puzzel:
 maak het getal 21 met 1, 5, 6, en 7 en alleen de operatoren 
-`+`, `-`, `*`, `/` en `(`..`)`. Het kan!
+`+`, `-`, `*`, `/` en `(`..`)`. Het kan echt!
 
 (end)
