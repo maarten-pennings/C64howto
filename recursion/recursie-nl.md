@@ -133,7 +133,8 @@ Dat is alles. Dat viel best mee.
 ## Mini probleem 2: Faculteit
 
 Dit tweede probleem lijkt bedrieglijk veel op het eerste, maar is toch net een 
-stapje anders. We gaan `N!` recursief uitrekenen. Voor de volledigheid
+stapje anders. We gaan `N!` ("N-faculteit") recursief uitrekenen. Voor de 
+volledigheid de definitie van _faculteit_:
 
 ```
 fac(0)= 1
@@ -280,21 +281,22 @@ wordt aangemaakt op regel 110.
 - Regel 260 herstelt  `N` en beëindigt de subroutine.
 
 We hebben eenzelfde hoofdprogramma als eerst, behalve dat we nu tijdmetingen doen.
-Ook dit programma stopt bij 23 met een `OUT OF MEMORY ERROR`.
-
+Ook dit programma stopt na 22 met een `OUT OF MEMORY ERROR`.
 Het programma stopt na 1128 secondes ofwel 20 minuten!
 Een recursieve subroutine is een erg slechte aanpak voor Fibonacci.
 
-Een korte verklaring voor nerds. Ten eerste, de Fibonnaci getallen 
-groeien exponentieel: `FIB(N) ~ 1.618^N / 2.236`. Ten tweede, een recursieve 
-berekening van `FIB(N)` kost `2*FIB(N+1)-1` aanroepen, en dat is dus 
-ook exponentieel.
+Waarom? Een korte verklaring voor nerds. De Fibonnaci getallen 
+groeien exponentieel: `FIB(N) ~ 1.618^N / 2.236`. Een recursieve 
+berekening van `FIB(N)` kost `2*FIB(N+1)-1` aanroepen, en dat 
+groeit dus ook exponentieel. Om een voorbeeld te geven `FAC(21)` gaat
+1.6 keer zo snel as `FAC(22)`, in 697 secondes (12 minuten) in plaats 
+van 1128 secondes (20 minuten).
 
 
 ## De BASIC stack
 
-De Commodore 64 gebruikt een 6510 processor, en die hebben de stack 
-op pagina 1 staan, van $0100 tot en met $01FF. De C64 
+De Commodore 64 gebruikt een 6510 processor, en die heeft de stack 
+op pagina 1 staan: van $0100 tot en met $01FF. De C64 
 KERNAL gebruikt $0100-$013E voor de datasette. De stack loopt dus 
 van $013F naar $01FF. Ik vermoed dat een BASIC programma begint met
 zo'n 16 PUSHes, en dat er altijd een marge van 16 bytes 
@@ -311,7 +313,7 @@ Wat ook nog goed is om te weten: een `FOR`-`NEXT` plaatst een 18-byte stack fram
 Er is in BASIC een stack, maar voor subroutines onthoudt die alleen maar 
 waarheen terug gesprongen moet worden. Er staan geen argumenten of lokale 
 variabelen op. Er zijn alleen maar globale variabelen in BASIC. Voor 
-succesvolle recursie moeten we de waardes in globale variabelen beheren: 
+succesvolle recursie moeten we de waardes in globale variabelen zorgvuldig beheren: 
 hetzij herstellen zoals we bij de faculteit routine zagen, hetzij in een array 
 bewaren zoals we bij de Fibonacci routine zagen. En de maximale recursie diepte is 22.
 
@@ -346,7 +348,7 @@ Kunnen we recursie gebruiken in Commodore 64 BASIC?
 Het korte antwoord is ja, maar het is wel wat lastiger dan in moderne talen.
 
 In het eerste deel van dit artikel bekeken we drie "_mini problemen_".
-Die leerde de valkuilen en oplossingen bij recursie in BASIC.
+Die leerde ons de valkuilen en oplossingen bij recursie in BASIC.
 In dit tweede deel gaan we die lessen toepassen in de praktijk, op
 _echte_ problemen.
 
@@ -427,7 +429,7 @@ hanoi
 
 Opdracht voor de lezer: houd in een array bij welke schijven op elke 
 pin liggen, werk het array bij bij elke schijf-verplaatsing, en print 
-net de verplaatsingen, maar de drie stapels.
+niet de verplaatsingen, maar de (inhoud van de) drie stapels.
 
 
 ## Toepassing 2: 8 Koninginnen 
@@ -436,7 +438,7 @@ Het 8-koninginnen probleem is ook een klassieker.
 Het doel is om 8 koninginnen op een schaakbord te plaatsen 
 zo dat geen koningin een andere aanvalt. 
 Dit soort problemen wordt vaak opgelost met behulp van 
-_recursieve backtracking_. We gaan dit in BASIC doen.
+_recursieve backtracking_. We gaan dat in BASIC doen.
 
 We kunnen het probleem herformuleren: elke rij, elke kolom en 
 elke (stijgende of dalende) diagonaal heeft elk maximaal één koningin.
@@ -723,8 +725,9 @@ Dat bevat meer details en bijvoorbeeld ook source files.
 
 > [https://github.com/maarten-pennings/C64howto/blob/main/recursion](https://github.com/maarten-pennings/C64howto/blob/main/recursion). 
 
-Daar staat ook nog een extra toepassing, een puzzel:
-maak het getal 21 met 1, 5, 6, en 7 en alleen de operatoren 
-`+`, `-`, `*`, `/` en `(`..`)`. Het kan echt!
+Daar staat ook nog een extra toepassing, een puzzel: maak het getal 21 met 
+1, 5, 6, en 7 en alleen de operatoren `+`, `-`, `*`, `/` en `(`..`)`. 
+Het is makkelijk om dichtbij te komen: `(5*6)-(1+7)` geeft `22`.
+Het is lastig, maar 21 kan echt!
 
 (end)
