@@ -219,7 +219,7 @@ Dat lijkt ook weer op de vorige problemen, dus herhalen we de aanpak.
 Onze subroutine heeft als input `N`.
 Hij berekent (recursief) `FIB(N)` en kent dat toe aan `R`.
 We zullen er voor zorgen dat de waarde van `N` behouden blijft.
-De subroutine heeft twee kladblok variabelen `R0` and `R1`.
+De subroutine heeft twee kladblok variabelen `R0` en `R1`.
 
 ```basic 
 200 REM INP:N; OUT:R=FIB(N); KEEP:N; MODS:R0,R1
@@ -270,7 +270,7 @@ wordt aangemaakt op regel 110.
 270 RETURN
 ```
 
-- Regel 210 berekent beide basis gevallen (`N=0` and `N=1`); 
+- Regel 210 berekent beide basis gevallen (`N=0` en `N=1`); 
   de basis gevallen veranderen `N` en `S` niet.
   
 - Regel 220 berekent `FIB(N-1)` en het resultaat `R` wordt _gePUSHed_ op 
@@ -287,7 +287,7 @@ Ook dit programma stopt na 22 iteraties met een `OUT OF MEMORY ERROR`.
 Het programma heeft dan 1128 secondes gelopen, ofwel 20 minuten!
 Een recursieve subroutine is een erg slechte aanpak voor Fibonacci.
 
-Waarom? Een korte verklaring voor nerds. De Fibonnaci getallen 
+Waarom? Een korte verklaring voor nerds. De Fibonacci getallen 
 groeien exponentieel: `FIB(N) ~ 1.618^N / 2.236`. Een recursieve 
 berekening van `FIB(N)` kost `2*FIB(N+1)-1` aanroepen, en dat 
 groeit dus ook exponentieel. Om een voorbeeld te geven `FAC(21)` gaat
