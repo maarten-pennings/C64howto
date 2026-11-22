@@ -3,9 +3,10 @@
 Maarten Pennings MCC#05 (deel 1)
 
 
-# Recursie in BASIC
+# Recursie in BASIC (1)
 
 Kunnen we recursie gebruiken in Commodore 64 BASIC?
+
 Het korte antwoord is ja, maar het is wel wat lastiger dan in moderne talen.
 
 ## Introductie
@@ -47,12 +48,12 @@ Om 2 tot de macht `N` uit te rekenen kun je in Commodore BASIC
 gewoon `2↑N` typen. Maar wij gaan een recursieve subroutine schrijven 
 die dit uitrekent.
 
-In BASIC zijn er geen functies met argumenten of een _return_ waarde.
-We gaan voor beide globale variabelen gebruiken. Onze subroutine heeft 
-als input `N`. De aanroeper moet `N` een waarde geven voor de `GOSUB` 
+In BASIC zijn er geen functies met _argumenten_ of een _return_ waarde.
+We moeten voor beide globale variabelen gebruiken. Onze subroutine heeft 
+als input `N`. De aanroeper moet `N` een waarde geven _voor_ de `GOSUB` 
 naar de subroutine. De subroutine zal 2 tot de macht `N` met recursie 
 berekenen en het antwoord toekennen aan de globale variabele `R` ("resultaat").
-Na de `RETURN` moet de aanroeper `R` inspecteren.
+_Na_ de `RETURN` moet de aanroeper `R` inspecteren.
 
 De vorige paragraaf beschrijft de _signatuur_ van de subroutine:
 welke waardes erin gaan (en in welke variabelen) en welke waardes eruit gaan 
@@ -63,7 +64,7 @@ Dit is een belangrijk aspect van een subroutine omdat alle variabelen globaal
 zijn. Als de aanroeper van een subroutine een variabele in gebruik heeft die 
 door de subroutine als kladblok wordt gebruikt, dan ontstaan er problemen.
 
-In onze subroutine wordt `N` gewijzigd - een kladblok.
+In onze subroutine wordt `N` gewijzigd - `N` is een kladblok variabele.
 De volledige signatuur van de te ontwikkelen subroutine 
 staat op regel 200 (met de kladblok lijst `MODS:N`).
 
@@ -87,8 +88,8 @@ Regel 210 implementeert de zogeheten _basis_ van de recursie: `N=0`.
 Regels 220 tot 250 bevatten de _stap_ van de recursie:
 
 ```
-pow2(0)= 1
-pow2(n)= pow2(n-1)*2, if n>0
+pow2(0) = 1
+pow2(n) = pow2(n-1)*2, if n>0
 ```
 
 We zouden een `FOR`-`NEXT` kunnen gebruiken op regels 110-140,
@@ -137,8 +138,8 @@ stapje anders. We gaan `N!` ("N-faculteit") recursief uitrekenen. Voor de
 volledigheid de definitie van _faculteit_:
 
 ```
-fac(0)= 1
-fac(n)= fac(n-1)*n, if n>0
+fac(0) = 1
+fac(n) = fac(n-1)*n, if n>0
 ```
 
 dus 4! = 4×3×2×1 = 24.
@@ -159,10 +160,11 @@ een "kladblok" is. En laten we dan ook de subroutine structuur hergebruiken.
 ```
 
 Dit werkt _niet_. Het probleem zit in regel 240.
-Na de `GOSUB 200` is globale variabele `N` gewijzigd,
+Na de `GOSUB 200` is globale variabele `N` gewijzigd 
+(`N` staat immers op de MODS lijst),
 dus de toekenning `240 R=R*N` is incorrect.
 
-We moeten de signatuur van de subroutine wijzigen: `N` is niet langer een 
+We kunnen de signatuur van de subroutine wijzigen: `N` is niet langer een 
 kladblok, maar hij behoudt zijn waarde. Dat is de nieuwe specificatie,
 zie regel 200 (`KEEP:N`). 
 
@@ -188,7 +190,7 @@ Voor de basis `N=0` (regel 210) is er geen toekenning aan `N`,
 dus is er geen programma wijziging nodig.
 Voor de stap als `N>0`, is er wel een toekenning aan `N`, namelijk 
 op regel 220: `N=N-1`. De reparatie is op regel 240, waar `N` hersteld
-wordt met `N=N+1`. Deze wijziging zorgt ervoor dat ook de stap aan
+wordt met `N=N+1`. Deze wijziging zorgt ervoor dat ook de stap van de recursie aan
 de nieuwe signatuur voldoet.
 En dan is regel `250 R=R*N` wel correct.
 
@@ -199,17 +201,17 @@ Ook hier krijgen we `OUT OF MEMORY ERROR` vanwege een _stack overflow_.
 ## Mini probleem 3: Fibonacci
 
 Bij `FAC(N)` zagen we dat het nodig is oude waardes te herstellen.
-Dat kon daar eenvoudig (met `N=N+1`), maar bij het probleem in deze 
-sectie lukt dat niet.
+Dat kon daar eenvoudig (met `N=N+1`), maar bij het laatste probleem in deze 
+sectie ("Fibonacci") lukt dat niet.
 
 Fibonacci was een wiskundige die een beroemde rij getallen introduceerde: 
 0, 1, 1, 2, 3, 5, 8, ..., elke getal is de som zijn twee directe voorgangers.
-Iets formeler als volgt te formuleren.
+Iets formeler kunnen we dat als volgt formuleren.
 
 ```
-fib(0)= 0
-fib(1)= 1
-fib(n)= fib(n-1) + fib(n-2), if n>1
+fib(0) = 0
+fib(1) = 1
+fib(n) = fib(n-1) + fib(n-2), if n>1
 ```
 
 Dat lijkt ook weer op de vorige problemen, dus herhalen we de aanpak.
@@ -254,7 +256,7 @@ wordt aangemaakt op regel 110.
 110 DIM S(30):S=0:REM SETUP STACK
 120 N=0
 130 :T0=TI:GOSUB 200:T1=TI:T=(T1-T0)/60
-140 :PRINT "FIB(";N;")=";R
+140 :PRINT "FIB(";N;")=";R;"(";T;")"
 170 :N=N+1
 180 GOTO 130
 190 :
@@ -272,17 +274,17 @@ wordt aangemaakt op regel 110.
   de basis gevallen veranderen `N` en `S` niet.
   
 - Regel 220 berekent `FIB(N-1)` en het resultaat `R` wordt _gePUSHed_ op 
-  de stack (regel 230).
+  de stack (in regel 230).
 
 - Regel 240 berekent `FIB(N-2)` en het resultaat `R` wordt verhoogd met 
   de waarde die _gePOPped_ wordt van de stack (regel 250).
-  Deze regel hersteld ook de stack pointer `S`.
+  Deze regel herstelt ook de stack pointer `S`.
   
 - Regel 260 herstelt  `N` en beëindigt de subroutine.
 
 We hebben eenzelfde hoofdprogramma als eerst, behalve dat we nu tijdmetingen doen.
-Ook dit programma stopt na 22 met een `OUT OF MEMORY ERROR`.
-Het programma stopt na 1128 secondes ofwel 20 minuten!
+Ook dit programma stopt na 22 iteraties met een `OUT OF MEMORY ERROR`.
+Het programma heeft dan 1128 secondes gelopen, ofwel 20 minuten!
 Een recursieve subroutine is een erg slechte aanpak voor Fibonacci.
 
 Waarom? Een korte verklaring voor nerds. De Fibonnaci getallen 
@@ -305,15 +307,16 @@ Kortom, er is ruimte om $01FF-$013F-16-16 = 160 bytes te PUSHen.
 
 Een `GOSUB` _stack frame_ beslaat 7 bytes. Dan is er ruimte voor 160/7=22 
 GOSUB frames. Dat zagen we in alle mini problemen. 
-Wat ook nog goed is om te weten: een `FOR`-`NEXT` plaatst een 18-byte stack frame.
+Wat misschien ook nog aardig is om te weten: 
+een `FOR`-`NEXT` plaatst een 18-byte stack frame.
 
 
 ## Mini problemen: Conclusies
 
 Er is in BASIC een stack, maar voor subroutines onthoudt die alleen maar 
-waarheen terug gesprongen moet worden. Er staan geen argumenten of lokale 
-variabelen op. Er zijn alleen maar globale variabelen in BASIC. Voor 
-succesvolle recursie moeten we de waardes in globale variabelen zorgvuldig beheren: 
+waarheen terug gesprongen moet worden. Hij wordt niet gebruikt voor (subroutine)
+argumenten of lokale variabelen. Er zijn alleen maar globale variabelen in BASIC. Voor 
+succesvolle recursie moeten we de waardes in de globale variabelen zorgvuldig beheren: 
 hetzij herstellen zoals we bij de faculteit routine zagen, hetzij in een array 
 bewaren zoals we bij de Fibonacci routine zagen. En de maximale recursie diepte is 22.
 
@@ -342,9 +345,10 @@ Dat bevat meer details en bijvoorbeeld ook source files.
 Maarten Pennings MCC#05 (deel 2)
 
 
-# Recursie in BASIC
+# Recursie in BASIC (2)
 
 Kunnen we recursie gebruiken in Commodore 64 BASIC?
+
 Het korte antwoord is ja, maar het is wel wat lastiger dan in moderne talen.
 
 In het eerste deel van dit artikel bekeken we drie "_mini problemen_".
@@ -371,7 +375,7 @@ daarbij de spelregels volgend:
 In het plaatje zien we dat we in 7 beurten de stapel
 van pin 1 naar pin 3 kunnen verhuizen. De dikke gebogen pijlen 
 zijn gelabeld met de verplaatsingen verplaatsing: _f→t_ betekent dat 
-de schijf van pin _f_ naar pin _t_ verplaatst wordt.
+een schijf van pin _f_ naar pin _t_ verplaatst wordt.
 
 ![Hanoi voorbeeld](hanoi.drawio.png)
 
@@ -384,10 +388,10 @@ Merk op dat er een derde pin is, de _reserve_ pin.
   enige stap te hoeven maken.
 - Als `N` groter is dan 0, splitsen we het werk in drie fasen:
   - Vraag recursief om een stapel van `N-1` schijven te verplaatsen
-    van `F` naar de _reserve_ pin.
-  - Verplaats de `N`-de (onderste) schijf van `F` naar `T`.
+    van pin `F` naar de _reserve_ pin.
+  - Verplaats de `N`-de (onderste) schijf van pin `F` naar pin `T`.
   - Vraag recursief om een stapel van `N-1` schijven te verplaatsen 
-    van de _reserve_ pin naar `T`.
+    van de _reserve_ pin naar pin `T`.
 
 We zetten dit om naar een BASIC-subroutine. We zorgen ervoor dat 
 de waarden van de variabelen `N`, `F` en `T` behouden blijven tijdens 
@@ -467,15 +471,15 @@ De _positie_ van een koningin is eenvoudig om te zetten in de indexen
 van de stijgende diagonaal en de dalende diagonaal. De index van de 
 dalende diagonaal is de _som_ van de rij en de kolom waar de koningin 
 staat, en de index van de stijgende diagonaal is het _verschil_ 
-tussen de rij en de kolom (met een offset van 7 om positief te blijven). 
+tussen de rij en de kolom (met een _offset_ van 7 om positief te blijven). 
+
+![8 koninginnen aanvalslijnen](8queens.drawio.png)
 
 De diagram geeft een voorbeeld: een koningin in rij 5 en kolom 1
 staat in de dalende (groene) diagonaal 5+1 = 6;
 ze staat ook in de stijgende (blauwe) diagonaal 7+5-1= 11, 
 en in de horizontale (oranje) rij 5. Dat ze ook nog kolom 1 staat
 is niet getekend.
-
-![8 koninginnen aanvalslijnen](8queens.drawio.png)
 
 ```BASIC 
 10 PRINT "8 QUEENS"
@@ -520,7 +524,7 @@ is niet getekend.
 
 - Als het bord nog niet compleet is (`C<8`) probeert de subroutine een 
   koningin in kolom `C` te plaatsen.
-  Het doorloopt alle rijen van 0 (regel 30) tot aan 8 (regel 44).
+  De subroutine doorloopt alle rijen van 0 (regel 30) tot aan 8 (regel 44).
 
 - In regels 32-42 hebben we een kandidaat-locatie voor de koningin 
   op coördinaten (`C`,`B(C)`). We berekenen de drie indexen: 
@@ -533,7 +537,7 @@ is niet getekend.
   geplaatste koningin. Zo ja, dan wordt de volgende rij geprobeerd (`THEN 44`).
 
 - Als de nieuwe koningin niet wordt aangevallen, dan worden de drie 
-  arrays afgevinkt als bezet voor de nieuwe locatie van de koningin (regel 38) 
+  arrays afgevinkt als aangevallen door de nieuwe koningin (regel 38) 
   en wordt de subroutine recursief aangeroepen (regel 40).
   Na de aanroep worden de drie arrays weer vrij gevinkt (regel 42).
 
@@ -576,10 +580,10 @@ waarna `PRINT E` het getal `40` afdrukt (immers `10+4*5+5*(1+1)` =
 `10+20+5*2` = `10+20+10` = `40`). De evaluator kent de prioriteitsregels: 
 `*` gaat vóór `+`, maar ondersteunt ook haakjes `(`..`)`.
 
-Om de subroutine behapbaar te houden voor dit artikel, ondersteunt de evaluator 
+Om de subroutine behapbaar (klein) te houden voor dit artikel, ondersteunt de evaluator 
 alleen `+`, `*`, `(`..`)` en gehele getallen zoals `123`. 
-Geen aftrekking of deling, geen negatieve getallen of functies. 
-Wel beschikt het over een vrij volledige foutafhandeling.
+Geen aftrekking of deling, geen negatieve getallen, gebroken getallen, of functies. 
+Wel beschikt de evaluator over een foutafhandeling.
 
 We schrijven een _Parse_-subroutine (regel 300) die als argument een 
 string `E$` meekrijgt, deze evalueert en de waarde teruggeeft in `E`. 
@@ -607,7 +611,7 @@ Daarom is er een hulp functie _Eval_ (regel 200) die een stopteken
 (sentinel-token) toevoegt aan `E$`; we hebben `"$"` als stopteken gekozen.
 
 De structuur van een _recursive descent_-parser is om één subroutine 
-per prioriteitsniveau te hebben. We hebben drie niveaus: 
+per prioriteitsniveau te hebben. We hebben drie niveaus en dus drie subroutines: 
 optelling (`+`, we zouden `-` kunnen toevoegen) op regel 300, 
 vermenigvuldiging (`*`, we zouden `/` kunnen toevoegen) op regel 400, en 
 atomen op regel 500. We ondersteunen twee soorten atomen: 
@@ -718,7 +722,7 @@ Hier is de uitvoer.
 
 We zien dat recursie ondersteund wordt in BASIC, maar omdat er alleen maar 
 globale variabelen zijn is het net wat moeilijker dan in modernere 
-programmeertalen. Maar we hebben drie echte problemen opgelost.
+programmeertalen. Toch hebben we drie echte problemen weten op te lossen.
 
 Dit artikel is een verkorte Nederlandse versie van een Engels artikel.
 Dat bevat meer details en bijvoorbeeld ook source files.
